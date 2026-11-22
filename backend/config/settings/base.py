@@ -120,6 +120,7 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     "TITLE": "LIFE RPG API",
     "VERSION": "0.1.0",
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAuthenticated"],
 }
 
 FRONTEND_DIST = ROOT_DIR / "frontend" / "dist"

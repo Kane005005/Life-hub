@@ -1,5 +1,6 @@
 """Tests des réglages de sécurité et d'architecture."""
 
+import pytest
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.settings import api_settings
@@ -36,3 +37,8 @@ def test_all_apps_are_installed() -> None:
 
 def test_default_permission_is_authenticated() -> None:
     assert IsAuthenticated in api_settings.DEFAULT_PERMISSION_CLASSES
+
+
+@pytest.mark.django_db
+def test_schema_requires_authentication(client) -> None:
+    assert client.get("/api/schema/").status_code in (401, 403)
