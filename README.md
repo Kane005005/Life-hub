@@ -79,5 +79,14 @@ docs/       cahier des charges, brand book, prompt de construction, ARCHITECTURE
 | --- | --- |
 | `docs/PROMPT_BUILD_LIFE_RPG.md` | Instructions de construction, phases 0 à 4 |
 | `docs/CAHIER_DES_CHARGES.md` | Cahier des charges fonctionnel et technique |
+| `docs/LIFE_RPG_Cahier_des_charges_v1.0.docx` | Cahier des charges (Word, source du Markdown) |
+| `docs/ARBRE_DE_COMPETENCES.md` | Annexe A : spécification de l'arbre de compétences (6 arbres, 72 compétences, coûts, conditions, API) |
+| `docs/skill_tree_seed.json` | Données de départ de l'arbre, chargées en phase 2 |
 | `docs/brand-book.html` | Brand book : identité visuelle, tokens, composants. Ouvre-le dans un navigateur. |
 | `docs/ARCHITECTURE.md` | Architecture technique et état d'avancement |
+
+## Identité visuelle
+
+Monde nocturne vert-nuit, braises émeraude, cadres de HUD argentés.
+Couleurs : Nuit `#0B100E`, Charbon `#16181A`, Vert profond `#0B3D2E`, Émeraude `#0F7B5A`, Émeraude vive `#2FD08B`, Ivoire `#EDE9DF`, Argent `#B9BEC2`.
+Polices : Instrument Serif, Chakra Petch, Schibsted Grotesk.

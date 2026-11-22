@@ -1,0 +1,984 @@
+{
+  "version": 1,
+  "tiers": 4,
+  "costs": [
+    1,
+    1,
+    2,
+    3
+  ],
+  "nodes": [
+    {
+      "code": "knowledge.reading.t1",
+      "territory": "KNOWLEDGE",
+      "branch": "reading",
+      "branch_name": "Lecture & culture",
+      "tier": 1,
+      "name": "Lecteur régulier",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "knowledge.reading.t2",
+      "territory": "KNOWLEDGE",
+      "branch": "reading",
+      "branch_name": "Lecture & culture",
+      "tier": 2,
+      "name": "Lecteur critique",
+      "cost": 1,
+      "requires": [
+        "knowledge.reading.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "knowledge.reading.t3",
+      "territory": "KNOWLEDGE",
+      "branch": "reading",
+      "branch_name": "Lecture & culture",
+      "tier": 3,
+      "name": "Fiches et synthèses",
+      "cost": 2,
+      "requires": [
+        "knowledge.reading.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "knowledge.reading.t4",
+      "territory": "KNOWLEDGE",
+      "branch": "reading",
+      "branch_name": "Lecture & culture",
+      "tier": 4,
+      "name": "Érudit",
+      "cost": 3,
+      "requires": [
+        "knowledge.reading.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "knowledge.languages.t1",
+      "territory": "KNOWLEDGE",
+      "branch": "languages",
+      "branch_name": "Langues",
+      "tier": 1,
+      "name": "Bases solides",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "knowledge.languages.t2",
+      "territory": "KNOWLEDGE",
+      "branch": "languages",
+      "branch_name": "Langues",
+      "tier": 2,
+      "name": "Conversation courante",
+      "cost": 1,
+      "requires": [
+        "knowledge.languages.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "knowledge.languages.t3",
+      "territory": "KNOWLEDGE",
+      "branch": "languages",
+      "branch_name": "Langues",
+      "tier": 3,
+      "name": "Lecture et écriture avancées",
+      "cost": 2,
+      "requires": [
+        "knowledge.languages.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "knowledge.languages.t4",
+      "territory": "KNOWLEDGE",
+      "branch": "languages",
+      "branch_name": "Langues",
+      "tier": 4,
+      "name": "Bilingue",
+      "cost": 3,
+      "requires": [
+        "knowledge.languages.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "knowledge.research.t1",
+      "territory": "KNOWLEDGE",
+      "branch": "research",
+      "branch_name": "Recherche & méthode",
+      "tier": 1,
+      "name": "Curiosité méthodique",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "knowledge.research.t2",
+      "territory": "KNOWLEDGE",
+      "branch": "research",
+      "branch_name": "Recherche & méthode",
+      "tier": 2,
+      "name": "Sources fiables",
+      "cost": 1,
+      "requires": [
+        "knowledge.research.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "knowledge.research.t3",
+      "territory": "KNOWLEDGE",
+      "branch": "research",
+      "branch_name": "Recherche & méthode",
+      "tier": 3,
+      "name": "Analyse et rédaction",
+      "cost": 2,
+      "requires": [
+        "knowledge.research.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "knowledge.research.t4",
+      "territory": "KNOWLEDGE",
+      "branch": "research",
+      "branch_name": "Recherche & méthode",
+      "tier": 4,
+      "name": "Chercheur autonome",
+      "cost": 3,
+      "requires": [
+        "knowledge.research.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "body.swimming.t1",
+      "territory": "BODY",
+      "branch": "swimming",
+      "branch_name": "Natation",
+      "tier": 1,
+      "name": "Aisance dans l'eau",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "body.swimming.t2",
+      "territory": "BODY",
+      "branch": "swimming",
+      "branch_name": "Natation",
+      "tier": 2,
+      "name": "Nage régulière",
+      "cost": 1,
+      "requires": [
+        "body.swimming.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "body.swimming.t3",
+      "territory": "BODY",
+      "branch": "swimming",
+      "branch_name": "Natation",
+      "tier": 3,
+      "name": "Endurance",
+      "cost": 2,
+      "requires": [
+        "body.swimming.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "body.swimming.t4",
+      "territory": "BODY",
+      "branch": "swimming",
+      "branch_name": "Natation",
+      "tier": 4,
+      "name": "Technique maîtrisée",
+      "cost": 3,
+      "requires": [
+        "body.swimming.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "body.fitness.t1",
+      "territory": "BODY",
+      "branch": "fitness",
+      "branch_name": "Forme & mobilité",
+      "tier": 1,
+      "name": "Routine d'étirements",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "body.fitness.t2",
+      "territory": "BODY",
+      "branch": "fitness",
+      "branch_name": "Forme & mobilité",
+      "tier": 2,
+      "name": "Entraînement régulier",
+      "cost": 1,
+      "requires": [
+        "body.fitness.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "body.fitness.t3",
+      "territory": "BODY",
+      "branch": "fitness",
+      "branch_name": "Forme & mobilité",
+      "tier": 3,
+      "name": "Force et mobilité",
+      "cost": 2,
+      "requires": [
+        "body.fitness.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "body.fitness.t4",
+      "territory": "BODY",
+      "branch": "fitness",
+      "branch_name": "Forme & mobilité",
+      "tier": 4,
+      "name": "Condition durable",
+      "cost": 3,
+      "requires": [
+        "body.fitness.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "body.recovery.t1",
+      "territory": "BODY",
+      "branch": "recovery",
+      "branch_name": "Sommeil & alimentation",
+      "tier": 1,
+      "name": "Rythme de sommeil",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "body.recovery.t2",
+      "territory": "BODY",
+      "branch": "recovery",
+      "branch_name": "Sommeil & alimentation",
+      "tier": 2,
+      "name": "Repas équilibrés",
+      "cost": 1,
+      "requires": [
+        "body.recovery.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "body.recovery.t3",
+      "territory": "BODY",
+      "branch": "recovery",
+      "branch_name": "Sommeil & alimentation",
+      "tier": 3,
+      "name": "Récupération planifiée",
+      "cost": 2,
+      "requires": [
+        "body.recovery.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "body.recovery.t4",
+      "territory": "BODY",
+      "branch": "recovery",
+      "branch_name": "Sommeil & alimentation",
+      "tier": 4,
+      "name": "Hygiène de vie stable",
+      "cost": 3,
+      "requires": [
+        "body.recovery.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "career.entrepreneurship.t1",
+      "territory": "CAREER",
+      "branch": "entrepreneurship",
+      "branch_name": "Entrepreneuriat",
+      "tier": 1,
+      "name": "Idée validée",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "career.entrepreneurship.t2",
+      "territory": "CAREER",
+      "branch": "entrepreneurship",
+      "branch_name": "Entrepreneuriat",
+      "tier": 2,
+      "name": "Offre structurée",
+      "cost": 1,
+      "requires": [
+        "career.entrepreneurship.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "career.entrepreneurship.t3",
+      "territory": "CAREER",
+      "branch": "entrepreneurship",
+      "branch_name": "Entrepreneuriat",
+      "tier": 3,
+      "name": "Activité rentable",
+      "cost": 2,
+      "requires": [
+        "career.entrepreneurship.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "career.entrepreneurship.t4",
+      "territory": "CAREER",
+      "branch": "entrepreneurship",
+      "branch_name": "Entrepreneuriat",
+      "tier": 4,
+      "name": "Entreprise pilotée",
+      "cost": 3,
+      "requires": [
+        "career.entrepreneurship.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "career.sales.t1",
+      "territory": "CAREER",
+      "branch": "sales",
+      "branch_name": "Vente & prospection",
+      "tier": 1,
+      "name": "Premiers contacts",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "career.sales.t2",
+      "territory": "CAREER",
+      "branch": "sales",
+      "branch_name": "Vente & prospection",
+      "tier": 2,
+      "name": "Pitch clair",
+      "cost": 1,
+      "requires": [
+        "career.sales.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "career.sales.t3",
+      "territory": "CAREER",
+      "branch": "sales",
+      "branch_name": "Vente & prospection",
+      "tier": 3,
+      "name": "Pipeline suivi",
+      "cost": 2,
+      "requires": [
+        "career.sales.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "career.sales.t4",
+      "territory": "CAREER",
+      "branch": "sales",
+      "branch_name": "Vente & prospection",
+      "tier": 4,
+      "name": "Négociateur",
+      "cost": 3,
+      "requires": [
+        "career.sales.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "career.finance.t1",
+      "territory": "CAREER",
+      "branch": "finance",
+      "branch_name": "Finances & gestion",
+      "tier": 1,
+      "name": "Budget tenu",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "career.finance.t2",
+      "territory": "CAREER",
+      "branch": "finance",
+      "branch_name": "Finances & gestion",
+      "tier": 2,
+      "name": "Suivi des flux",
+      "cost": 1,
+      "requires": [
+        "career.finance.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "career.finance.t3",
+      "territory": "CAREER",
+      "branch": "finance",
+      "branch_name": "Finances & gestion",
+      "tier": 3,
+      "name": "Prévision",
+      "cost": 2,
+      "requires": [
+        "career.finance.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "career.finance.t4",
+      "territory": "CAREER",
+      "branch": "finance",
+      "branch_name": "Finances & gestion",
+      "tier": 4,
+      "name": "Gestion maîtrisée",
+      "cost": 3,
+      "requires": [
+        "career.finance.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "technology.programming.t1",
+      "territory": "TECHNOLOGY",
+      "branch": "programming",
+      "branch_name": "Programmation",
+      "tier": 1,
+      "name": "Bases solides",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "technology.programming.t2",
+      "territory": "TECHNOLOGY",
+      "branch": "programming",
+      "branch_name": "Programmation",
+      "tier": 2,
+      "name": "Projet livré",
+      "cost": 1,
+      "requires": [
+        "technology.programming.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "technology.programming.t3",
+      "territory": "TECHNOLOGY",
+      "branch": "programming",
+      "branch_name": "Programmation",
+      "tier": 3,
+      "name": "Architecture propre",
+      "cost": 2,
+      "requires": [
+        "technology.programming.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "technology.programming.t4",
+      "territory": "TECHNOLOGY",
+      "branch": "programming",
+      "branch_name": "Programmation",
+      "tier": 4,
+      "name": "Développeur autonome",
+      "cost": 3,
+      "requires": [
+        "technology.programming.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "technology.ai.t1",
+      "territory": "TECHNOLOGY",
+      "branch": "ai",
+      "branch_name": "IA & automatisation",
+      "tier": 1,
+      "name": "Prompts efficaces",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "technology.ai.t2",
+      "territory": "TECHNOLOGY",
+      "branch": "ai",
+      "branch_name": "IA & automatisation",
+      "tier": 2,
+      "name": "Premiers workflows",
+      "cost": 1,
+      "requires": [
+        "technology.ai.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "technology.ai.t3",
+      "territory": "TECHNOLOGY",
+      "branch": "ai",
+      "branch_name": "IA & automatisation",
+      "tier": 3,
+      "name": "Agents orchestrés",
+      "cost": 2,
+      "requires": [
+        "technology.ai.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "technology.ai.t4",
+      "territory": "TECHNOLOGY",
+      "branch": "ai",
+      "branch_name": "IA & automatisation",
+      "tier": 4,
+      "name": "Systèmes automatisés",
+      "cost": 3,
+      "requires": [
+        "technology.ai.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "technology.devops.t1",
+      "territory": "TECHNOLOGY",
+      "branch": "devops",
+      "branch_name": "DevOps & sécurité",
+      "tier": 1,
+      "name": "Git et terminal",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "technology.devops.t2",
+      "territory": "TECHNOLOGY",
+      "branch": "devops",
+      "branch_name": "DevOps & sécurité",
+      "tier": 2,
+      "name": "Déploiement",
+      "cost": 1,
+      "requires": [
+        "technology.devops.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "technology.devops.t3",
+      "territory": "TECHNOLOGY",
+      "branch": "devops",
+      "branch_name": "DevOps & sécurité",
+      "tier": 3,
+      "name": "Conteneurs et CI",
+      "cost": 2,
+      "requires": [
+        "technology.devops.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "technology.devops.t4",
+      "territory": "TECHNOLOGY",
+      "branch": "devops",
+      "branch_name": "DevOps & sécurité",
+      "tier": 4,
+      "name": "Sécurité appliquée",
+      "cost": 3,
+      "requires": [
+        "technology.devops.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "creation.drawing.t1",
+      "territory": "CREATION",
+      "branch": "drawing",
+      "branch_name": "Dessin",
+      "tier": 1,
+      "name": "Croquis réguliers",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "creation.drawing.t2",
+      "territory": "CREATION",
+      "branch": "drawing",
+      "branch_name": "Dessin",
+      "tier": 2,
+      "name": "Proportions",
+      "cost": 1,
+      "requires": [
+        "creation.drawing.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "creation.drawing.t3",
+      "territory": "CREATION",
+      "branch": "drawing",
+      "branch_name": "Dessin",
+      "tier": 3,
+      "name": "Style personnel",
+      "cost": 2,
+      "requires": [
+        "creation.drawing.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "creation.drawing.t4",
+      "territory": "CREATION",
+      "branch": "drawing",
+      "branch_name": "Dessin",
+      "tier": 4,
+      "name": "Œuvre aboutie",
+      "cost": 3,
+      "requires": [
+        "creation.drawing.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "creation.cooking.t1",
+      "territory": "CREATION",
+      "branch": "cooking",
+      "branch_name": "Cuisine",
+      "tier": 1,
+      "name": "Recettes de base",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "creation.cooking.t2",
+      "territory": "CREATION",
+      "branch": "cooking",
+      "branch_name": "Cuisine",
+      "tier": 2,
+      "name": "Techniques maîtrisées",
+      "cost": 1,
+      "requires": [
+        "creation.cooking.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "creation.cooking.t3",
+      "territory": "CREATION",
+      "branch": "cooking",
+      "branch_name": "Cuisine",
+      "tier": 3,
+      "name": "Recettes originales",
+      "cost": 2,
+      "requires": [
+        "creation.cooking.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "creation.cooking.t4",
+      "territory": "CREATION",
+      "branch": "cooking",
+      "branch_name": "Cuisine",
+      "tier": 4,
+      "name": "Table maîtrisée",
+      "cost": 3,
+      "requires": [
+        "creation.cooking.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "creation.media.t1",
+      "territory": "CREATION",
+      "branch": "media",
+      "branch_name": "Vidéo & musique",
+      "tier": 1,
+      "name": "Premiers montages",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "creation.media.t2",
+      "territory": "CREATION",
+      "branch": "media",
+      "branch_name": "Vidéo & musique",
+      "tier": 2,
+      "name": "Narration visuelle",
+      "cost": 1,
+      "requires": [
+        "creation.media.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "creation.media.t3",
+      "territory": "CREATION",
+      "branch": "media",
+      "branch_name": "Vidéo & musique",
+      "tier": 3,
+      "name": "Production complète",
+      "cost": 2,
+      "requires": [
+        "creation.media.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "creation.media.t4",
+      "territory": "CREATION",
+      "branch": "media",
+      "branch_name": "Vidéo & musique",
+      "tier": 4,
+      "name": "Créateur reconnu",
+      "cost": 3,
+      "requires": [
+        "creation.media.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "inner_world.reflection.t1",
+      "territory": "INNER_WORLD",
+      "branch": "reflection",
+      "branch_name": "Réflexion & écriture",
+      "tier": 1,
+      "name": "Journal tenu",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "inner_world.reflection.t2",
+      "territory": "INNER_WORLD",
+      "branch": "reflection",
+      "branch_name": "Réflexion & écriture",
+      "tier": 2,
+      "name": "Bilans réguliers",
+      "cost": 1,
+      "requires": [
+        "inner_world.reflection.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "inner_world.reflection.t3",
+      "territory": "INNER_WORLD",
+      "branch": "reflection",
+      "branch_name": "Réflexion & écriture",
+      "tier": 3,
+      "name": "Principes personnels",
+      "cost": 2,
+      "requires": [
+        "inner_world.reflection.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "inner_world.reflection.t4",
+      "territory": "INNER_WORLD",
+      "branch": "reflection",
+      "branch_name": "Réflexion & écriture",
+      "tier": 4,
+      "name": "Vision de vie",
+      "cost": 3,
+      "requires": [
+        "inner_world.reflection.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "inner_world.relations.t1",
+      "territory": "INNER_WORLD",
+      "branch": "relations",
+      "branch_name": "Relations humaines",
+      "tier": 1,
+      "name": "Présence",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "inner_world.relations.t2",
+      "territory": "INNER_WORLD",
+      "branch": "relations",
+      "branch_name": "Relations humaines",
+      "tier": 2,
+      "name": "Écoute",
+      "cost": 1,
+      "requires": [
+        "inner_world.relations.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "inner_world.relations.t3",
+      "territory": "INNER_WORLD",
+      "branch": "relations",
+      "branch_name": "Relations humaines",
+      "tier": 3,
+      "name": "Liens entretenus",
+      "cost": 2,
+      "requires": [
+        "inner_world.relations.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "inner_world.relations.t4",
+      "territory": "INNER_WORLD",
+      "branch": "relations",
+      "branch_name": "Relations humaines",
+      "tier": 4,
+      "name": "Cercle solide",
+      "cost": 3,
+      "requires": [
+        "inner_world.relations.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    },
+    {
+      "code": "inner_world.balance.t1",
+      "territory": "INNER_WORLD",
+      "branch": "balance",
+      "branch_name": "Repos & équilibre",
+      "tier": 1,
+      "name": "Pauses assumées",
+      "cost": 1,
+      "requires": [],
+      "min_territory_stat": 0,
+      "min_validated_quests": 0
+    },
+    {
+      "code": "inner_world.balance.t2",
+      "territory": "INNER_WORLD",
+      "branch": "balance",
+      "branch_name": "Repos & équilibre",
+      "tier": 2,
+      "name": "Rituels",
+      "cost": 1,
+      "requires": [
+        "inner_world.balance.t1"
+      ],
+      "min_territory_stat": 15,
+      "min_validated_quests": 3
+    },
+    {
+      "code": "inner_world.balance.t3",
+      "territory": "INNER_WORLD",
+      "branch": "balance",
+      "branch_name": "Repos & équilibre",
+      "tier": 3,
+      "name": "Équilibre travail-repos",
+      "cost": 2,
+      "requires": [
+        "inner_world.balance.t2"
+      ],
+      "min_territory_stat": 30,
+      "min_validated_quests": 8
+    },
+    {
+      "code": "inner_world.balance.t4",
+      "territory": "INNER_WORLD",
+      "branch": "balance",
+      "branch_name": "Repos & équilibre",
+      "tier": 4,
+      "name": "Sérénité durable",
+      "cost": 3,
+      "requires": [
+        "inner_world.balance.t3"
+      ],
+      "min_territory_stat": 50,
+      "min_validated_quests": 15
+    }
+  ]
+}

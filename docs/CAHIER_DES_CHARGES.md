@@ -38,6 +38,8 @@ LIFE RPG ne doit pas être un simple gestionnaire de tâches avec des points d'e
 
 ### 1.2. Vision du produit
 
+**Your Life. Your Quest. Your Evolution.**
+
 LIFE RPG permet à chaque utilisateur de construire une représentation évolutive de sa vie, de ses objectifs et de ses accomplissements. Le système accompagne l'utilisateur pendant plusieurs années, sans imposer de progression artificielle ni créer de dépendance à la productivité.
 
 ### 1.3. Objectifs principaux
@@ -111,9 +113,9 @@ Les données personnelles liées au corps (territoire BODY) restent privées et 
 
 Chaque territoire possède trois états de progression :
 
-1.  : territoire découvert.
-2.  : territoire en développement.
-3.  : territoire dont les compétences sont durablement développées.
+1.  **DISCOVERY** : territoire découvert.
+2.  **DEVELOPMENT** : territoire en développement.
+3.  **MASTERY** : territoire dont les compétences sont durablement développées.
 
 Les territoires ne perdent jamais leurs acquis en raison d'une période d'inactivité.
 
@@ -226,6 +228,35 @@ Les crédits sont une monnaie virtuelle qui permet d'acquérir des récompenses 
 ### 6.4. Skill Points
 
 Les points de compétence débloquent des branches dans les arbres de compétences. Le système distingue les points disponibles, les points dépensés, les compétences débloquées et leurs conditions de déblocage.
+
+**Arbre de compétences : structure.** Il y a six arbres, un par territoire. Chaque arbre compte trois branches de quatre niveaux, soit 72 compétences. Les valeurs ci-dessous sont des valeurs de départ, configurables dans les paramètres du système.
+
+- Une compétence reconnaît un savoir-faire réel. Elle est symbolique (titre, badge, contenu d'interface) et ne donne jamais de bonus d'XP ou de statistiques.
+- Débloquer une compétence est toujours un choix de l'utilisateur, qui dépense lui-même ses points. Le serveur vérifie les conditions.
+- Une compétence débloquée n'est jamais perdue, même après une longue inactivité.
+- Un agent IA peut proposer une compétence à viser, mais ne peut ni la débloquer ni dépenser de points.
+- Les compétences du territoire BODY restent privées et ne constituent jamais un diagnostic médical.
+- Gain : 1 point de compétence par niveau général gagné. Les 72 compétences coûtent 126 points au total, alors qu'environ 49 points sont gagnés au niveau 50 : l'utilisateur choisit une orientation.
+
+**Coûts et conditions.** Chaque branche se débloque dans l'ordre (le niveau N exige le niveau N−1 de la même branche). Les branches sont indépendantes entre elles. Une mission peut être rattachée à une branche (champ optionnel skill_branch) ; seules les missions validées par l'utilisateur comptent.
+
+| **Niveau** | **Coût (points)** | **Statistique minimale du territoire (0–100)** | **Missions validées dans la branche** |
+|------------|-------------------|------------------------------------------------|---------------------------------------|
+| 1          | 1                 | 0                                              | 0                                     |
+| 2          | 1                 | 15                                             | 3                                     |
+| 3          | 2                 | 30 (état DEVELOPMENT)                          | 8                                     |
+| 4          | 3                 | 50                                             | 15                                    |
+
+**Contenu de départ.** La spécification complète (modèle de données, API, interface, critères d'acceptation) est dans l'annexe docs/ARBRE_DE_COMPETENCES.md du dépôt, et les données dans docs/skill_tree_seed.json.
+
+| **Territoire** | **Branche 1**        | **Branche 2**       | **Branche 3**          |
+|----------------|----------------------|---------------------|------------------------|
+| KNOWLEDGE      | Lecture & culture    | Langues             | Recherche & méthode    |
+| BODY           | Natation             | Forme & mobilité    | Sommeil & alimentation |
+| CAREER         | Entrepreneuriat      | Vente & prospection | Finances & gestion     |
+| TECHNOLOGY     | Programmation        | IA & automatisation | DevOps & sécurité      |
+| CREATION       | Dessin               | Cuisine             | Vidéo & musique        |
+| INNER WORLD    | Réflexion & écriture | Relations humaines  | Repos & équilibre      |
 
 ### 6.5. Achievements
 
@@ -661,5 +692,7 @@ LIFE RPG respecte définitivement les principes suivants :
 ### 19.2. Définition du produit final
 
 LIFE RPG est une application personnelle de progression inspirée des jeux de rôle. Elle associe un univers virtuel de six territoires, un personnage personnalisable, un moteur de progression, un système de missions, une économie virtuelle, des compétences évolutives et des agents IA capables d'accompagner l'utilisateur dans ses objectifs. Le système est conçu autour d'une architecture locale, modulaire et extensible.
+
+**LIFE RPG — YOUR LIFE IS THE GAME. YOUR GROWTH IS THE PROGRESSION.**
 
 Document de référence pour les futures phases de conception, de prototypage, de développement et de validation.

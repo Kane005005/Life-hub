@@ -150,7 +150,7 @@ Travaille **phase par phase**. À la fin de chaque phase : tests verts, applicat
 - **Critères :** valider une mission une seule fois (idempotence testée) ; passage de niveau avec report du surplus ; repos sans aucune perte ; tests unitaires complets sur `engine/rules.py` et le Life Engine.
 
 ### Phase 2 : RPG SYSTEM
-- Compétences et arbres, succès, crédits, boutique, équipements, saisons (90 jours), journal avancé.
+- Compétences et arbres : suivre à la lettre `docs/ARBRE_DE_COMPETENCES.md` (structure, coûts, conditions, API) et charger `docs/skill_tree_seed.json` avec `python manage.py load_skill_tree`. Puis succès, crédits, boutique, équipements, saisons (90 jours), journal avancé.
 - Pages Boutique, Saisons, Succès, Journal.
 - **Critères :** achat refusé si crédits insuffisants ; saison qui se ferme et ouvre la suivante ; succès attribués une seule fois.
 
