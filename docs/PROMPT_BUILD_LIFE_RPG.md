@@ -2,7 +2,7 @@
 
 > À coller dans Claude Code (ou un autre agent de code) à la racine d'un dépôt vide.
 > Avant de lancer, place ces deux fichiers dans le dépôt :
-> - `docs/CAHIER_DES_CHARGES.md` : le cahier des charges LIFE RPG (export Markdown du doc)
+> - `docs/CAHIER_DES_CHARGES.md` : le cahier des charges (à générer depuis le Word avec pandoc, voir le README)
 > - `docs/brand-book.html` : le brand book (fichier HTML fourni avec ce prompt)
 
 ---
