@@ -1,0 +1,40 @@
+:root {
+  /* Marque */
+  --lr-nuit: #0b100e;
+  --lr-charbon: #16181a;
+  --lr-vert-profond: #0b3d2e;
+  --lr-emeraude: #0f7b5a;
+  --lr-emeraude-vive: #2fd08b;
+  --lr-ivoire: #ede9df;
+  --lr-argent: #b9bec2;
+  --lr-panel: #111a17;
+  --lr-line: #24342e;
+
+  /* Compléments de phase 0 */
+  --lr-night2: #0f1815;
+  --lr-line2: #35493f;
+  --lr-muted: #93a19a;
+  --lr-em-deep: #1b9a6b;
+
+  /* Territoires */
+  --lr-int: #6f94b5;
+  --lr-vit: #2fd08b;
+  --lr-inf: #d0a94a;
+  --lr-tec: #3fb6c6;
+  --lr-cre: #e0806f;
+  --lr-sag: #a08dd0;
+
+  /* Typographie */
+  --lr-font-display: 'Instrument Serif', serif;
+  --lr-font-hud: 'Chakra Petch', sans-serif;
+  --lr-font-body: 'Schibsted Grotesk', system-ui, sans-serif;
+
+  /* Mouvement */
+  --lr-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --lr-t-fast: 120ms;
+  --lr-t-base: 240ms;
+  --lr-t-slow: 600ms;
+  --lr-glow: rgba(47, 208, 139, 0.38);
+
+  color-scheme: dark;
+}
