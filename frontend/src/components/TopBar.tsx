@@ -9,6 +9,8 @@ type TopBarProps = {
   xpRequired: number
   soundEnabled: boolean
   onToggleSound: () => void
+  pulse?: boolean
+  onLogout?: () => void
 }
 
 const NAV_ITEMS = [
@@ -22,7 +24,15 @@ const NAV_ITEMS = [
   { to: '/reglages', label: 'Réglages' },
 ] as const
 
-export function TopBar({ level, xp, xpRequired, soundEnabled, onToggleSound }: TopBarProps) {
+export function TopBar({
+  level,
+  xp,
+  xpRequired,
+  soundEnabled,
+  onToggleSound,
+  pulse = false,
+  onLogout,
+}: TopBarProps) {
   return (
     <header className="lr-topbar">
       <Link className="lr-brand" to="/" aria-label="LIFE RPG, accueil">
@@ -45,8 +55,13 @@ export function TopBar({ level, xp, xpRequired, soundEnabled, onToggleSound }: T
 
       <div className="lr-mini">
         <span className="lr-lvl">NIV {level}</span>
-        <XpGauge variant="mini" level={level} xp={xp} xpRequired={xpRequired} />
+        <XpGauge variant="mini" level={level} xp={xp} xpRequired={xpRequired} pulse={pulse} />
         <SoundToggle enabled={soundEnabled} onToggle={onToggleSound} />
+        {onLogout ? (
+          <button type="button" className="lr-snd" onClick={onLogout}>
+            Quitter
+          </button>
+        ) : null}
       </div>
     </header>
   )
