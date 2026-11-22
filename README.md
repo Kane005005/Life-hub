@@ -8,6 +8,8 @@ Tout tourne en local : Django + DRF + SQLite, front React + TypeScript + Vite + 
 | Fichier | Rôle |
 | --- | --- |
 | `docs/PROMPT_BUILD_LIFE_RPG.md` | Prompt de construction complet à donner à l'agent de code (Claude Code, etc.) |
+| `docs/ARBRE_DE_COMPETENCES.md` | Annexe A : spécification de l'arbre de compétences (6 arbres, 72 compétences, coûts, conditions, API) |
+| `docs/skill_tree_seed.json` | Données de départ de l'arbre, à charger en phase 2 |
 | `docs/brand-book.html` | Brand book interactif : identité visuelle, tokens CSS et Tailwind, composants, motion. Ouvre-le dans un navigateur. |
 | `docs/LIFE_RPG_Cahier_des_charges_v1.0.docx` | Cahier des charges fonctionnel et technique (Word) |
 
