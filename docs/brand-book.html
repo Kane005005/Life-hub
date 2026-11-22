@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LIFE RPG Brand Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Direction : cartographie nocturne. Un monde sombre vert-nuit, de la brume, des braises émeraude, des cadres de HUD argentés. Une seule lumière : l'émeraude. */
+:root{
+  --night:#0B100E; --night2:#0F1815; --panel:#111A17; --line:#24342E; --line2:#35493F;
+  --ink:#EDE9DF; --muted:#93A19A; --em:#2FD08B; --em-deep:#1B9A6B; --deep:#0B3D2E; --silver:#B9BEC2;
+  --glow:rgba(47,208,139,.38);
+  --f-display:'Instrument Serif','Times New Roman',serif;
+  --f-body:'Schibsted Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-hud:'Chakra Petch','Schibsted Grotesk',system-ui,sans-serif;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--night)}
+body{margin:0;background:var(--night);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3,h4{margin:0;text-wrap:balance}
+p{margin:0;max-width:62ch}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--em);outline-offset:3px;border-radius:4px}
+.hud-font{font-family:var(--f-hud)}
+.num{font-family:var(--f-hud);font-variant-numeric:tabular-nums}
+
+/* ---------- Barre HUD ---------- */
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:20px;padding:10px clamp(14px,3vw,36px);background:linear-gradient(180deg,rgba(11,16,14,.96),rgba(11,16,14,.82));backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar .brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex:none}
+.topbar .brand svg{width:28px;height:28px;color:var(--ink);--node:var(--em)}
+.topbar .brand span{font-family:var(--f-display);font-size:22px;line-height:1}
+.topbar nav{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none}
+.topbar nav a{font-family:var(--f-hud);font-size:12px;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;color:var(--muted);padding:8px 10px;white-space:nowrap;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+.topbar nav a:hover{color:var(--ink)}
+.topbar nav a.on{color:var(--em);border-color:var(--em)}
+.mini{display:flex;align-items:center;gap:10px;flex:none;font-family:var(--f-hud);font-size:12px}
+.mini .gauge{width:120px}
+.mini .lvl{color:var(--ink);letter-spacing:.08em}
+.snd{border:1px solid var(--line2);background:transparent;border-radius:999px;padding:5px 12px;font-family:var(--f-hud);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.snd[aria-pressed="true"]{color:var(--em);border-color:var(--em)}
+@media(max-width:720px){.mini .gauge,.snd{display:none}.topbar{gap:10px}}
+
+/* ---------- Hero ---------- */
+.hero{position:relative;overflow:hidden;padding:clamp(72px,12vw,150px) clamp(16px,5vw,64px) clamp(120px,16vw,200px);text-align:center;isolation:isolate;background:radial-gradient(ellipse at 50% 38%,#12261E 0%,var(--night) 62%)}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.layers{position:absolute;inset:auto 0 0 0;height:60%;z-index:-2;pointer-events:none}
+.layers svg{position:absolute;left:-4%;bottom:-1px;width:108%;height:100%;transition:transform .25s ease-out}
+.hero .mark{width:clamp(84px,11vw,120px);height:clamp(84px,11vw,120px);color:var(--ink);--node:var(--em);filter:drop-shadow(0 0 26px var(--glow));margin:0 auto 22px;display:block}
+.hero .kicker{font-family:var(--f-hud);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--em);margin-bottom:14px}
+.hero h1{font-family:var(--f-display);font-weight:400;font-size:clamp(64px,13vw,168px);line-height:.88;letter-spacing:-.02em;text-shadow:0 0 60px rgba(47,208,139,.22)}
+.hero h1 i{color:var(--em)}
+.hero .sub{margin:22px auto 0;color:var(--muted);font-size:clamp(16px,2vw,19px)}
+.hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:34px}
+.codes{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:34px}
+.codes span{font-family:var(--f-hud);font-size:11px;letter-spacing:.14em;padding:4px 10px;border:1px solid var(--line2);color:var(--c);clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);background:rgba(11,16,14,.5)}
+
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-hud);font-weight:500;font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:12px 22px;border:1px solid var(--em);background:transparent;color:var(--em);clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);transition:background .15s,color .15s,transform .12s,filter .15s;text-decoration:none}
+.btn:hover{background:rgba(47,208,139,.12)}
+.btn:active{transform:translateY(1px)}
+.btn.solid{background:var(--em);color:#06120D;border-color:var(--em);box-shadow:0 0 28px var(--glow)}
+.btn.solid:hover{filter:brightness(1.1);background:var(--em)}
+.btn.quiet{border-color:var(--line2);color:var(--muted)}
+.btn.quiet:hover{color:var(--ink);border-color:var(--silver);background:transparent}
+.btn[disabled]{opacity:.45;cursor:default;box-shadow:none}
+
+/* ---------- Mise en page ---------- */
+main{max-width:1180px;margin:0 auto;padding:0 clamp(16px,4vw,48px) 96px}
+section{padding:84px 0 0;scroll-margin-top:56px}
+.eyebrow{font-family:var(--f-hud);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--em);display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.eyebrow::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,var(--line2),transparent)}
+h2{font-family:var(--f-display);font-weight:400;font-size:clamp(36px,5vw,60px);line-height:1;letter-spacing:-.01em;margin-bottom:14px}
+.lede{color:var(--muted);font-size:17px;margin-bottom:34px}
+h3.lab{font-family:var(--f-hud);font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+
+/* Cadre HUD */
+.frame{position:relative;border:1px solid var(--line);background:linear-gradient(180deg,rgba(19,30,26,.92),rgba(12,19,16,.94));padding:22px}
+.frame::before,.frame::after{content:"";position:absolute;width:16px;height:16px;border:2px solid var(--em);opacity:.9;pointer-events:none}
+.frame::before{top:-1px;left:-1px;border-width:2px 0 0 2px}
+.frame::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0}
+
+/* Jauge */
+.gauge{--h:14px}
+.g-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.g-head .lv{font-family:var(--f-display);font-size:28px;line-height:1}
+.g-head .xpn{font-family:var(--f-hud);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rail{position:relative;height:var(--h);background:#0A120F;border:1px solid var(--line2);overflow:hidden;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%)}
+.fill{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,var(--em-deep),var(--em));box-shadow:0 0 18px var(--glow);transition:width .6s var(--ease)}
+.rail::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(10% - 1px),rgba(11,16,14,.7) calc(10% - 1px),rgba(11,16,14,.7) 10%);pointer-events:none}
+.gauge.pulse .rail{animation:pulse .9s var(--ease)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,208,139,.7)}100%{box-shadow:0 0 0 18px rgba(47,208,139,0)}}
+.mini .rail{--h:8px}
+
+/* ---------- Monde ---------- */
+.world{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:20px}
+@media(max-width:940px){.world{grid-template-columns:1fr}}
+.map{padding:0;overflow:hidden}
+.map svg{display:block;width:100%;height:auto}
+.route{fill:none;stroke:var(--line2);stroke-width:1.5;stroke-dasharray:3 9;animation:dash 2.4s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-24}}
+.node{cursor:pointer;outline:none}
+.node .hex{fill:#0E1A16;stroke:var(--c);stroke-width:1.5;transition:fill .2s,stroke-width .2s}
+.node .halo{fill:var(--c);opacity:0;transition:opacity .25s}
+.node:hover .hex,.node:focus-visible .hex{fill:#14261F}
+.node.sel .hex{stroke-width:3;fill:#16302A}
+.node.sel .halo{opacity:.16}
+.node text{fill:var(--ink);font-family:var(--f-hud);text-anchor:middle}
+.node .nm{font-size:15px;font-weight:500;letter-spacing:.08em}
+.node .cd{font-size:11px;letter-spacing:.2em;fill:var(--c)}
+.node .lv{font-size:12px;fill:var(--muted)}
+.node .gl{color:var(--c)}
+.hubring{fill:none;stroke:var(--em);stroke-width:1;opacity:.5;transform-origin:450px 262px;animation:spin 40s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.detail{display:flex;flex-direction:column;gap:14px;min-height:320px}
+.detail .code{font-family:var(--f-hud);font-size:12px;letter-spacing:.24em;color:var(--c)}
+.detail h4{font-family:var(--f-display);font-weight:400;font-size:44px;line-height:1}
+.detail .en{font-family:var(--f-hud);font-size:11px;letter-spacing:.22em;color:var(--muted)}
+.detail .glyph{width:44px;height:44px;color:var(--c)}
+.detail .stat{display:flex;align-items:center;gap:12px;font-family:var(--f-hud);font-size:13px}
+.detail .bar{flex:1;height:8px;background:#0A120F;border:1px solid var(--line2)}
+.detail .bar i{display:block;height:100%;background:var(--c);box-shadow:0 0 12px color-mix(in srgb,var(--c) 60%,transparent);transition:width .5s var(--ease)}
+.detail ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.detail li{padding:8px 12px;border-left:2px solid var(--c);background:rgba(255,255,255,.025)}
+.detail li.done{color:var(--muted);text-decoration:line-through}
+.detail p{color:var(--muted);font-size:14.5px}
+
+/* ---------- Héros ---------- */
+.hero-grid{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:20px}
+@media(max-width:940px){.hero-grid{grid-template-columns:1fr}}
+.card-char{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
+.avatar{width:168px;height:188px}
+.card-char h4{font-family:var(--f-display);font-weight:400;font-size:38px;line-height:1}
+.rank{font-family:var(--f-hud);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--em);border:1px solid var(--em);padding:3px 14px;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.card-char .gauge{width:100%;margin-top:8px;text-align:left}
+.radar-wrap{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:center}
+@media(max-width:620px){.radar-wrap{grid-template-columns:1fr}}
+.radar{width:100%;height:auto;display:block}
+.radar text{font-family:var(--f-hud);font-size:11px;letter-spacing:.12em;text-anchor:middle;fill:var(--muted)}
+.legend{display:grid;gap:8px}
+.legend div{display:flex;align-items:center;gap:10px;font-family:var(--f-hud);font-size:13px}
+.legend i{width:10px;height:10px;background:var(--c);box-shadow:0 0 8px var(--c);flex:none}
+.legend .v{margin-left:auto;color:var(--muted)}
+.ach{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:20px}
+.a{border:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,.02);transition:border-color .3s,background .3s}
+.a svg{width:30px;height:30px;color:var(--muted)}
+.a b{font-family:var(--f-hud);font-weight:500;font-size:13px;letter-spacing:.06em}
+.a span{font-size:12.5px;color:var(--muted);line-height:1.4}
+.a.lock{opacity:.5;filter:grayscale(1)}
+.a.on{border-color:var(--em);background:rgba(47,208,139,.07)}
+.a.on svg{color:var(--em);filter:drop-shadow(0 0 8px var(--glow))}
+
+/* ---------- Missions ---------- */
+.log{display:grid;gap:12px}
+.q{display:grid;grid-template-columns:auto 1fr auto;gap:6px 16px;align-items:center;padding:16px 18px;border:1px solid var(--line);background:rgba(255,255,255,.02);position:relative;transition:opacity .3s,border-color .3s}
+.q .qi{width:36px;height:36px;color:var(--c)}
+.q .t{font-weight:500;font-size:16px;line-height:1.35}
+.q .m{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;align-items:center}
+.pill{font-family:var(--f-hud);font-size:11px;letter-spacing:.1em;padding:2px 9px;border:1px solid var(--line2);color:var(--muted);text-transform:uppercase}
+.pill.t{color:var(--c);border-color:color-mix(in srgb,var(--c) 55%,transparent)}
+.xp{font-family:var(--f-hud);font-size:13px;color:var(--em);letter-spacing:.06em}
+.q.done{opacity:.55;border-color:transparent}
+.q.done .t{text-decoration:line-through;text-decoration-color:var(--line2)}
+.q.boss{background:linear-gradient(110deg,#0B3D2E 0%,#10241D 55%,rgba(16,36,29,.4) 100%);border-color:var(--em-deep);padding:22px 20px;box-shadow:0 0 40px rgba(47,208,139,.12)}
+.q.boss::before,.q.boss::after{content:"";position:absolute;width:20px;height:20px;border:2px solid var(--em)}
+.q.boss::before{top:-1px;left:-1px;border-width:2px 0 0 2px}
+.q.boss::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0}
+.q.boss .t{font-family:var(--f-display);font-size:28px;line-height:1.1;font-weight:400}
+.q.boss .pill.bs{background:var(--em);color:#06120D;border-color:var(--em);font-weight:600}
+.q .go{grid-column:3;grid-row:1 / span 2}
+.logbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;align-items:center}
+.note{font-family:var(--f-hud);font-size:13px;letter-spacing:.04em;color:var(--muted);min-height:22px;margin-top:12px}
+@media(max-width:560px){.q{grid-template-columns:auto 1fr}.q .go{grid-column:1 / -1;grid-row:auto}}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translate(0)}20%{transform:translate(-5px,2px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,3px)}80%{transform:translate(2px,-1px)}}
+
+/* ---------- Montée de niveau ---------- */
+.lvlup{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;flex-direction:column;gap:6px;background:radial-gradient(circle at 50% 50%,rgba(11,61,46,.92),rgba(5,9,7,.97));text-align:center;overflow:hidden}
+.lvlup.show{display:flex;animation:fadein .35s ease}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.lvlup .rays{position:absolute;width:160vmax;height:160vmax;left:50%;top:50%;margin:-80vmax 0 0 -80vmax;background:repeating-conic-gradient(from 0deg,rgba(47,208,139,.13) 0 6deg,transparent 6deg 18deg);animation:spin 28s linear infinite;mask-image:radial-gradient(circle,#000 0,transparent 55%);-webkit-mask-image:radial-gradient(circle,#000 0,transparent 55%)}
+.lvlup .ring{position:absolute;width:260px;height:260px;border:2px solid var(--em);border-radius:50%;animation:ring 1.4s var(--ease) infinite}
+@keyframes ring{from{transform:scale(.5);opacity:.9}to{transform:scale(2.6);opacity:0}}
+.lvlup small{font-family:var(--f-hud);letter-spacing:.4em;font-size:13px;color:var(--em);text-transform:uppercase;position:relative}
+.lvlup .big{font-family:var(--f-display);font-size:clamp(120px,24vw,260px);line-height:.85;color:var(--ink);text-shadow:0 0 70px var(--glow);position:relative;animation:pop .7s var(--ease)}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.lvlup p{position:relative;color:var(--muted);margin-bottom:22px}
+.lvlup .btn{position:relative}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:55}
+
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,24px);background:#0F1815;border:1px solid var(--em);color:var(--ink);padding:10px 18px;font-family:var(--f-hud);font-size:13px;letter-spacing:.06em;opacity:0;transition:all .3s var(--ease);pointer-events:none;z-index:70;clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- Charte ---------- */
+.logos{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.tile{min-height:210px;border:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between;padding:20px}
+.tile .lock{display:flex;align-items:center;gap:14px;margin:auto 0}
+.tile .lock svg{width:64px;height:64px}
+.tile .w{font-family:var(--f-display);font-size:46px;line-height:.9}
+.tile .w small{display:block;font-family:var(--f-hud);font-size:11px;letter-spacing:.36em;margin-top:8px}
+.tile .cap{font-family:var(--f-hud);font-size:11px;letter-spacing:.1em;opacity:.7;text-transform:uppercase}
+.tl-night{background:var(--night2);color:var(--ink);--node:#2FD08B}
+.tl-ivory{background:#F5F1E8;color:#16181A;--node:#0F7B5A}
+.tl-deep{background:#0B3D2E;color:#F5F1E8;--node:#2FD08B}
+.tl-mono{background:#16181A;color:var(--silver);--node:currentColor}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:14px}
+.rule{border:1px solid var(--line);padding:16px 18px;font-size:14.5px;color:var(--muted)}
+.rule b{display:block;font-family:var(--f-hud);font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--em);margin-bottom:6px}
+.sw{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.s{border:1px solid var(--line);background:rgba(255,255,255,.02);text-align:left;padding:0;overflow:hidden;display:flex;flex-direction:column}
+.s:hover{border-color:var(--em)}
+.s .chip{height:84px}
+.s .b{padding:10px 12px 12px;display:flex;flex-direction:column;gap:3px}
+.s .n{font-weight:600;font-size:14.5px}
+.s .h{font-family:var(--f-hud);font-size:12px;color:var(--muted);letter-spacing:.06em}
+.s .r{font-size:12.5px;color:var(--muted);line-height:1.4}
+.s .c{font-family:var(--f-hud);font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:6px;margin-top:6px}
+.s .c i{font-style:normal;color:var(--em)}
+.faces{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+.face{border:1px solid var(--line);padding:22px;display:flex;flex-direction:column;gap:10px;background:rgba(255,255,255,.02)}
+.face .l{font-family:var(--f-hud);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--em)}
+.face .big{font-size:72px;line-height:1}
+.face .al{color:var(--muted);font-size:16px;word-break:break-word}
+.scale{margin-top:20px;border-top:1px solid var(--line)}
+.scale .row{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--line)}
+.scale .k{font-family:var(--f-hud);font-size:11px;color:var(--muted);letter-spacing:.06em;line-height:1.5}
+@media(max-width:620px){.scale .row{grid-template-columns:1fr;gap:4px}}
+.motion{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.mo{border:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:12px;background:rgba(255,255,255,.02)}
+.mo .tr{height:40px;border:1px solid var(--line);background:repeating-linear-gradient(90deg,transparent 0,transparent calc(10% - 1px),var(--line) calc(10% - 1px),var(--line) 10%);position:relative;overflow:hidden}
+.mo .dot{position:absolute;left:6px;top:50%;width:22px;height:22px;margin-top:-11px;background:var(--em);box-shadow:0 0 16px var(--glow);transform:rotate(45deg) scale(.8);transition:left var(--d) var(--ease)}
+.mo.go .dot{left:calc(100% - 28px)}
+.mo b{font-family:var(--f-hud);font-weight:500;letter-spacing:.08em}
+.mo code,.k{font-family:var(--f-hud);font-size:12px;color:var(--muted);letter-spacing:.04em}
+.voice{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+.vc{border:1px solid var(--line);padding:16px 18px;display:flex;flex-direction:column;gap:10px;background:rgba(255,255,255,.02)}
+.vc .cx{font-family:var(--f-hud);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.vc .y,.vc .n{font-size:15px;padding-left:12px;border-left:3px solid var(--em)}
+.vc .n{border-color:var(--line2);color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(147,161,154,.5)}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab{border:1px solid var(--line2);background:transparent;padding:6px 16px;font-family:var(--f-hud);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--em);color:#06120D;border-color:var(--em)}
+.cw{position:relative}
+.cw .btn{position:absolute;right:10px;top:10px;padding:6px 14px;font-size:11px;background:#0F1815}
+pre.code{margin:0;background:#080D0B;color:#CFE3D9;padding:20px;overflow-x:auto;font-family:ui-monospace,'JetBrains Mono',Menlo,monospace;font-size:12.5px;line-height:1.65;border:1px solid var(--line)}
+footer{margin-top:80px;padding-top:22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-family:var(--f-hud);font-size:12px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="lr-mark" viewBox="0 0 64 64">
+    <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="3.5" stroke-dasharray="24 3.23" transform="rotate(-92 32 32)"/>
+    <path d="M19 41 L28 32 L34 37 L44 25" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="44" cy="25" r="4.4" style="fill:var(--node,#2FD08B)"/>
+  </symbol>
+</svg>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<header class="topbar">
+  <a class="brand" href="#entree" aria-label="LIFE RPG, retour à l'entrée"><svg aria-hidden="true"><use href="#lr-mark"/></svg><span>LIFE RPG</span></a>
+  <nav id="nav" aria-label="Sections">
+    <a href="#monde">Monde</a><a href="#heros">Héros</a><a href="#missions">Missions</a><a href="#marque">Marque</a><a href="#typo">Typo</a><a href="#mouvement">Mouvement</a><a href="#voix">Voix</a><a href="#tokens">Tokens</a>
+  </nav>
+  <div class="mini">
+    <span class="lvl">NIV <b data-level>7</b></span>
+    <div class="gauge" data-gauge><div class="rail"><i class="fill" data-fill></i></div></div>
+    <button class="snd" id="snd" type="button" aria-pressed="false">Son : non</button>
+  </div>
+</header>
+
+<div class="hero" id="entree">
+  <canvas id="embers" aria-hidden="true"></canvas>
+  <div class="layers" aria-hidden="true" id="layers">
+    <svg viewBox="0 0 1200 400" preserveAspectRatio="none" data-d="6"><path d="M0 250 L90 190 L170 235 L290 140 L390 220 L480 170 L600 250 L720 160 L830 230 L950 150 L1070 220 L1200 170 V400 H0Z" fill="#0E1D18" opacity=".75"/></svg>
+    <svg viewBox="0 0 1200 400" preserveAspectRatio="none" data-d="14"><path d="M0 300 L120 230 L230 285 L350 205 L470 290 L590 225 L700 300 L830 215 L950 285 L1080 235 L1200 290 V400 H0Z" fill="#0A1511"/></svg>
+    <svg viewBox="0 0 1200 400" preserveAspectRatio="none" data-d="26"><path d="M0 350 L140 300 L260 340 L400 290 L540 345 L680 295 L820 350 L960 305 L1100 345 L1200 315 V400 H0Z" fill="#070D0B"/><path d="M0 350 L140 300 L260 340 L400 290 L540 345 L680 295 L820 350 L960 305 L1100 345 L1200 315" fill="none" stroke="#2FD08B" stroke-opacity=".28" stroke-width="1.2"/></svg>
+  </div>
+  <svg class="mark" aria-hidden="true"><use href="#lr-mark"/></svg>
+  <div class="kicker">Personal Evolution System</div>
+  <h1>LIFE <i>RPG</i></h1>
+  <p class="sub" style="margin-left:auto;margin-right:auto">Six territoires à explorer. Une seule carte : ta vie. Chaque mission accomplie éclaire un peu plus le monde.</p>
+  <div class="cta"><a class="btn solid" href="#monde">Entrer dans le monde</a><a class="btn quiet" href="#marque">Voir la charte</a></div>
+  <div class="codes" id="codes"></div>
+</div>
+
+<main>
+
+<section id="monde">
+  <div class="eyebrow">01 · Le monde</div>
+  <h2>Une carte de ta vie, six territoires</h2>
+  <p class="lede">Chaque territoire est un nœud de la carte, relié à la citadelle centrale. Clique sur un nœud pour voir son rang et ses missions. Les routes pointillées s'animent en continu pour que la carte reste vivante.</p>
+  <div class="world">
+    <div class="frame map"><svg id="mapsvg" viewBox="0 0 900 520" role="group" aria-label="Carte des six territoires"></svg></div>
+    <div class="frame detail" id="detail" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="heros">
+  <div class="eyebrow">02 · Le héros</div>
+  <h2>Un personnage sobre, des statistiques qui parlent</h2>
+  <p class="lede">L'avatar reste minimaliste et la fiche se lit d'un coup d'œil. Le radar affiche les six statistiques. Valide une mission plus bas et regarde le polygone grandir.</p>
+  <div class="hero-grid">
+    <div class="frame card-char">
+      <svg class="avatar" viewBox="0 0 168 188" aria-label="Avatar du personnage">
+        <defs><radialGradient id="av" cx="50%" cy="38%" r="60%"><stop offset="0" stop-color="#1B9A6B" stop-opacity=".55"/><stop offset="1" stop-color="#0B100E" stop-opacity="0"/></radialGradient></defs>
+        <polygon points="84,4 160,48 160,140 84,184 8,140 8,48" fill="url(#av)" stroke="#35493F" stroke-width="1.5"/>
+        <polygon points="84,14 150,52 150,136 84,174 18,136 18,52" fill="none" stroke="#2FD08B" stroke-opacity=".45" stroke-width="1"/>
+        <circle cx="84" cy="74" r="22" fill="#0B100E" stroke="#EDE9DF" stroke-width="2"/>
+        <path d="M40 150 C40 116 64 104 84 104 C104 104 128 116 128 150 Z" fill="#0B100E" stroke="#EDE9DF" stroke-width="2"/>
+        <circle cx="84" cy="74" r="4" fill="#2FD08B"/>
+      </svg>
+      <h4>Kane</h4>
+      <span class="rank" id="rank">Initié</span>
+      <div class="gauge" data-gauge>
+        <div class="g-head"><span class="lv">Niveau <b data-level>7</b></span><span class="xpn"><span data-xp>214</span> / <span data-need>400</span> XP</span></div>
+        <div class="rail"><i class="fill" data-fill></i></div>
+      </div>
+      <p class="k" style="margin-top:6px">XP pour le niveau N : 100 + 50 × (N − 1)</p>
+    </div>
+    <div class="frame">
+      <h3 class="lab">Statistiques</h3>
+      <div class="radar-wrap">
+        <svg class="radar" id="radar" viewBox="0 0 300 300" role="img" aria-label="Radar des six statistiques"></svg>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+  </div>
+  <div class="ach" id="ach"></div>
+</section>
+
+<section id="missions">
+  <div class="eyebrow">03 · Missions</div>
+  <h2>Valider, c'est voir le monde réagir</h2>
+  <p class="lede">Chaque validation fait jaillir des braises, remplit la jauge et fait monter une statistique. Le boss a son propre cadre et fait trembler l'écran. Le bouton Se reposer ne retire rien, c'est une règle du jeu.</p>
+  <div class="log" id="log"></div>
+  <div class="logbar">
+    <button class="btn quiet" id="rest" type="button">Se reposer aujourd'hui</button>
+    <button class="btn quiet" id="reset" type="button">Réinitialiser la démo</button>
+  </div>
+  <div class="note" id="note" aria-live="polite"></div>
+</section>
+
+<section id="marque">
+  <div class="eyebrow">04 · Marque</div>
+  <h2>Un anneau en six arcs, une ligne qui monte</h2>
+  <p class="lede">Les six arcs sont les six territoires. La ligne ascendante est la progression et son point émeraude marque où tu en es. LIFE s'écrit en serif italique, RPG en capitales HUD très espacées.</p>
+  <div class="logos">
+    <div class="tile tl-night"><div class="lock"><svg aria-hidden="true"><use href="#lr-mark"/></svg><div class="w">LIFE<small>RPG</small></div></div><span class="cap">Monde nocturne · référence</span></div>
+    <div class="tile tl-ivory"><div class="lock"><svg aria-hidden="true"><use href="#lr-mark"/></svg><div class="w">LIFE<small>RPG</small></div></div><span class="cap">Sur ivoire · documents</span></div>
+    <div class="tile tl-deep"><div class="lock"><svg aria-hidden="true"><use href="#lr-mark"/></svg><div class="w">LIFE<small>RPG</small></div></div><span class="cap">Sur vert profond</span></div>
+    <div class="tile tl-mono"><div class="lock"><svg aria-hidden="true"><use href="#lr-mark"/></svg><div class="w">LIFE<small>RPG</small></div></div><span class="cap">Monochrome argent</span></div>
+  </div>
+  <div class="rules">
+    <div class="rule"><b>Zone de protection</b>Laisse autour du signe un vide égal à quatre fois le diamètre du point émeraude.</div>
+    <div class="rule"><b>Taille minimale</b>Le signe descend à 20 px. En dessous, les six arcs se confondent.</div>
+    <div class="rule"><b>À éviter</b>Étirer le signe, changer la couleur du point, poser le logo sur une image chargée, ajouter une lueur sur fond clair.</div>
+  </div>
+  <h3 class="lab" style="margin-top:44px">Couleurs · clique pour copier</h3>
+  <div class="sw" id="sw"></div>
+  <p class="k" style="margin-top:16px;max-width:70ch">Répartition d'un écran : nuit et charbon en fond, panneaux en vert-nuit, filets argent sombre, émeraude vive sur moins de 3 % de la surface. La lumière reste rare pour garder son sens.</p>
+</section>
+
+<section id="typo">
+  <div class="eyebrow">05 · Typographie</div>
+  <h2>Un serif de grimoire, un HUD, un texte calme</h2>
+  <p class="lede">Le serif porte les titres et les grands nombres de niveau. Chakra Petch habille tout ce qui est interface de jeu : étiquettes, codes, XP. Schibsted Grotesk porte les textes à lire.</p>
+  <div class="faces">
+    <div class="face"><span class="l">Titres · Instrument Serif</span><div class="big" style="font-family:var(--f-display)">Aa <i>Niveau</i></div><div class="al" style="font-family:var(--f-display);font-size:22px">ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789</div></div>
+    <div class="face"><span class="l">HUD · Chakra Petch</span><div class="big hud-font" style="font-weight:500">+30 XP</div><div class="al hud-font">ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 INT VIT INF TEC CRE SAG</div></div>
+    <div class="face"><span class="l">Texte · Schibsted Grotesk</span><div class="big" style="font-weight:500">Aa Mission</div><div class="al">ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz àéèêîôùç</div></div>
+  </div>
+  <div class="scale">
+    <div class="row"><span class="k">AFFICHAGE<br>Serif 400 · 64 à 168</span><span style="font-family:var(--f-display);font-size:clamp(44px,7vw,84px);line-height:1">Niveau 8 atteint</span></div>
+    <div class="row"><span class="k">TITRE DE SECTION<br>Serif 400 · 36 à 60</span><span style="font-family:var(--f-display);font-size:42px;line-height:1.05">Les six territoires</span></div>
+    <div class="row"><span class="k">ÉTIQUETTE HUD<br>Chakra 500 · 11 à 13 · +0,2 em</span><span class="hud-font" style="font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--em)">Mission principale · INF</span></div>
+    <div class="row"><span class="k">DONNÉE<br>Chakra 500 · 13 · chiffres tabulaires</span><span class="num" style="font-size:15px">214 / 400 XP · 1 250 crédits</span></div>
+    <div class="row"><span class="k">CORPS<br>Grotesque 400 · 16 / 1,6</span><span>Réviser le chapitre sur le drainage avant jeudi. La mission rapporte 30 XP dans le territoire Savoir.</span></div>
+  </div>
+</section>
+
+<section id="mouvement">
+  <div class="eyebrow">06 · Mouvement et effets</div>
+  <h2>Lent à la montée, vif à la réponse</h2>
+  <p class="lede">Une seule courbe, trois durées, et quelques moments forts : braises à la validation, secousse pour un boss, rayons et anneaux pour un niveau. Avec prefers-reduced-motion, tout devient instantané.</p>
+  <div class="motion" id="motion"></div>
+  <div class="logbar" style="margin-top:22px">
+    <button class="btn" id="fxburst" type="button">Braises</button>
+    <button class="btn" id="fxshake" type="button">Secousse boss</button>
+    <button class="btn solid" id="fxlevel" type="button">Montée de niveau</button>
+  </div>
+  <p class="k" style="margin-top:16px">Courbe « montée » : cubic-bezier(.2, .7, .2, 1). Départ franc, arrivée douce.</p>
+</section>
+
+<section id="voix">
+  <div class="eyebrow">07 · Voix</div>
+  <h2>Un maître du jeu calme et exact</h2>
+  <p class="lede">LIFE RPG annonce des faits, nomme le territoire concerné et ne juge jamais. L'épique vient de l'image et du son, pas des points d'exclamation.</p>
+  <div class="voice">
+    <div class="vc"><span class="cx">Mission validée</span><div class="y">Mission validée. +30 XP en Savoir.</div><div class="n">Bravo champion !!! Tu es incroyable !</div></div>
+    <div class="vc"><span class="cx">Jour de repos</span><div class="y">Repos enregistré. Ta progression est intacte.</div><div class="n">Tu as perdu ta série de 12 jours.</div></div>
+    <div class="vc"><span class="cx">Proposition d'un agent</span><div class="y">Claude Code propose 3 missions. Accepte, modifie ou refuse chacune.</div><div class="n">3 missions ajoutées à ta liste.</div></div>
+    <div class="vc"><span class="cx">Montée de niveau</span><div class="y">Niveau 8 atteint. 400 XP pour le suivant.</div><div class="n">LEVEL UP ! Débloque ton prochain pouvoir !</div></div>
+    <div class="vc"><span class="cx">Erreur</span><div class="y">La sauvegarde a échoué. Vérifie que le serveur local tourne, puis relance.</div><div class="n">Oups, quelque chose s'est mal passé.</div></div>
+    <div class="vc"><span class="cx">Règles</span><div class="y">Tutoiement. Phrases courtes. Verbes d'action sur les boutons. Pas d'émoji.</div></div>
+  </div>
+</section>
+
+<section id="tokens">
+  <div class="eyebrow">08 · Tokens</div>
+  <h2>À coller dans le projet</h2>
+  <p class="lede">Ces valeurs viennent des mêmes données que la page. Ton front React et tes agents de code peuvent les reprendre tels quels.</p>
+  <div class="tabs" role="tablist"><button class="tab" role="tab" id="tab-css" aria-selected="true" type="button">CSS</button><button class="tab" role="tab" id="tab-tw" aria-selected="false" type="button">Tailwind</button></div>
+  <div class="cw"><button class="btn" id="copycode" type="button">Copier</button><pre class="code" id="codebox" tabindex="0"></pre></div>
+</section>
+
+<footer><span>LIFE RPG · Brand Book 2.0</span><span>Kdigit · usage personnel</span></footer>
+</main>
+
+<div class="lvlup" id="lvlup" role="dialog" aria-modal="true" aria-label="Niveau atteint">
+  <div class="rays"></div><div class="ring"></div>
+  <small>Niveau atteint</small><div class="big" id="lvlnum">8</div>
+  <p id="lvltxt">400 XP pour le suivant.</p>
+  <button class="btn solid" id="lvlok" type="button">Continuer</button>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* ---------- Données ---------- */
+  var BRAND=[
+    {id:'nuit',name:'Nuit',hex:'#0B100E',role:'Fond du monde.'},
+    {id:'charbon',name:'Charbon',hex:'#16181A',role:'Encre sur clair, fonds neutres.'},
+    {id:'vert-profond',name:'Vert profond',hex:'#0B3D2E',role:'Boss, surfaces fortes.'},
+    {id:'emeraude',name:'Émeraude',hex:'#0F7B5A',role:'Accent sur fond clair.'},
+    {id:'emeraude-vive',name:'Émeraude vive',hex:'#2FD08B',role:'La lumière du monde : XP, sélection, lueurs.'},
+    {id:'ivoire',name:'Ivoire',hex:'#EDE9DF',role:'Texte sur nuit, papier des documents.'},
+    {id:'argent',name:'Argent',hex:'#B9BEC2',role:'Cadres, filets, texte secondaire.'}
+  ];
+  var G={
+    INT:'<path d="M4 19 L12 5 L20 19 Z"/><circle cx="12" cy="14.5" r="1.6"/>',
+    VIT:'<path d="M3 12 H8 L10.5 6 L13.5 18 L16 12 H21"/>',
+    INF:'<path d="M4 19 H9 V14 H14 V9 H19 V4"/>',
+    TEC:'<path d="M8 6 L3 12 L8 18 M16 6 L21 12 L16 18 M13.5 5 L10.5 19"/>',
+    CRE:'<path d="M12 3 L14 10 L21 12 L14 14 L12 21 L10 14 L3 12 L10 10 Z"/>',
+    SAG:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4"/>'
+  };
+  var TERR=[
+    {code:'INT',name:'Savoir',en:'KNOWLEDGE',hex:'#6F94B5',x:170,y:150,d:'Études, lectures, compréhension. Hydraulique agricole, économie, cours.'},
+    {code:'VIT',name:'Corps',en:'BODY',hex:'#2FD08B',x:165,y:380,d:'Sport, sommeil, nutrition. Natation, énergie, récupération.'},
+    {code:'INF',name:'Carrière',en:'CAREER',hex:'#D0A94A',x:450,y:92,d:'Clients, offres, revenus. KWeb Mali, Digital_K, relations.'},
+    {code:'TEC',name:'Technologie',en:'TECHNOLOGY',hex:'#3FB6C6',x:450,y:432,d:'Code, outils, infrastructure. Python, Django, agents, serveurs.'},
+    {code:'CRE',name:'Création',en:'CREATION',hex:'#E0806F',x:735,y:150,d:'Dessin, vidéo, écriture, design. Tout ce qui se fabrique.'},
+    {code:'SAG',name:'Monde intérieur',en:'INNER WORLD',hex:'#A08DD0',x:740,y:380,d:'Calme, lecture, discipline mentale, sens de la direction.'}
+  ];
+  var TM={};TERR.forEach(function(t){TM[t.code]=t});
+  var AXES=TERR.map(function(t){return t.code});
+  var QUESTS=[
+    {id:'q1',t:'Réviser le chapitre sur le drainage',terr:'INT',type:'Quotidienne',xp:30},
+    {id:'q2',t:'Nager 30 minutes',terr:'VIT',type:'Quotidienne',xp:15},
+    {id:'q3',t:'Livrer la maquette au client KWeb',terr:'INF',type:'Principale',xp:60},
+    {id:'q4',t:'Brancher Claude Code à l’API locale',terr:'TEC',type:'Principale',xp:100},
+    {id:'q5',t:'Dessiner trois croquis de la carte',terr:'CRE',type:'Secondaire',xp:15},
+    {id:'q6',t:'Préparer l’exposé de fin de semestre',terr:'SAG',type:'Boss',xp:200}
+  ];
+  var ST0={INT:58,VIT:44,INF:66,TEC:72,CRE:38,SAG:50};
+  var ACH=[
+    {id:'a1',n:'Premier pas',d:'Valider une mission.',g:'<path d="M4 19 H9 V14 H14 V9 H19 V4"/>'},
+    {id:'a2',n:'Repos sans perte',d:'Se reposer sans rien perdre.',g:'<circle cx="12" cy="12" r="8"/><path d="M9 12h6"/>'},
+    {id:'a3',n:'Niveau franchi',d:'Monter d’un niveau.',g:'<path d="M12 3 L14 10 L21 12 L14 14 L12 21 L10 14 L3 12 L10 10 Z"/>'},
+    {id:'a4',n:'Boss vaincu',d:'Valider une mission de boss.',g:'<path d="M12 3 L21 9 L18 20 H6 L3 9 Z"/><circle cx="12" cy="12" r="2"/>'},
+    {id:'a5',n:'Six régions',d:'Faire progresser les six territoires.',g:'<polygon points="12,3 20,7.5 20,16.5 12,21 4,16.5 4,7.5"/>'}
+  ];
+  var MOTION=[
+    {n:'Rapide',v:'120 ms',d:'120ms',u:'Survol, appui, état d’un bouton.'},
+    {n:'Standard',v:'240 ms',d:'240ms',u:'Panneaux, apparition d’une mission.'},
+    {n:'Montée',v:'600 ms',d:'600ms',u:'Remplissage de la jauge. Le mouvement lent du produit.'}
+  ];
+
+  /* ---------- Utilitaires ---------- */
+  function lum(h){var c=[1,3,5].map(function(i){var v=parseInt(h.substr(i,2),16)/255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+  function cr(a,b){var x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+  function fr(n){return n.toFixed(1).replace('.',',')}
+  function grade(r){return r>=7?'AAA':r>=4.5?'AA':r>=3?'AA grand texte':'insuffisant'}
+  function gl(code,cls){return '<svg class="'+(cls||'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+G[code]+'</svg>'}
+  var tt;function toast(m){var e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){e.classList.remove('show')},2000)}
+  function copy(text,label){
+    function fb(){var ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);toast(ok?label:'Copie à la main : '+text)}
+    try{navigator.clipboard.writeText(text).then(function(){toast(label)},fb)}catch(e){fb()}
+  }
+
+  /* ---------- Son (désactivé par défaut) ---------- */
+  var sndOn=false,ac=null;
+  function tone(f,t0,dur,vol,type){
+    if(!sndOn||!ac)return;
+    var o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;
+    g.gain.setValueAtTime(0,ac.currentTime+t0);g.gain.linearRampToValueAtTime(vol||.07,ac.currentTime+t0+.02);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+t0+dur);
+    o.connect(g);g.connect(ac.destination);o.start(ac.currentTime+t0);o.stop(ac.currentTime+t0+dur+.05);
+  }
+  function sfx(k){
+    try{
+      if(k==='ok'){tone(523,0,.18);tone(784,.08,.3)}
+      if(k==='boss'){tone(110,0,.5,.12,'triangle');tone(165,.05,.6,.08,'triangle');tone(660,.2,.4)}
+      if(k==='lvl'){[392,494,587,784,988].forEach(function(f,i){tone(f,i*.1,.5,.07)})}
+      if(k==='rest'){tone(220,0,.7,.05)}
+      if(k==='ach'){tone(880,0,.12);tone(1175,.1,.3)}
+    }catch(e){}
+  }
+  document.getElementById('snd').addEventListener('click',function(){
+    sndOn=!sndOn;this.setAttribute('aria-pressed',sndOn);this.textContent='Son : '+(sndOn?'oui':'non');
+    if(sndOn){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();sfx('ok')}catch(e){sndOn=false;this.setAttribute('aria-pressed','false');this.textContent='Son : non'}}
+  });
+
+  /* ---------- Hero : braises + parallaxe ---------- */
+  var hero=document.getElementById('entree'),ec=document.getElementById('embers'),ex=ec.getContext('2d'),em=[],hw=0,hh=0,heroVisible=true;
+  function sizeHero(){var r=hero.getBoundingClientRect();var d=Math.min(window.devicePixelRatio||1,2);hw=r.width;hh=r.height;ec.width=hw*d;ec.height=hh*d;ex.setTransform(d,0,0,d,0,0);
+    em=[];var n=Math.round(Math.min(90,hw/14));for(var i=0;i<n;i++)em.push(mk(true))}
+  function mk(init){return {x:Math.random()*hw,y:init?Math.random()*hh:hh+10,r:Math.random()*1.8+.4,v:Math.random()*.35+.12,s:Math.random()*Math.PI*2,a:Math.random()*.6+.25}}
+  function drawEmbers(step){
+    ex.clearRect(0,0,hw,hh);
+    em.forEach(function(p,i){
+      if(step){p.y-=p.v;p.s+=.01;p.x+=Math.sin(p.s)*.25;if(p.y<-10)em[i]=mk(false)}
+      var al=p.a*Math.min(1,p.y/(hh*.5));ex.beginPath();ex.fillStyle='rgba(47,208,139,'+Math.max(0,al)+')';ex.shadowColor='rgba(47,208,139,.9)';ex.shadowBlur=8;ex.arc(p.x,p.y,p.r,0,6.283);ex.fill();
+    });
+  }
+  function loopEmbers(){if(heroVisible&&!RM)drawEmbers(true);requestAnimationFrame(loopEmbers)}
+  sizeHero();drawEmbers(false);if('ResizeObserver' in window)new ResizeObserver(function(){sizeHero();drawEmbers(false)}).observe(hero);
+  if('IntersectionObserver' in window)new IntersectionObserver(function(e){heroVisible=e[0].isIntersecting}).observe(hero);
+  if(!RM)requestAnimationFrame(loopEmbers);
+  var lay=[].slice.call(document.querySelectorAll('#layers svg'));
+  if(!RM)hero.addEventListener('mousemove',function(e){var r=hero.getBoundingClientRect(),nx=(e.clientX-r.left)/r.width-.5;lay.forEach(function(s){s.style.transform='translateX('+(-nx*Number(s.getAttribute('data-d')))+'px)'})});
+  document.getElementById('codes').innerHTML=TERR.map(function(t){return '<span style="--c:'+t.hex+'">'+t.code+'</span>'}).join('');
+
+  /* ---------- État ---------- */
+  var S,ST,done,ach,touched;
+  function init(){S={level:7,xp:214};ST={};AXES.forEach(function(a){ST[a]=ST0[a]});done={};ach={};touched={};}
+  init();
+  function need(l){return 100+50*(l-1)}
+  function tlevel(v){return 1+Math.floor(v/10)}
+
+  /* ---------- Jauges ---------- */
+  function paint(up){
+    var n=need(S.level),p=Math.min(100,S.xp/n*100);
+    document.querySelectorAll('[data-gauge]').forEach(function(g){
+      var q=function(s){return g.querySelector(s)||g.parentNode.querySelector(s)};
+      var f=g.querySelector('[data-fill]');if(f)f.style.width=p+'%';
+      var a=g.querySelector('[data-xp]');if(a)a.textContent=S.xp;
+      var b=g.querySelector('[data-need]');if(b)b.textContent=n;
+      var l=g.querySelector('[data-level]');if(l)l.textContent=S.level;
+      if(up){g.classList.remove('pulse');void g.offsetWidth;g.classList.add('pulse')}
+    });
+    document.querySelectorAll('.mini [data-level]').forEach(function(e){e.textContent=S.level});
+  }
+  function rankName(){return S.level>=20?'Architecte':'Initié'}
+
+  /* ---------- Carte ---------- */
+  var HUB={x:450,y:262},sel='TEC';
+  function hexPts(cx,cy,r){var a=[];for(var k=0;k<6;k++){var t=(-90+60*k)*Math.PI/180;a.push((cx+Math.cos(t)*r).toFixed(1)+','+(cy+Math.sin(t)*r).toFixed(1))}return a.join(' ')}
+  function drawMap(){
+    var s='<defs><pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#1d2b25"/></pattern>'+
+      '<radialGradient id="fog1" cx="0" cy="0" r="1"><stop offset="0" stop-color="#0B100E" stop-opacity=".9"/><stop offset="1" stop-color="#0B100E" stop-opacity="0"/></radialGradient>'+
+      '<radialGradient id="hubg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#2FD08B" stop-opacity=".28"/><stop offset="1" stop-color="#2FD08B" stop-opacity="0"/></radialGradient></defs>'+
+      '<rect width="900" height="520" fill="#0C1512"/><rect width="900" height="520" fill="url(#dots)"/>'+
+      '<circle cx="450" cy="262" r="190" fill="url(#hubg)"/>'+
+      '<ellipse cx="0" cy="0" rx="260" ry="200" fill="url(#fog1)"/><ellipse cx="900" cy="520" rx="260" ry="200" fill="url(#fog1)"/>';
+    TERR.forEach(function(t){
+      var mx=(HUB.x+t.x)/2+(t.y<HUB.y?0:0),my=(HUB.y+t.y)/2;var cx=mx+(t.x<HUB.x?-40:40)*(Math.abs(t.x-HUB.x)>100?0.5:0),cy=my+(Math.abs(t.x-HUB.x)<100?(t.x<=HUB.x?-40:40):0);
+      s+='<path class="route" d="M'+HUB.x+' '+HUB.y+' Q'+(mx+(t.y-HUB.y)*.12)+' '+(my-(t.x-HUB.x)*.12)+' '+t.x+' '+t.y+'"/>';
+    });
+    s+='<circle class="hubring" cx="450" cy="262" r="58" stroke-dasharray="2 10"/><circle cx="450" cy="262" r="44" fill="#0E1A16" stroke="#35493F"/>'+
+      '<g transform="translate(418 230)" style="color:#EDE9DF;--node:#2FD08B"><svg width="64" height="64" viewBox="0 0 64 64"><use href="#lr-mark"/></svg></g>'+
+      '<text x="450" y="338" text-anchor="middle" font-family="Chakra Petch" font-size="11" letter-spacing="3" fill="#93A19A">CITADELLE</text>';
+    TERR.forEach(function(t){
+      var lv=tlevel(ST[t.code]);
+      s+='<g class="node'+(sel===t.code?' sel':'')+'" data-code="'+t.code+'" style="--c:'+t.hex+'" tabindex="0" role="button" aria-pressed="'+(sel===t.code)+'" aria-label="'+t.name+', niveau '+lv+'">'+
+        '<polygon class="halo" points="'+hexPts(t.x,t.y,78)+'"/><polygon class="hex" points="'+hexPts(t.x,t.y,56)+'"/>'+
+        '<g class="gl" transform="translate('+(t.x-15)+' '+(t.y-34)+') scale(1.25)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+G[t.code]+'</g>'+
+        '<text class="cd" x="'+t.x+'" y="'+(t.y+14)+'">'+t.code+'</text><text class="lv" x="'+t.x+'" y="'+(t.y+32)+'">Niv. '+lv+'</text>'+
+        '<text class="nm" x="'+t.x+'" y="'+(t.y+(t.y<HUB.y?-70:78))+'">'+t.name.toUpperCase()+'</text></g>';
+    });
+    var svg=document.getElementById('mapsvg');svg.innerHTML=s;
+    [].slice.call(svg.querySelectorAll('.node')).forEach(function(n){
+      var c=n.getAttribute('data-code');
+      n.addEventListener('click',function(){pick(c)});
+      n.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(c)}});
+    });
+  }
+  function pick(c){sel=c;drawMap();drawDetail();sfx('ok')}
+  function drawDetail(){
+    var t=TM[sel],v=ST[sel],qs=QUESTS.filter(function(q){return q.terr===sel});
+    var d=document.getElementById('detail');d.style.setProperty('--c',t.hex);
+    d.innerHTML=gl(sel,'glyph')+'<div><div class="code">'+t.code+' · NIVEAU '+tlevel(v)+'</div><h4>'+t.name+'</h4><div class="en">'+t.en+'</div></div><p>'+t.d+'</p>'+
+      '<div class="stat"><span>Stat</span><div class="bar"><i style="width:'+v+'%"></i></div><span class="num">'+v+' / 100</span></div>'+
+      '<h3 class="lab" style="margin:6px 0 0">Missions</h3><ul>'+(qs.length?qs.map(function(q){return '<li class="'+(done[q.id]?'done':'')+'">'+q.t+' <span class="xp">+'+q.xp+' XP</span></li>'}).join(''):'<li>Aucune mission active.</li>')+'</ul>';
+  }
+
+  /* ---------- Radar ---------- */
+  var R=105,CX=150,CY=150,shown=AXES.map(function(a){return ST0[a]});
+  function pt(i,v){var a=-Math.PI/2+i*Math.PI/3,r=R*v/100;return [CX+Math.cos(a)*r,CY+Math.sin(a)*r]}
+  function buildRadar(){
+    var s='';[25,50,75,100].forEach(function(l){s+='<polygon points="'+AXES.map(function(_,i){return pt(i,l).map(function(n){return n.toFixed(1)}).join(',')}).join(' ')+'" fill="none" stroke="#24342E" stroke-width="1"/>'});
+    AXES.forEach(function(_,i){var p=pt(i,100);s+='<line x1="'+CX+'" y1="'+CY+'" x2="'+p[0].toFixed(1)+'" y2="'+p[1].toFixed(1)+'" stroke="#24342E"/>';var q=pt(i,100+22);s+='<text x="'+q[0].toFixed(1)+'" y="'+(q[1]+4).toFixed(1)+'">'+AXES[i]+'</text>'});
+    s+='<polygon id="rpoly" fill="rgba(47,208,139,.2)" stroke="#2FD08B" stroke-width="2" stroke-linejoin="round" style="filter:drop-shadow(0 0 8px rgba(47,208,139,.5))"/>';
+    AXES.forEach(function(a,i){s+='<circle id="rd'+i+'" r="4.5" fill="'+TM[a].hex+'" stroke="#0B100E" stroke-width="1.5"/>'});
+    document.getElementById('radar').innerHTML=s;drawRadar(shown);
+  }
+  function drawRadar(vals){
+    document.getElementById('rpoly').setAttribute('points',vals.map(function(v,i){return pt(i,v).map(function(n){return n.toFixed(1)}).join(',')}).join(' '));
+    vals.forEach(function(v,i){var p=pt(i,v),c=document.getElementById('rd'+i);c.setAttribute('cx',p[0].toFixed(1));c.setAttribute('cy',p[1].toFixed(1))});
+  }
+  function updateRadar(){
+    var to=AXES.map(function(a){return ST[a]}),from=shown.slice(),t0=performance.now(),ms=RM?0:700;
+    function f(t){var k=ms?Math.min(1,(t-t0)/ms):1;k=1-Math.pow(1-k,3);shown=from.map(function(v,i){return v+(to[i]-v)*k});drawRadar(shown);if(k<1)requestAnimationFrame(f)}
+    requestAnimationFrame(f);
+    document.getElementById('legend').innerHTML=TERR.map(function(t){return '<div style="--c:'+t.hex+'"><i></i>'+t.name+'<span class="v">'+t.code+' · '+ST[t.code]+'</span></div>'}).join('');
+  }
+
+  /* ---------- Succès ---------- */
+  function drawAch(){
+    document.getElementById('ach').innerHTML=ACH.map(function(a){var on=ach[a.id];return '<div class="a '+(on?'on':'lock')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+a.g+'</svg><b>'+a.n+'</b><span>'+a.d+'</span></div>'}).join('');
+  }
+  function unlock(id){if(ach[id])return;ach[id]=true;var a=ACH.filter(function(x){return x.id===id})[0];toast('Succès débloqué : '+a.n);sfx('ach');drawAch()}
+
+  /* ---------- Effets ---------- */
+  var fc=document.getElementById('fx'),fx=fc.getContext('2d'),parts=[],fxRun=false;
+  function sizeFx(){var d=Math.min(window.devicePixelRatio||1,2);fc.width=innerWidth*d;fc.height=innerHeight*d;fx.setTransform(d,0,0,d,0,0)}
+  sizeFx();addEventListener('resize',sizeFx);
+  function burst(x,y,n,col){
+    if(RM)return;
+    for(var i=0;i<n;i++){var a=Math.random()*6.283,v=Math.random()*5+1.5;parts.push({x:x,y:y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-2,l:1,r:Math.random()*2.4+.8,c:col||'47,208,139'})}
+    if(!fxRun){fxRun=true;requestAnimationFrame(stepFx)}
+  }
+  function stepFx(){
+    fx.clearRect(0,0,innerWidth,innerHeight);
+    parts=parts.filter(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.14;p.vx*=.985;p.l-=.016;if(p.l<=0)return false;fx.beginPath();fx.fillStyle='rgba('+p.c+','+p.l+')';fx.shadowColor='rgba('+p.c+',1)';fx.shadowBlur=10;fx.arc(p.x,p.y,p.r,0,6.283);fx.fill();return true});
+    if(parts.length)requestAnimationFrame(stepFx);else{fxRun=false;fx.clearRect(0,0,innerWidth,innerHeight)}
+  }
+  function shake(){if(RM)return;document.body.classList.remove('shake');void document.body.offsetWidth;document.body.classList.add('shake');setTimeout(function(){document.body.classList.remove('shake')},500)}
+  var lu=document.getElementById('lvlup'),lt;
+  function showLevel(n){
+    document.getElementById('lvlnum').textContent=n;document.getElementById('lvltxt').textContent=need(n)+' XP pour le niveau suivant.';
+    lu.classList.add('show');sfx('lvl');document.getElementById('lvlok').focus();clearTimeout(lt);lt=setTimeout(hideLevel,5000);
+    if(!RM){burst(innerWidth/2,innerHeight/2,120);setTimeout(function(){burst(innerWidth/2,innerHeight/2,80,'237,233,223')},250)}
+  }
+  function hideLevel(){clearTimeout(lt);lu.classList.remove('show')}
+  document.getElementById('lvlok').addEventListener('click',hideLevel);
+  addEventListener('keydown',function(e){if(e.key==='Escape')hideLevel()});
+
+  /* ---------- Missions ---------- */
+  var note=document.getElementById('note');
+  var ICON={'Quotidienne':'','Principale':'','Secondaire':'','Boss':''};
+  function drawLog(){
+    var box=document.getElementById('log');box.innerHTML='';
+    QUESTS.slice().sort(function(a,b){return (a.type==='Boss'?1:0)-(b.type==='Boss'?1:0)}).forEach(function(q){
+      var t=TM[q.terr],d=!!done[q.id],boss=q.type==='Boss';
+      var el=document.createElement('div');el.className='q'+(boss?' boss':'')+(d?' done':'');el.style.setProperty('--c',t.hex);
+      el.innerHTML=gl(q.terr,'qi')+'<div><div class="t">'+q.t+'</div><div class="m"><span class="pill t">'+t.code+'</span><span class="pill'+(boss?' bs':'')+'">'+q.type+'</span><span class="xp">+'+q.xp+' XP</span></div></div><button type="button" class="btn go'+(boss&&!d?' solid':'')+'"'+(d?' disabled':'')+'>'+(d?'Validée':(boss?'Affronter':'Valider'))+'</button>';
+      if(!d)el.querySelector('button').addEventListener('click',function(e){validate(q,e.currentTarget)});
+      box.appendChild(el);
+    });
+  }
+  function validate(q,btn){
+    var t=TM[q.terr],r=btn.getBoundingClientRect(),boss=q.type==='Boss';
+    done[q.id]=true;touched[q.terr]=true;
+    S.xp+=q.xp;var up=false;while(S.xp>=need(S.level)){S.xp-=need(S.level);S.level++;up=true}
+    ST[q.terr]=Math.min(100,ST[q.terr]+Math.max(1,Math.round(q.xp/10)));
+    burst(r.left+r.width/2,r.top+r.height/2,boss?90:34,boss?null:null);
+    if(boss){shake();sfx('boss')}else sfx('ok');
+    paint(up);updateRadar();drawMap();drawDetail();drawLog();drawAch();
+    unlock('a1');if(boss)unlock('a4');if(AXES.every(function(a){return touched[a]}))unlock('a5');
+    note.textContent='Mission validée. +'+q.xp+' XP en '+t.name+'.'+(up?' Niveau '+S.level+' atteint.':'');
+    document.getElementById('rank').textContent=rankName();
+    if(up){unlock('a3');setTimeout(function(){showLevel(S.level)},boss?600:300)}
+  }
+  document.getElementById('rest').addEventListener('click',function(){note.textContent='Repos enregistré. Ta progression est intacte : '+S.xp+' XP, niveau '+S.level+'.';sfx('rest');unlock('a2')});
+  document.getElementById('reset').addEventListener('click',function(){init();paint(false);updateRadar();drawMap();drawDetail();drawLog();drawAch();note.textContent='Démo réinitialisée.'});
+
+  /* ---------- Marque ---------- */
+  var sw=document.getElementById('sw');
+  BRAND.forEach(function(c){
+    var a=cr(c.hex,'#0B100E'),b=cr(c.hex,'#EDE9DF');
+    var el=document.createElement('button');el.type='button';el.className='s';el.setAttribute('aria-label','Copier '+c.name+' '+c.hex);
+    el.innerHTML='<div class="chip" style="background:'+c.hex+'"></div><div class="b"><span class="n">'+c.name+'</span><span class="h">'+c.hex+'</span><span class="r">'+c.role+'</span><div class="c">Sur nuit : '+fr(a)+' : 1 <i>'+grade(a)+'</i><br>Sur ivoire : '+fr(b)+' : 1 <i>'+grade(b)+'</i></div></div>';
+    el.addEventListener('click',function(){copy(c.hex,c.name+' copié : '+c.hex)});sw.appendChild(el);
+  });
+  var mg=document.getElementById('motion');
+  MOTION.forEach(function(m){
+    var el=document.createElement('div');el.className='mo';el.style.setProperty('--d',m.d);
+    el.innerHTML='<div><b>'+m.n.toUpperCase()+'</b> <code>'+m.v+'</code></div><div class="tr" aria-hidden="true"><span class="dot"></span></div><p class="k" style="max-width:none">'+m.u+'</p><button type="button" class="btn quiet">Rejouer</button>';
+    el.querySelector('button').addEventListener('click',function(){el.classList.remove('go');void el.offsetWidth;requestAnimationFrame(function(){el.classList.add('go')})});
+    mg.appendChild(el);
+  });
+  document.getElementById('fxburst').addEventListener('click',function(e){var r=e.currentTarget.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,60);sfx('ok')});
+  document.getElementById('fxshake').addEventListener('click',function(){shake();sfx('boss')});
+  document.getElementById('fxlevel').addEventListener('click',function(){showLevel(S.level+1)});
+
+  /* ---------- Tokens ---------- */
+  var CSS=':root {\n  /* Marque */\n'+BRAND.map(function(c){return '  --lr-'+c.id+': '+c.hex+';'}).join('\n')+'\n  --lr-panel: #111A17;\n  --lr-line: #24342E;\n\n  /* Territoires */\n'+TERR.map(function(t){return '  --lr-'+t.code.toLowerCase()+': '+t.hex+';'}).join('\n')+'\n\n  /* Typographie */\n  --lr-font-display: \'Instrument Serif\', serif;\n  --lr-font-hud: \'Chakra Petch\', sans-serif;\n  --lr-font-body: \'Schibsted Grotesk\', system-ui, sans-serif;\n\n  /* Mouvement */\n  --lr-ease: cubic-bezier(.2, .7, .2, 1);\n  --lr-t-fast: 120ms;\n  --lr-t-base: 240ms;\n  --lr-t-slow: 600ms;\n  --lr-glow: rgba(47, 208, 139, .38);\n}';
+  var TW='// tailwind.config.js\nexport default {\n  theme: {\n    extend: {\n      colors: {\n        lr: {\n'+BRAND.map(function(c){return "          '"+c.id+"': '"+c.hex+"',"}).join('\n')+'\n        },\n        territoire: {\n'+TERR.map(function(t){return '          '+t.code.toLowerCase()+": '"+t.hex+"',"}).join('\n')+'\n        },\n      },\n      fontFamily: {\n        display: [\'Instrument Serif\', \'serif\'],\n        hud: [\'Chakra Petch\', \'sans-serif\'],\n        body: [\'Schibsted Grotesk\', \'system-ui\', \'sans-serif\'],\n      },\n      transitionTimingFunction: { montee: \'cubic-bezier(.2,.7,.2,1)\' },\n      transitionDuration: { fast: \'120ms\', base: \'240ms\', slow: \'600ms\' },\n      boxShadow: { lueur: \'0 0 28px rgba(47,208,139,.38)\' },\n    },\n  },\n};';
+  var box=document.getElementById('codebox'),mode='css';
+  function showCode(m){mode=m;box.textContent=m==='css'?CSS:TW;document.getElementById('tab-css').setAttribute('aria-selected',m==='css');document.getElementById('tab-tw').setAttribute('aria-selected',m==='tw')}
+  document.getElementById('tab-css').addEventListener('click',function(){showCode('css')});
+  document.getElementById('tab-tw').addEventListener('click',function(){showCode('tw')});
+  document.getElementById('copycode').addEventListener('click',function(){copy(mode==='css'?CSS:TW,'Tokens copiés')});
+
+  /* ---------- Démarrage ---------- */
+  showCode('css');drawMap();drawDetail();buildRadar();updateRadar();drawAch();drawLog();paint(false);
+  var links=[].slice.call(document.querySelectorAll('#nav a'));
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id)})})},{rootMargin:'-25% 0px -65% 0px'});
+    document.querySelectorAll('main section').forEach(function(s){io.observe(s)});
+  }
+})();
+</script>
+</body>
+</html>
