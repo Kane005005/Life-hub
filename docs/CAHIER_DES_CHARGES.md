@@ -38,6 +38,8 @@ LIFE RPG ne doit pas être un simple gestionnaire de tâches avec des points d'e
 
 ### 1.2. Vision du produit
 
+**Your Life. Your Quest. Your Evolution.**
+
 LIFE RPG permet à chaque utilisateur de construire une représentation évolutive de sa vie, de ses objectifs et de ses accomplissements. Le système accompagne l'utilisateur pendant plusieurs années, sans imposer de progression artificielle ni créer de dépendance à la productivité.
 
 ### 1.3. Objectifs principaux
@@ -111,9 +113,9 @@ Les données personnelles liées au corps (territoire BODY) restent privées et 
 
 Chaque territoire possède trois états de progression :
 
-1.  : territoire découvert.
-2.  : territoire en développement.
-3.  : territoire dont les compétences sont durablement développées.
+1.  **DISCOVERY** : territoire découvert.
+2.  **DEVELOPMENT** : territoire en développement.
+3.  **MASTERY** : territoire dont les compétences sont durablement développées.
 
 Les territoires ne perdent jamais leurs acquis en raison d'une période d'inactivité.
 
@@ -661,5 +663,7 @@ LIFE RPG respecte définitivement les principes suivants :
 ### 19.2. Définition du produit final
 
 LIFE RPG est une application personnelle de progression inspirée des jeux de rôle. Elle associe un univers virtuel de six territoires, un personnage personnalisable, un moteur de progression, un système de missions, une économie virtuelle, des compétences évolutives et des agents IA capables d'accompagner l'utilisateur dans ses objectifs. Le système est conçu autour d'une architecture locale, modulaire et extensible.
+
+**LIFE RPG — YOUR LIFE IS THE GAME. YOUR GROWTH IS THE PROGRESSION.**
 
 Document de référence pour les futures phases de conception, de prototypage, de développement et de validation.
