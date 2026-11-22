@@ -199,6 +199,7 @@ export function useCompleteQuest() {
         'POST',
         `/quests/${id}/complete/`,
         note === undefined ? {} : { note },
+        'Mission déjà validée.',
       )
     },
     onSuccess: () => {

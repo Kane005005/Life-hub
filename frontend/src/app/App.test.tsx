@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearToken, setToken } from '../lib/auth'
 import type { Character } from '../lib/types'
+import { makeTerritory } from '../test/fixtures'
 import App from './App'
 
 function makeCharacter(overrides: Partial<Character> = {}): Character {
@@ -23,13 +24,24 @@ function makeCharacter(overrides: Partial<Character> = {}): Character {
   }
 }
 
+function jsonResponse(body: unknown) {
+  return { ok: true, status: 200, json: async () => body }
+}
+
 function stubApi(character: Character) {
   vi.stubGlobal(
     'fetch',
-    vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => character,
+    vi.fn().mockImplementation((url: string) => {
+      if (url === '/api/character/') {
+        return Promise.resolve(jsonResponse(character))
+      }
+      if (url === '/api/world/territories/') {
+        return Promise.resolve(jsonResponse([makeTerritory()]))
+      }
+      if (url.startsWith('/api/quests/')) {
+        return Promise.resolve(jsonResponse({ count: 0, next: null, previous: null, results: [] }))
+      }
+      return Promise.resolve(jsonResponse({ status: 'ok' }))
     }),
   )
 }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { EmberContext } from './EmberContext'
-import { prefersReducedMotion } from './motion'
+import { cancelFrame, prefersReducedMotion, requestFrame } from './motion'
 
 type Particle = {
   x: number
@@ -62,7 +62,7 @@ export function EmberCanvas({ children }: EmberCanvasProps) {
       return true
     })
     if (particles.current.length > 0) {
-      frame.current = window.requestAnimationFrame(step)
+      frame.current = requestFrame(step)
     } else {
       running.current = false
       frame.current = null
@@ -90,7 +90,7 @@ export function EmberCanvas({ children }: EmberCanvasProps) {
       }
       if (!running.current) {
         running.current = true
-        frame.current = window.requestAnimationFrame(step)
+        frame.current = requestFrame(step)
       }
     },
     [step],
@@ -102,7 +102,7 @@ export function EmberCanvas({ children }: EmberCanvasProps) {
     return () => {
       window.removeEventListener('resize', sizeCanvas)
       if (frame.current !== null) {
-        window.cancelAnimationFrame(frame.current)
+        cancelFrame(frame.current)
       }
       running.current = false
       particles.current = []

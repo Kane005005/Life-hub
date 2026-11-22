@@ -3,6 +3,7 @@ import type { TerritoryCode as StatCode, Territory as TokenTerritory } from '../
 import type {
   CharacterClass,
   Difficulty,
+  EventType,
   Priority,
   QuestStatus,
   QuestType,
@@ -52,6 +53,22 @@ export const STATUS_LABELS = {
   ABANDONED: 'Abandonnée',
 } satisfies Record<QuestStatus, string>
 
+export const EVENT_TYPE_LABELS = {
+  QUEST_CREATED: 'Mission créée',
+  QUEST_UPDATED: 'Mission modifiée',
+  QUEST_ACCEPTED: 'Mission acceptée',
+  QUEST_STEP_DONE: 'Étape terminée',
+  QUEST_STEP_UNDONE: 'Étape rouverte',
+  QUEST_COMPLETED: 'Mission validée',
+  QUEST_ABANDONED: 'Mission abandonnée',
+  XP_AWARDED: 'XP gagnée',
+  LEVEL_UP: 'Niveau gagné',
+  CREDITS_EARNED: 'Crédits gagnés',
+  SKILL_POINTS_EARNED: 'Point de compétence gagné',
+  REST: 'Repos',
+  CHARACTER_UPDATED: 'Personnage modifié',
+} satisfies Record<EventType, string>
+
 export const STATE_LABELS = {
   DISCOVERY: 'Découverte',
   DEVELOPMENT: 'Développement',
@@ -98,6 +115,7 @@ export const QUEST_TYPE_CODES = Object.keys(QUEST_TYPE_LABELS) as QuestType[]
 export const DIFFICULTY_CODES = Object.keys(DIFFICULTY_LABELS) as Difficulty[]
 export const PRIORITY_CODES = Object.keys(PRIORITY_LABELS) as Priority[]
 export const STATUS_CODES = Object.keys(STATUS_LABELS) as QuestStatus[]
+export const EVENT_TYPE_CODES = Object.keys(EVENT_TYPE_LABELS) as EventType[]
 export const CLASS_CODES = Object.keys(CLASS_LABELS) as CharacterClass[]
 
 export const SILHOUETTES: readonly Silhouette[] = ['A', 'B', 'C']
