@@ -26,8 +26,8 @@ env: ## Crée .env avec une clé secrète si le fichier n'existe pas (ne l'écra
 build: ## Construit le front (frontend/dist), servi ensuite par Django
 	cd $(FRONT) && npm run build
 
-migrate: env ## Applique les migrations de la base SQLite
-	cd $(BACK) && uv run python manage.py migrate --noinput
+migrate: env ## Applique les migrations et les données initiales (idempotent)
+	cd $(BACK) && uv run python manage.py migrate --noinput && uv run python manage.py seed
 
 run: env build migrate ## Lance l'application : http://127.0.0.1:8000
 	@echo "LIFE RPG : http://$(HOST):$(PORT)"
