@@ -1,0 +1,22 @@
+# Secrets et données locales (jamais dans le dépôt)
+.env
+data/
+backups/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+staticfiles/
+
+# Node / front
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+coverage/
+
+# Divers
+.DS_Store
+*.log
