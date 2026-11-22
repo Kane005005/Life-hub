@@ -1,0 +1,1814 @@
+openapi: 3.0.3
+info:
+  title: LIFE RPG API
+  version: 0.1.0
+paths:
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: Crée ou récupère le jeton du compte après authentification.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          description: ''
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Supprime le jeton courant et renvoie une réponse vide.
+      tags:
+      - auth
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      description: Renvoie l'identifiant et le nom d'utilisateur.
+      tags:
+      - auth
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/character/:
+    get:
+      operationId: character_retrieve
+      description: Renvoie le personnage complet de l'utilisateur connecté.
+      tags:
+      - character
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Character'
+          description: ''
+    patch:
+      operationId: character_partial_update
+      description: Modifie les seules données de profil autorisées.
+      tags:
+      - character
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCharacterUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCharacterUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCharacterUpdate'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Character'
+          description: ''
+  /api/character/avatar/:
+    patch:
+      operationId: character_avatar_partial_update
+      description: Modifie l'avatar puis renvoie le personnage complet.
+      tags:
+      - character
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAvatarUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAvatarUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAvatarUpdate'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Character'
+          description: ''
+  /api/economy/transactions/:
+    get:
+      operationId: economy_transactions_list
+      description: Historique paginé des transactions de crédits.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un numéro de page de l'ensemble des résultats.
+        schema:
+          type: integer
+      tags:
+      - economy
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCreditTransactionList'
+          description: ''
+  /api/economy/wallet/:
+    get:
+      operationId: economy_wallet_retrieve
+      description: Renvoie le nombre de crédits actuellement détenus.
+      tags:
+      - economy
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+          description: ''
+  /api/health/:
+    get:
+      operationId: health_retrieve
+      description: Renvoie l'état de santé de l'application LIFE RPG.
+      summary: Santé de l'API
+      tags:
+      - health
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+          description: ''
+  /api/journal/:
+    get:
+      operationId: journal_list
+      description: Historique paginé des événements de l'utilisateur connecté.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un numéro de page de l'ensemble des résultats.
+        schema:
+          type: integer
+      tags:
+      - journal
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedJournalEntryList'
+          description: ''
+  /api/journal/rest/:
+    post:
+      operationId: journal_rest_create
+      description: Consigne l'événement REST et renvoie son message.
+      tags:
+      - journal
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestResponse'
+          description: ''
+  /api/progression/:
+    get:
+      operationId: progression_retrieve
+      description: Renvoie niveau, rang, XP et points de compétence.
+      tags:
+      - progression
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Progression'
+          description: ''
+  /api/progression/history/:
+    get:
+      operationId: progression_history_list
+      description: Historique paginé des gains d'XP du personnage.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un numéro de page de l'ensemble des résultats.
+        schema:
+          type: integer
+      tags:
+      - progression
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedXPTransactionList'
+          description: ''
+  /api/progression/skills/:
+    get:
+      operationId: progression_skills_retrieve
+      description: Renvoie le solde et les transactions de points.
+      tags:
+      - progression
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillPointsResponse'
+          description: ''
+  /api/quests/:
+    get:
+      operationId: quests_list
+      description: Renvoie la liste paginée et filtrée des missions.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un numéro de page de l'ensemble des résultats.
+        schema:
+          type: integer
+      tags:
+      - quests
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuestList'
+          description: ''
+    post:
+      operationId: quests_create
+      description: Crée une mission en laissant le moteur calculer les récompenses.
+      tags:
+      - quests
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quest'
+          description: ''
+  /api/quests/{id}/:
+    get:
+      operationId: quests_retrieve
+      description: Renvoie une mission appartenant à l'utilisateur connecté.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - quests
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quest'
+          description: ''
+    put:
+      operationId: quests_update
+      description: Modifie une mission active, comme la méthode PATCH.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - quests
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestUpdate'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quest'
+          description: ''
+    patch:
+      operationId: quests_partial_update
+      description: Modifie une mission active en ignorant les champs serveur.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - quests
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestUpdate'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quest'
+          description: ''
+  /api/quests/{id}/abandon/:
+    post:
+      operationId: quests_abandon_create
+      description: Abandonne la mission sans retirer la moindre XP.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - quests
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quest'
+          description: ''
+  /api/quests/{id}/accept/:
+    post:
+      operationId: quests_accept_create
+      description: Fait passer une mission disponible ou en pause au statut accepté.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - quests
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quest'
+          description: ''
+  /api/quests/{id}/complete/:
+    post:
+      operationId: quests_complete_create
+      description: Valide la mission et renvoie le résultat exact du moteur.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - quests
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteQuestInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompleteQuestInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompleteQuestInput'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletionResult'
+          description: ''
+  /api/quests/{id}/steps/{step_id}/toggle/:
+    post:
+      operationId: quests_steps_toggle_create
+      description: Coche ou décoche une étape d'une mission encore active.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: step_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - quests
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quest'
+          description: ''
+  /api/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/settings/game/:
+    get:
+      operationId: settings_game_retrieve
+      description: Renvoie les barèmes et seuils utilisés par le moteur.
+      tags:
+      - settings
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameSettings'
+          description: ''
+  /api/world/progress/:
+    get:
+      operationId: world_progress_retrieve
+      description: Renvoie le niveau, le rang et les territoires du personnage.
+      tags:
+      - world
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorldProgress'
+          description: ''
+  /api/world/territories/:
+    get:
+      operationId: world_territories_list
+      description: Renvoie les six territoires du personnage.
+      tags:
+      - world
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TerritoryStat'
+          description: ''
+  /api/world/territories/{id}/:
+    get:
+      operationId: world_territories_retrieve
+      description: Renvoie le territoire demandé et les missions encore actives.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - world
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TerritoryDetail'
+          description: ''
+components:
+  schemas:
+    Avatar:
+      type: object
+      description: Apparence minimaliste renvoyée dans le Character.
+      properties:
+        silhouette:
+          type: string
+        color:
+          type: string
+        accent:
+          type: string
+      required:
+      - accent
+      - color
+      - silhouette
+    Character:
+      type: object
+      description: Objet Character complet du contrat d'API.
+      properties:
+        pseudonym:
+          type: string
+        bio:
+          type: string
+        character_class:
+          type: string
+        is_onboarded:
+          type: boolean
+        level:
+          type: integer
+        xp_in_level:
+          type: integer
+        xp_required:
+          type: integer
+        total_xp:
+          type: integer
+        rank:
+          $ref: '#/components/schemas/Rank'
+        credits:
+          type: integer
+        skill_points:
+          $ref: '#/components/schemas/SkillPoints'
+        avatar:
+          $ref: '#/components/schemas/Avatar'
+        stats:
+          type: array
+          items:
+            $ref: '#/components/schemas/TerritoryStat'
+      required:
+      - avatar
+      - bio
+      - character_class
+      - credits
+      - is_onboarded
+      - level
+      - pseudonym
+      - rank
+      - skill_points
+      - stats
+      - total_xp
+      - xp_in_level
+      - xp_required
+    CharacterClassEnum:
+      enum:
+      - ARCHITECT
+      - CREATOR
+      - EXPLORER
+      - STRATEGIST
+      - INNOVATOR
+      type: string
+      description: |-
+        * `ARCHITECT` - Architecte
+        * `CREATOR` - Créateur
+        * `EXPLORER` - Explorateur
+        * `STRATEGIST` - Stratège
+        * `INNOVATOR` - Innovateur
+    CompleteQuestInput:
+      type: object
+      description: Note facultative jointe à une validation.
+      properties:
+        note:
+          type: string
+          default: ''
+    CompletionResult:
+      type: object
+      description: Réponse complète de la route de validation d'une mission.
+      properties:
+        quest:
+          $ref: '#/components/schemas/Quest'
+        result:
+          $ref: '#/components/schemas/CompletionResultDetail'
+      required:
+      - quest
+      - result
+    CompletionResultDetail:
+      type: object
+      description: Récompenses et messages renvoyés après une validation.
+      properties:
+        xp:
+          type: integer
+        credits:
+          type: integer
+        territory:
+          type: string
+        level_before:
+          type: integer
+        level_after:
+          type: integer
+        levels_gained:
+          type: integer
+        skill_points_gained:
+          type: integer
+        message:
+          type: string
+        level_message:
+          type: string
+          nullable: true
+      required:
+      - credits
+      - level_after
+      - level_before
+      - level_message
+      - levels_gained
+      - message
+      - skill_points_gained
+      - territory
+      - xp
+    CreditTransaction:
+      type: object
+      description: Ligne de l'historique des crédits.
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        amount:
+          type: integer
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/CreditTransactionKindEnum'
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        balance_after:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - balance_after
+      - created_at
+      - kind
+      - reason
+      - uuid
+    CreditTransactionKindEnum:
+      enum:
+      - EARN
+      - SPEND
+      type: string
+      description: |-
+        * `EARN` - Gain
+        * `SPEND` - Dépense
+    DifficultyEnum:
+      enum:
+      - TRIVIAL
+      - EASY
+      - MEDIUM
+      - HARD
+      - EPIC
+      - LEGENDARY
+      type: string
+      description: |-
+        * `TRIVIAL` - Très facile
+        * `EASY` - Facile
+        * `MEDIUM` - Moyenne
+        * `HARD` - Difficile
+        * `EPIC` - Épique
+        * `LEGENDARY` - Légendaire
+    EventTypeEnum:
+      enum:
+      - QUEST_CREATED
+      - QUEST_UPDATED
+      - QUEST_ACCEPTED
+      - QUEST_STEP_DONE
+      - QUEST_STEP_UNDONE
+      - QUEST_COMPLETED
+      - QUEST_ABANDONED
+      - XP_AWARDED
+      - LEVEL_UP
+      - CREDITS_EARNED
+      - SKILL_POINTS_EARNED
+      - REST
+      - CHARACTER_UPDATED
+      type: string
+      description: |-
+        * `QUEST_CREATED` - Mission créée
+        * `QUEST_UPDATED` - Mission modifiée
+        * `QUEST_ACCEPTED` - Mission acceptée
+        * `QUEST_STEP_DONE` - Étape cochée
+        * `QUEST_STEP_UNDONE` - Étape décochée
+        * `QUEST_COMPLETED` - Mission validée
+        * `QUEST_ABANDONED` - Mission abandonnée
+        * `XP_AWARDED` - XP attribuée
+        * `LEVEL_UP` - Niveau gagné
+        * `CREDITS_EARNED` - Crédits gagnés
+        * `SKILL_POINTS_EARNED` - Points de compétence gagnés
+        * `REST` - Repos
+        * `CHARACTER_UPDATED` - Personnage modifié
+    GameSettings:
+      type: object
+      description: Paramètres du jeu exposés en lecture seule.
+      properties:
+        xp_by_difficulty:
+          readOnly: true
+        credits_per_xp:
+          type: integer
+          readOnly: true
+        skill_points_per_level:
+          type: integer
+          readOnly: true
+        territory_stat_divisor:
+          type: integer
+          readOnly: true
+        territory_stat_display_max:
+          type: integer
+          readOnly: true
+        territory_state_thresholds:
+          readOnly: true
+        ranks:
+          readOnly: true
+      required:
+      - credits_per_xp
+      - ranks
+      - skill_points_per_level
+      - territory_stat_display_max
+      - territory_stat_divisor
+      - territory_state_thresholds
+      - xp_by_difficulty
+    HealthResponse:
+      type: object
+      description: Forme de la réponse de l'endpoint de santé.
+      properties:
+        status:
+          type: string
+        app:
+          type: string
+        version:
+          type: string
+      required:
+      - app
+      - status
+      - version
+    JournalEntry:
+      type: object
+      description: Événement du journal, tel que décrit dans le contrat d'API.
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        event_type:
+          allOf:
+          - $ref: '#/components/schemas/EventTypeEnum'
+          readOnly: true
+        actor:
+          type: string
+          readOnly: true
+        message:
+          type: string
+          readOnly: true
+        payload:
+          readOnly: true
+        quest:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actor
+      - created_at
+      - event_type
+      - message
+      - payload
+      - quest
+      - uuid
+    Login:
+      type: object
+      description: Identifiants acceptés par la route de connexion.
+      properties:
+        username:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - username
+    LoginResponse:
+      type: object
+      description: Jeton créé et identité du compte connecté.
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+      - token
+      - user
+    OriginEnum:
+      enum:
+      - USER
+      - AI
+      type: string
+      description: |-
+        * `USER` - Utilisateur
+        * `AI` - Agent
+    PaginatedCreditTransactionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreditTransaction'
+    PaginatedJournalEntryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalEntry'
+    PaginatedQuestList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Quest'
+    PaginatedXPTransactionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/XPTransaction'
+    PatchedAvatarUpdate:
+      type: object
+      description: Champs de l'avatar acceptés en PATCH.
+      properties:
+        silhouette:
+          $ref: '#/components/schemas/SilhouetteEnum'
+        color:
+          type: string
+          pattern: ^#[0-9A-Fa-f]{6}$
+        accent:
+          type: string
+          pattern: ^#[0-9A-Fa-f]{6}$
+    PatchedCharacterUpdate:
+      type: object
+      description: Champs de profil modifiables ; la progression est ignorée.
+      properties:
+        pseudonym:
+          type: string
+          maxLength: 40
+        bio:
+          type: string
+        character_class:
+          $ref: '#/components/schemas/CharacterClassEnum'
+        is_onboarded:
+          type: boolean
+    PatchedQuestUpdate:
+      type: object
+      description: Champs modifiables d'une mission active ; le reste est ignoré.
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        territory:
+          type: string
+          maxLength: 20
+        quest_type:
+          $ref: '#/components/schemas/QuestTypeEnum'
+        difficulty:
+          $ref: '#/components/schemas/DifficultyEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityEnum'
+        estimated_minutes:
+          type: integer
+          minimum: 0
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        validation_mode:
+          $ref: '#/components/schemas/ValidationModeEnum'
+        skill_branch:
+          type: string
+          maxLength: 40
+    PriorityEnum:
+      enum:
+      - LOW
+      - NORMAL
+      - HIGH
+      type: string
+      description: |-
+        * `LOW` - Faible
+        * `NORMAL` - Normale
+        * `HIGH` - Haute
+    Progression:
+      type: object
+      description: Résumé de progression générale du personnage.
+      properties:
+        level:
+          type: integer
+        xp_in_level:
+          type: integer
+        xp_required:
+          type: integer
+        total_xp:
+          type: integer
+        rank:
+          $ref: '#/components/schemas/Rank'
+        skill_points:
+          $ref: '#/components/schemas/SkillPoints'
+      required:
+      - level
+      - rank
+      - skill_points
+      - total_xp
+      - xp_in_level
+      - xp_required
+    Quest:
+      type: object
+      description: Mission renvoyée par l'API, avec les champs calculés par le serveur.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        territory:
+          type: string
+          readOnly: true
+        quest_type:
+          $ref: '#/components/schemas/QuestTypeEnum'
+        difficulty:
+          $ref: '#/components/schemas/DifficultyEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityEnum'
+        estimated_minutes:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        xp_reward:
+          type: integer
+          readOnly: true
+        credit_reward:
+          type: integer
+          readOnly: true
+        validation_mode:
+          $ref: '#/components/schemas/ValidationModeEnum'
+        origin:
+          allOf:
+          - $ref: '#/components/schemas/OriginEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        skill_branch:
+          type: string
+          maxLength: 40
+        is_recurring:
+          type: boolean
+          description: Indique si la mission est quotidienne ou hebdomadaire.
+          readOnly: true
+        period_key:
+          type: string
+          description: Calcule la clé de période du jour local.
+          readOnly: true
+        completed_this_period:
+          type: boolean
+          description: Indique si la mission a déjà été validée dans la période courante.
+          readOnly: true
+        completions_count:
+          type: integer
+          description: Compte toutes les validations enregistrées pour la mission.
+          readOnly: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestStep'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - completed_at
+      - completed_this_period
+      - completions_count
+      - created_at
+      - credit_reward
+      - id
+      - is_recurring
+      - origin
+      - period_key
+      - status
+      - steps
+      - territory
+      - title
+      - updated_at
+      - uuid
+      - xp_reward
+    QuestCreate:
+      type: object
+      description: Données acceptées à la création ; les champs serveur sont ignorés.
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          default: ''
+        territory:
+          type: string
+          maxLength: 20
+        quest_type:
+          allOf:
+          - $ref: '#/components/schemas/QuestTypeEnum'
+          default: SIDE
+        difficulty:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          default: MEDIUM
+        priority:
+          allOf:
+          - $ref: '#/components/schemas/PriorityEnum'
+          default: NORMAL
+        estimated_minutes:
+          type: integer
+          minimum: 0
+          default: 0
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        validation_mode:
+          allOf:
+          - $ref: '#/components/schemas/ValidationModeEnum'
+          default: MANUAL
+        skill_branch:
+          type: string
+          default: ''
+          maxLength: 40
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestStepInput'
+      required:
+      - territory
+      - title
+    QuestStep:
+      type: object
+      description: Étape d'une mission, sans récompense propre.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        order:
+          type: integer
+          readOnly: true
+        is_required:
+          type: boolean
+          readOnly: true
+        is_done:
+          type: boolean
+          readOnly: true
+        done_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - done_at
+      - id
+      - is_done
+      - is_required
+      - order
+      - title
+    QuestStepInput:
+      type: object
+      description: Étape envoyée lors de la création d'une mission composée.
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        is_required:
+          type: boolean
+          default: true
+        order:
+          type: integer
+          minimum: 0
+      required:
+      - title
+    QuestTypeEnum:
+      enum:
+      - DAILY
+      - WEEKLY
+      - MAIN
+      - SIDE
+      - BOSS
+      type: string
+      description: |-
+        * `DAILY` - Quotidienne
+        * `WEEKLY` - Hebdomadaire
+        * `MAIN` - Principale
+        * `SIDE` - Secondaire
+        * `BOSS` - Boss
+    QuestUpdate:
+      type: object
+      description: Champs modifiables d'une mission active ; le reste est ignoré.
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        territory:
+          type: string
+          maxLength: 20
+        quest_type:
+          $ref: '#/components/schemas/QuestTypeEnum'
+        difficulty:
+          $ref: '#/components/schemas/DifficultyEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityEnum'
+        estimated_minutes:
+          type: integer
+          minimum: 0
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        validation_mode:
+          $ref: '#/components/schemas/ValidationModeEnum'
+        skill_branch:
+          type: string
+          maxLength: 40
+    Rank:
+      type: object
+      description: Rang du personnage, avec son libellé français.
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+      required:
+      - code
+      - label
+    RestResponse:
+      type: object
+      description: Message renvoyé après l'enregistrement d'un jour de repos.
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    SilhouetteEnum:
+      enum:
+      - A
+      - B
+      - C
+      type: string
+      description: |-
+        * `A` - Silhouette A
+        * `B` - Silhouette B
+        * `C` - Silhouette C
+    SkillPointTransaction:
+      type: object
+      description: Ligne de l'historique des points de compétence.
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        amount:
+          type: integer
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/SkillPointTransactionKindEnum'
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        balance_after:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - balance_after
+      - created_at
+      - kind
+      - reason
+      - uuid
+    SkillPointTransactionKindEnum:
+      enum:
+      - GAIN
+      - SPEND
+      type: string
+      description: |-
+        * `GAIN` - Gain
+        * `SPEND` - Dépense
+    SkillPoints:
+      type: object
+      description: Points de compétence disponibles et dépensés.
+      properties:
+        available:
+          type: integer
+        spent:
+          type: integer
+      required:
+      - available
+      - spent
+    SkillPointsResponse:
+      type: object
+      description: Solde de points et transactions associées.
+      properties:
+        available:
+          type: integer
+        spent:
+          type: integer
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillPointTransaction'
+      required:
+      - available
+      - spent
+      - transactions
+    StatusEnum:
+      enum:
+      - AVAILABLE
+      - ACCEPTED
+      - IN_PROGRESS
+      - COMPLETED
+      - PAUSED
+      - ABANDONED
+      type: string
+      description: |-
+        * `AVAILABLE` - Disponible
+        * `ACCEPTED` - Acceptée
+        * `IN_PROGRESS` - En cours
+        * `COMPLETED` - Terminée
+        * `PAUSED` - En pause
+        * `ABANDONED` - Abandonnée
+    TerritoryDetail:
+      type: object
+      description: Statistique d'un territoire avec ses missions actives.
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        stat_code:
+          type: string
+        name:
+          type: string
+        english:
+          type: string
+        place:
+          type: string
+        domain:
+          type: string
+        color:
+          type: string
+        total_xp:
+          type: integer
+        stat:
+          type: integer
+        stat_display:
+          type: integer
+        state:
+          type: string
+        active_quests:
+          type: integer
+        quests:
+          type: array
+          items:
+            $ref: '#/components/schemas/Quest'
+          readOnly: true
+      required:
+      - active_quests
+      - code
+      - color
+      - domain
+      - english
+      - id
+      - name
+      - place
+      - quests
+      - stat
+      - stat_code
+      - stat_display
+      - state
+      - total_xp
+    TerritoryStat:
+      type: object
+      description: Statistique d'un territoire pour un personnage.
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        stat_code:
+          type: string
+        name:
+          type: string
+        english:
+          type: string
+        place:
+          type: string
+        domain:
+          type: string
+        color:
+          type: string
+        total_xp:
+          type: integer
+        stat:
+          type: integer
+        stat_display:
+          type: integer
+        state:
+          type: string
+        active_quests:
+          type: integer
+      required:
+      - active_quests
+      - code
+      - color
+      - domain
+      - english
+      - id
+      - name
+      - place
+      - stat
+      - stat_code
+      - stat_display
+      - state
+      - total_xp
+    User:
+      type: object
+      description: Identité minimale d'un compte renvoyée par l'API.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          title: Nom d’utilisateur
+          description: Requis. 150 caractères maximum. Uniquement des lettres, nombres
+            et les caractères « @ », « . », « + », « - » et « _ ».
+      required:
+      - id
+      - username
+    ValidationModeEnum:
+      enum:
+      - MANUAL
+      - PROOF
+      type: string
+      description: |-
+        * `MANUAL` - Manuelle
+        * `PROOF` - Avec preuve
+    Wallet:
+      type: object
+      description: Solde de crédits du personnage.
+      properties:
+        credits:
+          type: integer
+      required:
+      - credits
+    WorldProgress:
+      type: object
+      description: Résumé de progression affiché sur la page Monde.
+      properties:
+        level:
+          type: integer
+        xp_in_level:
+          type: integer
+        xp_required:
+          type: integer
+        total_xp:
+          type: integer
+        rank:
+          $ref: '#/components/schemas/Rank'
+        territories:
+          type: array
+          items:
+            $ref: '#/components/schemas/TerritoryStat'
+      required:
+      - level
+      - rank
+      - territories
+      - total_xp
+      - xp_in_level
+      - xp_required
+    XPTransaction:
+      type: object
+      description: Ligne de l'historique des gains d'XP.
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        amount:
+          type: integer
+          readOnly: true
+        territory:
+          type: string
+          readOnly: true
+        level_before:
+          type: integer
+          readOnly: true
+        level_after:
+          type: integer
+          readOnly: true
+        quest_title:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - level_after
+      - level_before
+      - quest_title
+      - territory
+      - uuid
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"

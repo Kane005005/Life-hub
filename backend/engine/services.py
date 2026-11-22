@@ -42,6 +42,8 @@ if TYPE_CHECKING:
     from apps.accounts.models import User
 
 ACTIVE_STATUSES = ("AVAILABLE", "ACCEPTED", "IN_PROGRESS", "PAUSED")
+CHARACTER_EDITABLE_FIELDS = ("pseudonym", "bio", "character_class", "is_onboarded")
+AVATAR_EDITABLE_FIELDS = ("silhouette", "color", "accent")
 QUEST_EDITABLE_FIELDS = (
     "title",
     "description",
@@ -110,6 +112,32 @@ def ensure_character(user: User) -> Character:
     for territory in Territory.objects.all():
         TerritoryProgress.objects.get_or_create(character=character, territory=territory)
     return character
+
+
+@transaction.atomic
+def update_character(character: Character, data: Mapping[str, object]) -> Character:
+    """Met à jour le profil sans toucher à la progression du personnage."""
+    character = Character.objects.select_for_update().get(pk=character.pk)
+    for field in CHARACTER_EDITABLE_FIELDS:
+        if field in data:
+            setattr(character, field, data[field])
+    character.save(update_fields=[*CHARACTER_EDITABLE_FIELDS, "updated_at"])
+    log_event(character.user, "CHARACTER_UPDATED", "Personnage mis à jour.")
+    return character
+
+
+@transaction.atomic
+def update_avatar(character: Character, data: Mapping[str, object]) -> AvatarConfiguration:
+    """Met à jour l'apparence de l'avatar sans modifier la progression."""
+    avatar, _ = AvatarConfiguration.objects.select_for_update().get_or_create(
+        character=character,
+    )
+    for field in AVATAR_EDITABLE_FIELDS:
+        if field in data:
+            setattr(avatar, field, data[field])
+    avatar.save(update_fields=list(AVATAR_EDITABLE_FIELDS))
+    log_event(character.user, "CHARACTER_UPDATED", "Avatar mis à jour.")
+    return avatar
 
 
 @transaction.atomic

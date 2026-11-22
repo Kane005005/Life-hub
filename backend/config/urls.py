@@ -4,7 +4,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path, re_path
+from django.urls import include, path, re_path
 from django.views.static import serve
 from drf_spectacular.views import SpectacularAPIView
 
@@ -16,6 +16,13 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health/", HealthView.as_view(), name="health"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/", include("apps.accounts.urls")),
+    path("api/", include("apps.character.urls")),
+    path("api/", include("apps.world.urls")),
+    path("api/", include("apps.quests.urls")),
+    path("api/", include("apps.progression.urls")),
+    path("api/", include("apps.economy.urls")),
+    path("api/", include("apps.journal.urls")),
     path(
         "assets/<path:path>",
         serve,
