@@ -90,4 +90,29 @@ describe('ShopItemCard', () => {
       )
     })
   })
+
+  it('n’affiche le manque de crédits qu’après la réponse de l’API', async () => {
+    const user = userEvent.setup()
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          jsonResponse(400, { detail: 'Crédits insuffisants : il te manque 120 crédits.' }),
+        ),
+    )
+
+    render(
+      <TestProviders>
+        <ShopItemCard item={makeShopItem()} />
+      </TestProviders>,
+    )
+
+    expect(screen.queryByText('Il te manque 120 crédits')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Acheter' }))
+    expect(await screen.findByText('Il te manque 120 crédits')).toBeInTheDocument()
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Crédits insuffisants : il te manque 120 crédits.',
+    )
+  })
 })

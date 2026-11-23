@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import '../styles/seasons.css'
 import { ApiError } from '../lib/api'
 import { TERRITORY_BY_CODE, TERRITORY_CODES } from '../lib/labels'
 import { useCreateSeason, useUpdateSeason } from '../lib/queries'
@@ -91,7 +92,7 @@ export function SeasonForm({ season, onSaved, onCancel }: SeasonFormProps) {
   }
 
   return (
-    <HudFrame as="form" className="lr-quest-form" onSubmit={handleSubmit}>
+    <HudFrame as="form" className="lr-quest-form lr-season-form" onSubmit={handleSubmit}>
       <h3 className="lr-form-title">{season ? 'Modifier la saison' : 'Nouvelle saison'}</h3>
       <div className="lr-form-grid">
         <label className="lr-field">

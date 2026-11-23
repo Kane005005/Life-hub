@@ -1,6 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { makeShopItem } from '../test/fixtures'
 import { TestProviders } from '../test/TestProviders'
 import { ShopPage } from './ShopPage'
 
@@ -102,5 +103,62 @@ describe('ShopPage', () => {
         expect.objectContaining({ method: 'POST' }),
       )
     })
+  })
+
+  it('regroupe les objets par emplacement et simule l’aperçu sans requête', async () => {
+    const user = userEvent.setup()
+    const artifacts = [
+      makeShopItem({ id: 10, slot: 'AURA', visual: { color: '#2FD08B' } }),
+      makeShopItem({ id: 11, name: 'Cadre argent', slot: 'FRAME', visual: { style: 'silver' } }),
+      makeShopItem({ id: 12, name: 'Emblème LIFE', slot: 'EMBLEM', visual: { sign: '✦' } }),
+    ]
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url === '/api/character/') return Promise.resolve(jsonResponse(200, character))
+      if (url.startsWith('/api/economy/rewards/?category=REWARD')) {
+        return Promise.resolve(jsonResponse(200, []))
+      }
+      if (url.startsWith('/api/economy/rewards/?category=ARTIFACT')) {
+        return Promise.resolve(jsonResponse(200, artifacts))
+      }
+      if (url === '/api/economy/inventory/') {
+        return Promise.resolve(jsonResponse(200, { items: [], purchases: [] }))
+      }
+      if (url === '/api/economy/transactions/') {
+        return Promise.resolve(
+          jsonResponse(200, { count: 0, next: null, previous: null, results: [] }),
+        )
+      }
+      return Promise.resolve(jsonResponse(200, {}))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <TestProviders>
+        <ShopPage />
+      </TestProviders>,
+    )
+
+    await user.click(screen.getByRole('tab', { name: 'Objets' }))
+    expect(await screen.findByRole('heading', { name: 'Aura' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Cadre' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Emblème' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('img', { name: 'Aperçu de ton avatar équipé' }),
+    ).toBeInTheDocument()
+
+    const card = screen.getByRole('article', { name: "Objet Aura d'émeraude" })
+    expect(screen.queryByText('Aperçu')).not.toBeInTheDocument()
+    const callsBefore = fetchMock.mock.calls.length
+
+    await user.hover(card)
+    expect(screen.getByText('Aperçu')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: "Aperçu avec Aura d'émeraude" })).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledTimes(callsBefore)
+
+    await user.unhover(card)
+    expect(screen.queryByText('Aperçu')).not.toBeInTheDocument()
+    fireEvent.focus(card)
+    expect(screen.getByText('Aperçu')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledTimes(callsBefore)
   })
 })

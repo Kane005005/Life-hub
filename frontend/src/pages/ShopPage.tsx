@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
-import { Avatar } from '../components/Avatar'
+import '../styles/shop.css'
 import { Button } from '../components/Button'
-import { HudFrame } from '../components/HudFrame'
 import { RewardForm } from '../components/RewardForm'
+import { ShopAvatarPreview } from '../components/ShopAvatarPreview'
 import { ShopItemCard } from '../components/ShopItemCard'
 import { WalletBadge } from '../components/WalletBadge'
 import { formatDateTime } from '../lib/format'
@@ -27,6 +27,7 @@ export function ShopPage() {
   const [tab, setTab] = useState<Tab>('Récompenses')
   const [editingReward, setEditingReward] = useState<ShopItem | null>(null)
   const [creatingReward, setCreatingReward] = useState(false)
+  const [previewItem, setPreviewItem] = useState<ShopItem | null>(null)
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
   const characterQuery = useCharacter()
   const rewardsQuery = useShopItems({ category: 'REWARD' })
@@ -34,27 +35,36 @@ export function ShopPage() {
   const inventoryQuery = useInventory()
   const walletQuery = useWalletTransactions()
 
+  const character = characterQuery.data
   const rewards = rewardsQuery.data ?? []
   const artifacts = artifactsQuery.data ?? []
   const inventory = inventoryQuery.data
   const walletTx = walletQuery.data?.results ?? []
+
+  function selectTab(next: Tab) {
+    setTab(next)
+    setPreviewItem(null)
+  }
 
   function onTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return
     event.preventDefault()
     const direction = event.key === 'ArrowRight' ? 1 : -1
     const next = (index + direction + TABS.length) % TABS.length
-    setTab(TABS[next])
+    selectTab(TABS[next])
     tabRefs.current[next]?.focus()
   }
 
   return (
-    <section className="lr-section">
+    <section className="lr-section lr-shop-page">
       <p className="lr-eyebrow">05 · Boutique</p>
       <h1 className="lr-title">Boutique</h1>
       <p className="lr-lede">Dépense tes crédits pour des récompenses et des objets cosmétiques.</p>
 
-      {characterQuery.data ? <WalletBadge credits={characterQuery.data.credits} /> : null}
+      <div className="lr-shop-header">
+        {character ? <WalletBadge credits={character.credits} /> : null}
+        <p className="lr-shop-disclaimer">Un achat ici ne dépense pas d'argent réel.</p>
+      </div>
 
       <div className="lr-tabs" role="tablist" aria-label="Sections de la boutique">
         {TABS.map((label, index) => {
@@ -70,7 +80,7 @@ export function ShopPage() {
               className={selected ? 'lr-tab is-selected' : 'lr-tab'}
               aria-selected={selected}
               tabIndex={selected ? 0 : -1}
-              onClick={() => setTab(label)}
+              onClick={() => selectTab(label)}
               onKeyDown={(event) => onTabKeyDown(event, index)}
             >
               {label}
@@ -113,16 +123,57 @@ export function ShopPage() {
             ))}
           </div>
           {rewards.length === 0 && !rewardsQuery.isPending ? (
-            <p className="lr-note">Aucune récompense disponible.</p>
+            <p className="lr-empty">Aucune récompense disponible.</p>
           ) : null}
         </div>
       ) : null}
 
       {tab === 'Objets' ? (
+        <div role="tabpanel" className="lr-shop-layout">
+          <div className="lr-shop-main lr-stack">
+            {groupBySlot(artifacts).map(([slot, items]) => (
+              <section key={slot} className="lr-shop-slot">
+                <h2 className="lr-eyebrow">{SLOT_LABELS[slot]}</h2>
+                <div className="lr-shop-grid">
+                  {items.map((item) => (
+                    <ShopItemCard
+                      key={item.id}
+                      item={item}
+                      onPreview={setPreviewItem}
+                      previewing={previewItem?.id === item.id}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+            {artifacts.length === 0 && !artifactsQuery.isPending ? (
+              <p className="lr-empty">Aucun objet disponible.</p>
+            ) : null}
+          </div>
+          {character ? (
+            <div className="lr-shop-side">
+              <ShopAvatarPreview
+                avatar={character.avatar}
+                equipment={character.equipment}
+                previewItem={previewItem}
+              />
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {tab === 'Inventaire' ? (
         <div role="tabpanel" className="lr-stack">
-          {groupBySlot(artifacts).map(([slot, items]) => (
-            <section key={slot} className="lr-stack">
-              <h2 className="lr-subtitle">{SLOT_LABELS[slot]}</h2>
+          {character ? (
+            <ShopAvatarPreview
+              avatar={character.avatar}
+              equipment={character.equipment}
+              listLabel="Équipement courant"
+            />
+          ) : null}
+          {groupBySlot(inventory?.items ?? []).map(([slot, items]) => (
+            <section key={slot} className="lr-shop-slot">
+              <h2 className="lr-eyebrow">{SLOT_LABELS[slot]}</h2>
               <div className="lr-shop-grid">
                 {items.map((item) => (
                   <ShopItemCard key={item.id} item={item} />
@@ -130,33 +181,8 @@ export function ShopPage() {
               </div>
             </section>
           ))}
-          {artifacts.length === 0 && !artifactsQuery.isPending ? (
-            <p className="lr-note">Aucun objet disponible.</p>
-          ) : null}
-        </div>
-      ) : null}
-
-      {tab === 'Inventaire' ? (
-        <div role="tabpanel" className="lr-stack">
-          {characterQuery.data ? (
-            <HudFrame className="lr-stack">
-              <p className="lr-detail-subtitle">Aperçu</p>
-              <Avatar
-                silhouette={characterQuery.data.avatar.silhouette}
-                color={characterQuery.data.avatar.color}
-                accent={characterQuery.data.avatar.accent}
-                equipment={characterQuery.data.equipment}
-                label="Aperçu de ton avatar équipé"
-              />
-            </HudFrame>
-          ) : null}
-          <div className="lr-shop-grid">
-            {(inventory?.items ?? []).map((item) => (
-              <ShopItemCard key={item.id} item={item} />
-            ))}
-          </div>
           {!inventoryQuery.isPending && (inventory?.items ?? []).length === 0 ? (
-            <p className="lr-note">Tu ne possèdes pas encore d'objet.</p>
+            <p className="lr-empty">Tu ne possèdes pas encore d'objet.</p>
           ) : null}
           <h2 className="lr-subtitle">Historique des achats</h2>
           <ul className="lr-journal-list">
@@ -170,6 +196,9 @@ export function ShopPage() {
               </li>
             ))}
           </ul>
+          {(inventory?.purchases ?? []).length === 0 ? (
+            <p className="lr-empty">Aucun achat enregistré.</p>
+          ) : null}
         </div>
       ) : null}
 
@@ -190,12 +219,10 @@ export function ShopPage() {
             ))}
           </ul>
           {!walletQuery.isPending && walletTx.length === 0 ? (
-            <p className="lr-note">Aucune transaction.</p>
+            <p className="lr-empty">Aucune transaction.</p>
           ) : null}
         </div>
       ) : null}
-
-      <p className="lr-note">Un achat ici ne dépense pas d'argent réel.</p>
     </section>
   )
 }

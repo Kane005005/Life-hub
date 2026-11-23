@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import '../styles/shop.css'
 import { ApiError } from '../lib/api'
 import { useCreateReward, useUpdateReward } from '../lib/queries'
 import type { ShopItem } from '../lib/types'
@@ -41,7 +42,7 @@ export function RewardForm({ reward, onSaved, onCancel }: RewardFormProps) {
   }
 
   return (
-    <HudFrame as="form" className="lr-quest-form" onSubmit={handleSubmit}>
+    <HudFrame as="form" className="lr-quest-form lr-shop-reward-form" onSubmit={handleSubmit}>
       <h3 className="lr-form-title">{reward ? 'Modifier la récompense' : 'Nouvelle récompense'}</h3>
       <label className="lr-field">
         <span>Nom</span>
