@@ -1,0 +1,260 @@
+{
+  "season": {
+    "name": "Saison 1 : L'Ascension",
+    "theme": "Bâtir l'audience, gagner des clients, ancrer la discipline et monter en compétences",
+    "start_date": "2026-11-24",
+    "end_date": "2027-02-21",
+    "duration_days": 90,
+    "primary_objective": {
+      "title": "Atteindre 1000 abonnés (départ : 252)",
+      "territory": "CAREER"
+    },
+    "secondary_objectives": [
+      {
+        "title": "Trouver au moins 2 nouveaux clients",
+        "territory": "CAREER"
+      },
+      {
+        "title": "Rythme de vie : sport, méditation, prière, 3 sourates, relations",
+        "territory": "INNER_WORLD"
+      },
+      {
+        "title": "Compétences : programmation, 3 skills de travail, 2 livres",
+        "territory": "TECHNOLOGY"
+      }
+    ],
+    "priority_territories": [
+      "CAREER",
+      "TECHNOLOGY",
+      "INNER_WORLD"
+    ]
+  },
+  "missions": [
+    {
+      "title": "Atteindre 1000 abonnés",
+      "territory": "CAREER",
+      "type": "Boss",
+      "difficulty": "légendaire",
+      "xp_indicative": 200,
+      "description": "Passer de 252 à 1000 abonnés ou plus en 90 jours (environ 58 nouveaux abonnés par semaine).",
+      "skill_branch": "entrepreneurship",
+      "recurrence": null,
+      "steps": [
+        "Atteindre 400 abonnés",
+        "Atteindre 550 abonnés",
+        "Atteindre 700 abonnés",
+        "Atteindre 850 abonnés",
+        "Atteindre 1000 abonnés"
+      ]
+    },
+    {
+      "title": "Signer 2 nouveaux clients",
+      "territory": "CAREER",
+      "type": "Main",
+      "difficulty": "très difficile",
+      "xp_indicative": 100,
+      "description": "Trouver au moins 2 nouveaux clients payants.",
+      "skill_branch": "sales",
+      "recurrence": null,
+      "steps": [
+        "Dresser une liste de 30 prospects qualifiés",
+        "Contacter les 15 premiers prospects",
+        "Obtenir 5 appels ou rendez-vous",
+        "Envoyer 2 devis",
+        "Signer le client n°1",
+        "Signer le client n°2"
+      ]
+    },
+    {
+      "title": "Contenu ou échanges pour la communauté",
+      "territory": "CAREER",
+      "type": "Daily",
+      "difficulty": "facile",
+      "xp_indicative": 15,
+      "description": "Publier 1 contenu ou avoir 10 échanges utiles avec la communauté.",
+      "skill_branch": "entrepreneurship",
+      "recurrence": "daily",
+      "steps": []
+    },
+    {
+      "title": "Publier 3 contenus de qualité",
+      "territory": "CAREER",
+      "type": "Weekly",
+      "difficulty": "moyenne",
+      "xp_indicative": 30,
+      "description": "Publier au moins 3 contenus dans la semaine.",
+      "skill_branch": "entrepreneurship",
+      "recurrence": "weekly",
+      "steps": []
+    },
+    {
+      "title": "Contacter 5 prospects",
+      "territory": "CAREER",
+      "type": "Weekly",
+      "difficulty": "moyenne",
+      "xp_indicative": 30,
+      "description": "Envoyer 5 messages ou appels de prospection personnalisés.",
+      "skill_branch": "sales",
+      "recurrence": "weekly",
+      "steps": []
+    },
+    {
+      "title": "Point chiffres de la semaine",
+      "territory": "CAREER",
+      "type": "Weekly",
+      "difficulty": "facile",
+      "xp_indicative": 15,
+      "description": "Noter le nombre d'abonnés, de prospects contactés et de clients, et ajuster la semaine suivante.",
+      "skill_branch": "finance",
+      "recurrence": "weekly",
+      "steps": []
+    },
+    {
+      "title": "Maîtriser une nouvelle compétence de programmation",
+      "territory": "TECHNOLOGY",
+      "type": "Main",
+      "difficulty": "difficile",
+      "xp_indicative": 60,
+      "description": "Apprendre une compétence de programmation et l'utiliser dans un vrai projet.",
+      "skill_branch": "programming",
+      "recurrence": null,
+      "steps": [
+        "Choisir la compétence à maîtriser",
+        "Suivre un cours ou une documentation complète",
+        "Construire un mini-projet",
+        "Utiliser la compétence dans un projet de travail",
+        "Écrire une fiche de synthèse"
+      ]
+    },
+    {
+      "title": "Créer 3 skills utiles pour mon travail",
+      "territory": "TECHNOLOGY",
+      "type": "Main",
+      "difficulty": "difficile",
+      "xp_indicative": 60,
+      "description": "Transformer 3 tâches répétitives de mon travail en skills ou workflows réutilisables.",
+      "skill_branch": "ai",
+      "recurrence": null,
+      "steps": [
+        "Lister 3 tâches répétitives à automatiser",
+        "Créer et tester le skill n°1",
+        "Créer et tester le skill n°2",
+        "Créer et tester le skill n°3",
+        "Documenter les 3 skills"
+      ]
+    },
+    {
+      "title": "4 sessions de code concentré",
+      "territory": "TECHNOLOGY",
+      "type": "Weekly",
+      "difficulty": "moyenne",
+      "xp_indicative": 30,
+      "description": "Faire 4 sessions de programmation d'au moins 45 minutes.",
+      "skill_branch": "programming",
+      "recurrence": "weekly",
+      "steps": []
+    },
+    {
+      "title": "Lire 2 livres",
+      "territory": "KNOWLEDGE",
+      "type": "Main",
+      "difficulty": "difficile",
+      "xp_indicative": 60,
+      "description": "Lire 2 livres en entier pendant la saison.",
+      "skill_branch": "reading",
+      "recurrence": null,
+      "steps": [
+        "Choisir le livre n°1",
+        "Terminer le livre n°1",
+        "Écrire une fiche de lecture n°1",
+        "Choisir le livre n°2",
+        "Terminer le livre n°2",
+        "Écrire une fiche de lecture n°2"
+      ]
+    },
+    {
+      "title": "Lire 20 minutes",
+      "territory": "KNOWLEDGE",
+      "type": "Daily",
+      "difficulty": "facile",
+      "xp_indicative": 15,
+      "description": "Lire au moins 20 minutes.",
+      "skill_branch": "reading",
+      "recurrence": "daily",
+      "steps": []
+    },
+    {
+      "title": "Apprendre 3 nouvelles sourates",
+      "territory": "INNER_WORLD",
+      "type": "Main",
+      "difficulty": "difficile",
+      "xp_indicative": 60,
+      "description": "Mémoriser 3 nouvelles sourates.",
+      "skill_branch": null,
+      "recurrence": null,
+      "steps": [
+        "Choisir et mémoriser la sourate n°1",
+        "Réciter la sourate n°1 sans erreur",
+        "Choisir et mémoriser la sourate n°2",
+        "Réciter la sourate n°2 sans erreur",
+        "Choisir et mémoriser la sourate n°3",
+        "Réciter la sourate n°3 sans erreur"
+      ]
+    },
+    {
+      "title": "Réviser ma sourate",
+      "territory": "INNER_WORLD",
+      "type": "Daily",
+      "difficulty": "très facile",
+      "xp_indicative": 5,
+      "description": "Réviser 10 minutes la sourate en cours d'apprentissage.",
+      "skill_branch": null,
+      "recurrence": "daily",
+      "steps": []
+    },
+    {
+      "title": "Faire mes prières",
+      "territory": "INNER_WORLD",
+      "type": "Daily",
+      "difficulty": "très facile",
+      "xp_indicative": 5,
+      "description": "Accomplir mes prières du jour.",
+      "skill_branch": null,
+      "recurrence": "daily",
+      "steps": []
+    },
+    {
+      "title": "Méditer 10 minutes",
+      "territory": "INNER_WORLD",
+      "type": "Daily",
+      "difficulty": "très facile",
+      "xp_indicative": 5,
+      "description": "Méditer 10 minutes au calme.",
+      "skill_branch": "balance",
+      "recurrence": "daily",
+      "steps": []
+    },
+    {
+      "title": "Créer ou entretenir une relation",
+      "territory": "INNER_WORLD",
+      "type": "Weekly",
+      "difficulty": "moyenne",
+      "xp_indicative": 30,
+      "description": "Rencontrer, appeler ou relancer au moins une personne (nouvelle relation ou lien à entretenir).",
+      "skill_branch": "relations",
+      "recurrence": "weekly",
+      "steps": []
+    },
+    {
+      "title": "3 séances de sport",
+      "territory": "BODY",
+      "type": "Weekly",
+      "difficulty": "moyenne",
+      "xp_indicative": 30,
+      "description": "Faire 3 séances de sport dans la semaine (natation, renforcement, marche rapide…).",
+      "skill_branch": "fitness",
+      "recurrence": "weekly",
+      "steps": []
+    }
+  ]
+}
