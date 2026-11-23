@@ -51,9 +51,9 @@ export function SkillDetail({ node }: SkillDetailProps) {
       </p>
       <div>
         <p className="lr-detail-subtitle">Prérequis</p>
-        {node.requires.length > 0 ? (
+        {(node.requires ?? []).length > 0 ? (
           <ul className="lr-detail-quests">
-            {node.requires.map((req) => (
+            {(node.requires ?? []).map((req) => (
               <li key={req}>{req}</li>
             ))}
           </ul>
@@ -63,9 +63,9 @@ export function SkillDetail({ node }: SkillDetailProps) {
       </div>
       <div>
         <p className="lr-detail-subtitle">Ce qu'il manque</p>
-        {node.missing.length > 0 ? (
+        {(node.missing ?? []).length > 0 ? (
           <ul className="lr-detail-quests">
-            {node.missing.map((item) => (
+            {(node.missing ?? []).map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>

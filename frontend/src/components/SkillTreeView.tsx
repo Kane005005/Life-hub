@@ -17,9 +17,11 @@ function nodeLabel(node: SkillNode): string {
 export function SkillTreeView({ tree, selectedCode, onSelect }: SkillTreeViewProps) {
   const refs = useRef<Record<string, HTMLButtonElement | null>>({})
 
+  const branches = tree.branches ?? []
+
   function focusNode(branchIndex: number, tierIndex: number) {
-    const branch = tree.branches[branchIndex]
-    const node = branch?.skills[tierIndex]
+    const branch = branches[branchIndex]
+    const node = branch?.skills?.[tierIndex]
     if (node) {
       refs.current[node.code]?.focus()
     }
@@ -39,7 +41,7 @@ export function SkillTreeView({ tree, selectedCode, onSelect }: SkillTreeViewPro
     } else if (event.key === 'ArrowLeft') {
       nextBranch = Math.max(0, branchIndex - 1)
     } else if (event.key === 'ArrowRight') {
-      nextBranch = Math.min(tree.branches.length - 1, branchIndex + 1)
+      nextBranch = Math.min(branches.length - 1, branchIndex + 1)
     } else {
       return
     }
@@ -61,7 +63,7 @@ export function SkillTreeView({ tree, selectedCode, onSelect }: SkillTreeViewPro
         <h3 className="lr-form-title">{tree.name}</h3>
       </header>
       <div className="lr-skill-branches" role="group" aria-label="Branches">
-        {tree.branches.map((branch, branchIndex) => (
+        {branches.map((branch, branchIndex) => (
           <div key={branch.code} className="lr-skill-branch">
             <div className="lr-skill-branch-head">
               <p className="lr-skill-branch-name">{branch.name}</p>
@@ -70,7 +72,7 @@ export function SkillTreeView({ tree, selectedCode, onSelect }: SkillTreeViewPro
               </p>
             </div>
             <div className="lr-skill-nodes">
-              {branch.skills.map((node, tierIndex) => {
+              {(branch.skills ?? []).map((node, tierIndex) => {
                 const selected = selectedCode === node.code
                 return (
                   <div key={node.code} className="lr-skill-node-wrap">

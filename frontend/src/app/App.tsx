@@ -7,6 +7,8 @@ import { JournalPage } from '../pages/JournalPage'
 import { LoginPage } from '../pages/LoginPage'
 import { PlaceholderPage } from '../pages/PlaceholderPage'
 import { QuestsPage } from '../pages/QuestsPage'
+import { SeasonsPage } from '../pages/SeasonsPage'
+import { ShopPage } from '../pages/ShopPage'
 import { WorldPage } from '../pages/WorldPage'
 import { Layout } from './Layout'
 import { RequireAuth } from './RequireAuth'
@@ -33,8 +35,8 @@ export default function App() {
                   <Route path="/heros" element={<HeroPage />} />
                   <Route path="/missions" element={<QuestsPage />} />
                   <Route path="/game-master" element={<PlaceholderPage title="Game Master" />} />
-                  <Route path="/boutique" element={<PlaceholderPage title="Boutique" />} />
-                  <Route path="/saisons" element={<PlaceholderPage title="Saisons" />} />
+                  <Route path="/boutique" element={<ShopPage />} />
+                  <Route path="/saisons" element={<SeasonsPage />} />
                   <Route path="/journal" element={<JournalPage />} />
                   <Route path="/reglages" element={<PlaceholderPage title="Réglages" />} />
                 </Route>

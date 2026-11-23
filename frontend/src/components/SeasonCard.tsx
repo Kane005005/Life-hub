@@ -17,6 +17,12 @@ export function SeasonCard({ season }: SeasonCardProps) {
   const { announce } = useFx()
   const [error, setError] = useState('')
   const isActive = season.status === 'ACTIVE'
+  const objectives = season.objectives ?? []
+  const priorityTerritories = season.priority_territories ?? []
+  const summary = season.summary
+  const xpByTerritory = summary?.xp_by_territory ?? {}
+  const achievementsUnlocked = summary?.achievements_unlocked ?? []
+  const skillsUnlocked = summary?.skills_unlocked ?? []
 
   async function handleObjectiveToggle(objectiveId: number, isDone: boolean) {
     setError('')
@@ -24,7 +30,7 @@ export function SeasonCard({ season }: SeasonCardProps) {
       await updateSeason.mutateAsync({
         id: season.id,
         input: {
-          objectives: season.objectives.map((objective) =>
+          objectives: objectives.map((objective) =>
             objective.id === objectiveId
               ? { title: objective.title, is_main: objective.is_main, is_done: isDone }
               : {
@@ -57,15 +63,15 @@ export function SeasonCard({ season }: SeasonCardProps) {
       <p className="lr-note">
         <span className="num">{season.days_left}</span> jours restants
       </p>
-      {season.priority_territories.length > 0 ? (
+      {priorityTerritories.length > 0 ? (
         <div className="lr-q-meta" aria-label="Territoires prioritaires">
-          {season.priority_territories.map((code) => (
+          {priorityTerritories.map((code) => (
             <span
               key={code}
               className="lr-pill lr-pill--territory"
-              style={{ '--c': TERRITORY_BY_CODE[code].color } as CSSProperties}
+              style={{ '--c': TERRITORY_BY_CODE[code]?.color ?? '#93A19A' } as CSSProperties}
             >
-              {TERRITORY_BY_CODE[code].statCode}
+              {TERRITORY_BY_CODE[code]?.statCode ?? code}
             </span>
           ))}
         </div>
@@ -73,7 +79,7 @@ export function SeasonCard({ season }: SeasonCardProps) {
       <div>
         <p className="lr-detail-subtitle">Objectifs</p>
         <ul className="lr-detail-quests">
-          {season.objectives.map((objective) => (
+          {objectives.map((objective) => (
             <li key={objective.id} className={objective.is_main ? 'lr-season-objective-main' : ''}>
               <label className="lr-q-step">
                 <input
@@ -94,43 +100,38 @@ export function SeasonCard({ season }: SeasonCardProps) {
       <div className="lr-season-summary">
         <p className="lr-detail-subtitle">Bilan</p>
         <p className="lr-note">
-          XP total : <span className="num">{season.summary.xp_total}</span>
+          XP total : <span className="num">{summary?.xp_total ?? 0}</span>
         </p>
         <p className="lr-note">
-          Validations : <span className="num">{season.summary.completions}</span>
+          Validations : <span className="num">{summary?.completions ?? 0}</span>
         </p>
         <p className="lr-note">
-          Niveaux gagnés : <span className="num">{season.summary.levels_gained}</span>
+          Niveaux gagnés : <span className="num">{summary?.levels_gained ?? 0}</span>
         </p>
         <p className="lr-note">
-          Objectifs faits : <span className="num">{season.summary.objectives_done}</span> /{' '}
-          <span className="num">{season.summary.objectives_total}</span>
+          Objectifs faits : <span className="num">{summary?.objectives_done ?? 0}</span> /{' '}
+          <span className="num">{summary?.objectives_total ?? 0}</span>
         </p>
-        {season.summary.achievements_unlocked.length > 0 ? (
-          <p className="lr-note">
-            Succès obtenus : {season.summary.achievements_unlocked.join(', ')}
-          </p>
+        {achievementsUnlocked.length > 0 ? (
+          <p className="lr-note">Succès obtenus : {achievementsUnlocked.join(', ')}</p>
         ) : null}
-        {season.summary.skills_unlocked.length > 0 ? (
-          <p className="lr-note">
-            Compétences obtenues : {season.summary.skills_unlocked.join(', ')}
-          </p>
+        {skillsUnlocked.length > 0 ? (
+          <p className="lr-note">Compétences obtenues : {skillsUnlocked.join(', ')}</p>
         ) : null}
         <div className="lr-season-bars" aria-label="XP par territoire">
-          {Object.entries(season.summary.xp_by_territory).map(([code, xp]) => {
+          {Object.entries(xpByTerritory).map(([code, xp]) => {
             const territory = code as keyof typeof TERRITORY_BY_CODE
-            const max = Math.max(
-              1,
-              ...Object.values(season.summary.xp_by_territory).map((v) => v ?? 0),
-            )
+            const max = Math.max(1, ...Object.values(xpByTerritory).map((v) => v ?? 0))
             const value = xp ?? 0
             return (
               <div key={code} className="lr-season-bar-row">
                 <span
                   className="lr-pill lr-pill--territory"
-                  style={{ '--c': TERRITORY_BY_CODE[territory].color } as CSSProperties}
+                  style={
+                    { '--c': TERRITORY_BY_CODE[territory]?.color ?? '#93A19A' } as CSSProperties
+                  }
                 >
-                  {TERRITORY_BY_CODE[territory].statCode}
+                  {TERRITORY_BY_CODE[territory]?.statCode ?? code}
                 </span>
                 <div className="lr-detail-bar">
                   <i style={{ width: `${(value / max) * 100}%` }} />

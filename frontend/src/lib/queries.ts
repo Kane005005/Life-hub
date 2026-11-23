@@ -31,6 +31,7 @@ import type {
   SkillsSummary,
   TerritoryCode,
   TerritoryStat,
+  WalletTransaction,
   WorldProgress,
   XpTransaction,
 } from './types'
@@ -424,6 +425,13 @@ export function useInventory() {
   return useQuery({
     queryKey: queryKeys.inventory,
     queryFn: () => apiRequest<Inventory>('GET', '/economy/inventory/'),
+  })
+}
+
+export function useWalletTransactions() {
+  return useQuery({
+    queryKey: queryKeys.wallet,
+    queryFn: () => apiRequest<Paginated<WalletTransaction>>('GET', '/economy/transactions/'),
   })
 }
 

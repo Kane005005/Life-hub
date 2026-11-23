@@ -1,19 +1,41 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import type { CSSProperties } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { AchievementGrid } from '../components/AchievementGrid'
 import { Button } from '../components/Button'
 import { CharacterForm } from '../components/CharacterForm'
 import { HeroCard } from '../components/HeroCard'
 import { HudFrame } from '../components/HudFrame'
 import { Radar } from '../components/Radar'
+import { SkillDetail } from '../components/SkillDetail'
+import { SkillPointsBadge } from '../components/SkillPointsBadge'
+import { SkillTreeView } from '../components/SkillTreeView'
 import { formatDate } from '../lib/format'
-import { TERRITORY_BY_CODE } from '../lib/labels'
-import { useCharacter, useXpHistory } from '../lib/queries'
+import { TERRITORY_BY_CODE, TERRITORY_CODES, TERRITORY_LABELS } from '../lib/labels'
+import { useAchievements, useCharacter, useSkillTrees, useXpHistory } from '../lib/queries'
+import type { SkillNode, TerritoryCode } from '../lib/types'
 
 export function HeroPage() {
   const characterQuery = useCharacter()
   const historyQuery = useXpHistory()
+  const achievementsQuery = useAchievements()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [editing, setEditing] = useState(false)
+  const arbreParam = searchParams.get('arbre') as TerritoryCode | null
+  const selectedTree: TerritoryCode =
+    arbreParam && TERRITORY_CODES.includes(arbreParam) ? arbreParam : 'KNOWLEDGE'
+  const skillTreesQuery = useSkillTrees(selectedTree)
+  const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null)
   const character = characterQuery.data
   const transactions = historyQuery.data?.results.slice(0, 10) ?? []
+  const tree = skillTreesQuery.data?.[0]
+
+  useEffect(() => {
+    setSelectedNode(null)
+  }, [selectedTree])
+
+  const achievements = useMemo(() => achievementsQuery.data ?? [], [achievementsQuery.data])
+  const branches = tree?.branches ?? []
 
   return (
     <section className="lr-section">
@@ -52,6 +74,46 @@ export function HeroPage() {
           />
         </div>
       ) : null}
+
+      <h2 className="lr-subtitle">Succès</h2>
+      {achievementsQuery.isPending ? <p className="lr-note">Chargement des succès…</p> : null}
+      {achievements.length > 0 ? <AchievementGrid achievements={achievements} /> : null}
+
+      <h2 className="lr-subtitle" id="competences">
+        Compétences
+      </h2>
+      {character ? (
+        <SkillPointsBadge
+          available={character.skill_points.available}
+          spent={character.skill_points.spent}
+        />
+      ) : null}
+      <div className="lr-choices" role="group" aria-label="Territoire de l'arbre">
+        {TERRITORY_CODES.map((code) => (
+          <button
+            key={code}
+            type="button"
+            className={selectedTree === code ? 'lr-tab is-selected' : 'lr-tab'}
+            aria-pressed={selectedTree === code}
+            style={{ '--c': TERRITORY_BY_CODE[code].color } as CSSProperties}
+            onClick={() => setSearchParams({ arbre: code })}
+          >
+            {TERRITORY_LABELS[code]}
+          </button>
+        ))}
+      </div>
+      <div className="lr-skill-layout">
+        {tree ? (
+          <SkillTreeView
+            tree={{ ...tree, branches }}
+            selectedCode={selectedNode?.code}
+            onSelect={(node) => setSelectedNode(node)}
+          />
+        ) : (
+          <p className="lr-note">Chargement de l'arbre…</p>
+        )}
+        <SkillDetail node={selectedNode} />
+      </div>
 
       <h2 className="lr-subtitle">Progression récente</h2>
       {historyQuery.isPending ? <p className="lr-note">Chargement de l'historique…</p> : null}

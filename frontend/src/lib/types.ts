@@ -367,6 +367,15 @@ export type Inventory = {
   purchases: PurchaseRecord[]
 }
 
+export type WalletTransaction = {
+  uuid: string
+  amount: number
+  kind: string
+  reason: string
+  balance_after: number
+  created_at: string
+}
+
 export type SeasonObjective = {
   id: number
   title: string

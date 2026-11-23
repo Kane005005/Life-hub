@@ -6,9 +6,10 @@ type AchievementGridProps = {
 }
 
 export function AchievementGrid({ achievements }: AchievementGridProps) {
+  const items = achievements ?? []
   return (
     <div className="ach lr-ach-grid" aria-label="Succès">
-      {achievements.map((achievement) => {
+      {items.map((achievement) => {
         const unlocked = achievement.unlocked
         return (
           <article

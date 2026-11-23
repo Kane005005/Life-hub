@@ -1510,6 +1510,70 @@
     color: var(--lr-emeraude-vive);
   }
 
+  .lr-stack {
+    display: grid;
+    gap: 16px;
+  }
+
+  .lr-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0;
+  }
+
+  .lr-tab {
+    border: 1px solid var(--lr-line2);
+    background: transparent;
+    color: var(--lr-muted);
+    padding: 8px 14px;
+    font-family: var(--lr-font-hud);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .lr-tab.is-selected,
+  .lr-tab[aria-selected='true'] {
+    border-color: var(--lr-emeraude-vive);
+    color: var(--lr-emeraude-vive);
+  }
+
+  .lr-shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .lr-skill-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    gap: 20px;
+    margin-top: 16px;
+  }
+
+  .lr-season-banner {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    margin: 20px 0;
+  }
+
+  .lr-season-summary-toggle {
+    cursor: pointer;
+    font-family: var(--lr-font-hud);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
+  .lr-summary-chart {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--lr-line);
+    background: #0a120f;
+  }
+
   .lr-skill-points,
   .lr-wallet-badge {
     display: grid;
@@ -1759,7 +1823,12 @@
   @media (max-width: 940px) {
     .lr-world,
     .lr-hero-grid,
-    .lr-radar-wrap {
+    .lr-radar-wrap,
+    .lr-skill-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .lr-skill-branches {
       grid-template-columns: 1fr;
     }
   }

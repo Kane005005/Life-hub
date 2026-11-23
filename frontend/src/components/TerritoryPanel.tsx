@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { CssVars } from '../lib/css'
 import { formatDate } from '../lib/format'
 import { STATE_LABELS, TERRITORY_BY_CODE } from '../lib/labels'
@@ -69,6 +70,9 @@ export function TerritoryPanel({ territory }: TerritoryPanelProps) {
           </li>
         )}
       </ul>
+      <Link className="lr-q-menu" to={`/heros?arbre=${territory.code}#competences`}>
+        Voir l'arbre de compétences
+      </Link>
     </HudFrame>
   )
 }

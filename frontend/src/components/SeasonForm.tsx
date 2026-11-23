@@ -22,12 +22,13 @@ export function SeasonForm({ season, onSaved, onCancel }: SeasonFormProps) {
   const [theme, setTheme] = useState(season?.theme ?? '')
   const [startDate, setStartDate] = useState(season?.start_date ?? '')
   const [priorities, setPriorities] = useState<TerritoryCode[]>(season?.priority_territories ?? [])
-  const [objectives, setObjectives] = useState<ObjectiveDraft[]>(
-    season?.objectives.map((objective) => ({
+  const [objectives, setObjectives] = useState<ObjectiveDraft[]>(() => {
+    const existing = (season?.objectives ?? []).map((objective) => ({
       title: objective.title,
       is_main: objective.is_main,
-    })) ?? [{ title: '', is_main: true }],
-  )
+    }))
+    return existing.length > 0 ? existing : [{ title: '', is_main: true }]
+  })
   const [error, setError] = useState('')
   const isSaving = createSeason.isPending || updateSeason.isPending
 

@@ -25,15 +25,13 @@ describe('ShopItemCard', () => {
     const item = makeShopItem()
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          jsonResponse(200, {
-            item: { ...item, owned: true },
-            credits: 450,
-            message: "Récompense obtenue : Aura d'émeraude. -150 crédits.",
-          }),
-        ),
+      vi.fn().mockResolvedValue(
+        jsonResponse(200, {
+          item: { ...item, owned: true },
+          credits: 450,
+          message: "Récompense obtenue : Aura d'émeraude. -150 crédits.",
+        }),
+      ),
     )
 
     render(
