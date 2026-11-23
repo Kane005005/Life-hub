@@ -68,11 +68,21 @@ class SkillPointTransactionSerializer(serializers.ModelSerializer):
         )
 
 
+class UnlockedSkillSerializer(serializers.Serializer):
+    """Compétence débloquée renvoyée dans la progression."""
+
+    code = serializers.CharField()
+    name = serializers.CharField()
+    territory = serializers.CharField()
+    unlocked_at = serializers.DateTimeField()
+
+
 class SkillPointsResponseSerializer(serializers.Serializer):
-    """Solde de points et transactions associées."""
+    """Solde de points, compétences débloquées et transactions."""
 
     available = serializers.IntegerField()
     spent = serializers.IntegerField()
+    unlocked = UnlockedSkillSerializer(many=True)
     transactions = SkillPointTransactionSerializer(many=True)
 
 
