@@ -35,16 +35,12 @@ def _resolve_path(value: str | None, default: Path) -> Path:
 def main(argv: Sequence[str] | None = None) -> int:
     """Crée une sauvegarde datée ; renvoie 0 en cas de succès, 1 sinon."""
     _load_env()
-    db_path = _resolve_path(
-        os.environ.get("LIFE_RPG_DB_PATH"), ROOT_DIR / "data" / DB_FILENAME
-    )
+    db_path = _resolve_path(os.environ.get("LIFE_RPG_DB_PATH"), ROOT_DIR / "data" / DB_FILENAME)
     if not db_path.is_file():
         print(f"Aucune base à sauvegarder : {db_path}.")
         return 1
 
-    backup_root = _resolve_path(
-        os.environ.get("LIFE_RPG_BACKUP_DIR"), ROOT_DIR / "backups"
-    )
+    backup_root = _resolve_path(os.environ.get("LIFE_RPG_BACKUP_DIR"), ROOT_DIR / "backups")
     backup_dir = backup_root / datetime.now().strftime("%Y-%m-%d_%H%M%S")
     backup_dir.mkdir(parents=True, exist_ok=False)  # jamais écraser une sauvegarde
 
@@ -65,14 +61,28 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     from django.core.management import call_command
 
-    call_command(
-        "dumpdata",
-        natural_foreign=True,
-        natural_primary=True,
-        indent=2,
-        exclude=["contenttypes", "auth.permission", "sessions", "admin.logentry"],
-        output=str(backup_dir / DATA_FILENAME),
-    )
+    # L'export JSON passe par un fichier temporaire : jamais de data.json partiel.
+    # S'il échoue (par exemple des migrations pas encore appliquées), la copie SQLite,
+    # qui est la sauvegarde de référence, reste valable.
+    partial = backup_dir / (DATA_FILENAME + ".partiel")
+    try:
+        call_command(
+            "dumpdata",
+            natural_foreign=True,
+            natural_primary=True,
+            indent=2,
+            exclude=["contenttypes", "auth.permission", "sessions", "admin.logentry"],
+            output=str(partial),
+        )
+    except Exception as error:  # noqa: BLE001 - on signale l'échec sans perdre la copie SQLite
+        partial.unlink(missing_ok=True)
+        print(f"Sauvegarde créée : {backup_dir} (copie SQLite seulement).")
+        print(
+            "Export JSON impossible pour l'instant "
+            f"({type(error).__name__}). Lance make migrate, puis make backup pour l'avoir aussi."
+        )
+        return 0
+    partial.replace(backup_dir / DATA_FILENAME)
 
     print(f"Sauvegarde créée : {backup_dir}.")
     return 0

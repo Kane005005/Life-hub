@@ -15,6 +15,10 @@ dev = [
     "pytest-django>=4.14.0",
     "ruff>=0.17.6",
 ]
+mcp = [
+    "httpx>=0.28.1",
+    "mcp>=1.2",
+]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.local"

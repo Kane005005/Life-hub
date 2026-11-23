@@ -200,3 +200,101 @@ Libellés français : FIRST_QUEST « Premier pas », FIRST_BOSS « Premier boss 
 | POST | `/api/seasons/{id}/close/` | Clôture anticipée → `{ "closed": Season, "next": Season }` |
 | GET | `/api/journal/` | (complété) filtres `event_type` répétable, `date_from`, `date_to` (AAAA-MM-JJ), `territory`, `q` (recherche dans le message) |
 | GET | `/api/journal/summary/` | `{ "period": "week"|"month", "from", "to", "xp_by_day": [{date, xp}], "xp_by_territory": {...}, "completions": n, "rests": n, "achievements": n, "skills": n }` ; paramètre `period` (défaut `week`) |
+
+---
+
+# Phase 3 — LIFE AI (agents et MCP)
+
+## Règles (non négociables)
+- **L'agent propose, l'utilisateur décide.** Un agent ne valide jamais une mission, n'attribue jamais d'XP, de crédit ni de point, ne débloque aucune compétence, n'achète rien, ne supprime rien, ne modifie aucune donnée existante.
+- **Refus par défaut.** Une requête authentifiée par un jeton d'agent est refusée (403 « Cette action est réservée à l'utilisateur. ») sur **tous** les endpoints, sauf ceux sous `/api/agent/`. Ce refus est global (classe de permission par défaut), pas endpoint par endpoint.
+- **Jetons** : un par agent, nommé, révocable, avec des portées. Le secret (`lra_` + 40 caractères aléatoires) n'est affiché **qu'une fois**, à la création ; seule son empreinte SHA-256 est stockée, avec un préfixe visible (8 premiers caractères). Un jeton révoqué est refusé immédiatement (401 « Jeton révoqué. »).
+- **Portées** (lecture seule par défaut) :
+
+| Portée | Ce que l'agent peut lire ou faire |
+| --- | --- |
+| `profile` | pseudonyme, classe, niveau, rang, titre actif |
+| `progression` | XP, niveaux, statistiques des territoires, analyse de progression |
+| `quests` | missions actives et récemment validées |
+| `skills` | arbres et compétences débloquées (lecture seule) |
+| `seasons` | saison active, objectifs, bilan |
+| `journal` | 50 derniers événements |
+| `energy` | 7 derniers bilans énergétiques |
+| `body` | **données du territoire BODY** (statistique, missions, compétences, journal). Sans cette portée, tout ce qui touche BODY est retiré, partout |
+| `proposals` | **écriture** : créer des propositions de missions et lire leur statut |
+
+Création sans `scopes` → `["profile", "progression", "quests"]`. `body` et `proposals` ne sont jamais accordés par défaut.
+- **Journal** : chaque action d'un agent (lecture du contexte, proposition) est écrite dans le journal avec `actor` = nom de l'agent. La création et la révocation d'un jeton sont journalisées (acteur `user`).
+- **Une proposition acceptée** devient une mission `AVAILABLE` d'origine `AI`, qui ne rapporte rien tant que l'utilisateur ne l'a pas validée par le Life Engine.
+- **Analyse et adaptation** : par règles fixes, sans modèle embarqué ; elles ne modifient jamais rien (« L'IA ne modifie jamais silencieusement les échéances ou les objectifs »).
+
+Authentification d'un agent : en-tête `Authorization: Bearer lra_…`.
+
+## Objets
+
+### `AgentToken`
+```json
+{ "id": 3, "name": "Claude Code", "prefix": "lra_a1b2", "scopes": ["profile", "progression", "quests", "proposals"],
+  "created_at": "…", "last_used_at": null, "revoked_at": null, "is_active": true }
+```
+À la création seulement : champ supplémentaire `"token": "lra_…"` (secret complet).
+
+### `QuestProposal`
+```json
+{ "id": 7, "uuid": "…", "agent_name": "Claude Code", "status": "PENDING",
+  "title": "Lire 20 pages", "description": "", "rationale": "Ton territoire Savoir n'a pas bougé depuis 12 jours.",
+  "territory": "KNOWLEDGE", "quest_type": "DAILY", "difficulty": "EASY", "priority": "NORMAL",
+  "estimated_minutes": 20, "due_date": null, "skill_branch": "reading", "steps": [{"title": "…", "is_required": true}],
+  "xp_preview": 15, "quest": null, "decided_at": null, "reject_reason": "", "created_at": "…" }
+```
+`status` : `PENDING`, `ACCEPTED`, `REJECTED`. `xp_preview` est calculé par le serveur (barème), à titre indicatif : rien n'est attribué. `quest` = id de la mission créée après acceptation.
+
+### `EnergyCheckIn`
+```json
+{ "id": 1, "level": 2, "label": "Faible", "note": "", "date": "2026-11-23", "created_at": "…" }
+```
+Échelle du cahier §8.3 : 1 Très faible, 2 Faible, 3 Moyenne, 4 Bonne, 5 Excellente. Un bilan par jour (le dernier de la journée remplace le précédent).
+
+### `Insights` (analyse par règles)
+```json
+{ "generated_at": "…", "energy": { "level": 2, "label": "Faible", "date": "…" } ,
+  "load": { "active_quests": 6, "hard_quests": 3, "overdue": 1 },
+  "neglected_territories": [ { "code": "CREATION", "days_since_xp": 21 } ],
+  "suggestions": [ { "kind": "RECOVERY", "message": "Énergie faible et 3 missions difficiles en cours : une mission courte ou une pause suffit aujourd'hui." } ] }
+```
+Règles : territoire négligé = aucun XP depuis 14 jours (ou jamais) ; mission difficile = `HARD`, `EPIC` ou `LEGENDARY` ; `kind` ∈ `RECOVERY` (énergie ≤ 2 et au moins 2 missions difficiles actives), `OVERLOAD` (plus de 8 missions actives), `BALANCE` (territoire négligé), `OVERDUE` (échéance dépassée), `MOMENTUM` (énergie ≥ 4 et aucune mission difficile active). Les suggestions sont des phrases ; elles ne changent rien.
+
+### `AgentContext` (`GET /api/agent/context/`)
+Objet borné : seules les clés des portées du jeton sont présentes.
+```json
+{ "agent": "Claude Code", "scopes": ["profile", "progression", "quests"], "generated_at": "…",
+  "profile": { "pseudonym", "character_class", "level", "rank", "active_title" },
+  "progression": { "level", "xp_in_level", "xp_required", "total_xp", "territories": [TerritoryStat sans BODY], "insights": Insights },
+  "quests": { "active": [ {id, title, territory, quest_type, difficulty, status, due_date, skill_branch} ] (50 max), "recent_completions": [ {title, territory, completed_at} ] (20 max) },
+  "skills": { "available_points", "unlocked": [ {code, name, territory} ], "trees": [ {territory, branches: [ {code, name, validated_quests} ]} ] },
+  "seasons": { "current": Season | null },
+  "journal": [ {event_type, message, created_at} ] (50 max),
+  "energy": [ EnergyCheckIn ] (7 max),
+  "proposals": { "pending": 2 } }
+```
+
+## Endpoints
+
+| Méthode | Chemin | Qui | Rôle |
+| --- | --- | --- | --- |
+| GET | `/api/auth/agent-tokens/` | utilisateur | Liste des jetons (sans secret) |
+| POST | `/api/auth/agent-tokens/` | utilisateur | `{name, scopes?}` → 201 `AgentToken` + `token` (affiché une fois). Nom requis (1–60 caractères), portées inconnues → 400 |
+| DELETE | `/api/auth/agent-tokens/{id}/` | utilisateur | Révoque (204). Le jeton reste listé, `is_active: false`. Rien n'est supprimé |
+| GET | `/api/agent/context/` | agent | `AgentContext` selon les portées |
+| GET | `/api/agent/quest-proposals/` | agent (`proposals`) | Ses propres propositions et leur statut |
+| POST | `/api/agent/quest-proposals/` | agent (`proposals`) | Une proposition (objet) ou plusieurs (`{"proposals": [...]}`, 10 max) → 201 `[QuestProposal]`. Champs serveur ignorés (`status`, `xp_preview`, `quest`…). Sans la portée `body`, une proposition en BODY est refusée (403). Journal : « Claude Code propose 3 missions. Accepte, modifie ou refuse chacune. » |
+| GET | `/api/quest-proposals/` | utilisateur | Liste paginée, filtre `status` (défaut : toutes, en attente d'abord) |
+| PATCH | `/api/quest-proposals/{id}/` | utilisateur | Modifie une proposition en attente (mêmes champs que la création) ; 409 si déjà décidée |
+| POST | `/api/quest-proposals/{id}/accept/` | utilisateur | Corps facultatif = modifications de dernière minute → `{ "proposal": QuestProposal, "quest": Quest }`. Crée la mission par le Life Engine (`origin: "AI"`, statut `AVAILABLE`, aucune récompense). 409 si déjà décidée |
+| POST | `/api/quest-proposals/{id}/reject/` | utilisateur | `{reason?}` → `QuestProposal` ; 409 si déjà décidée |
+| GET | `/api/energy/` | utilisateur | Bilans énergétiques (paginé) |
+| POST | `/api/energy/` | utilisateur | `{level: 1..5, note?}` → `EnergyCheckIn` (remplace celui du jour) |
+| GET | `/api/analytics/insights/` | utilisateur | `Insights` |
+| GET | `/api/export/` | utilisateur | Export JSON complet des données du joueur (téléchargement `life-rpg-export-AAAA-MM-JJ.json`) |
+
+Nouveaux `event_type` du journal : `AGENT_TOKEN_CREATED`, `AGENT_TOKEN_REVOKED`, `AGENT_CONTEXT_READ`, `QUEST_PROPOSED`, `PROPOSAL_ACCEPTED`, `PROPOSAL_REJECTED`, `PROPOSAL_UPDATED`, `ENERGY_CHECKIN`.

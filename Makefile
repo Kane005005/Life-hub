@@ -6,7 +6,7 @@ BACK  := backend
 FRONT := frontend
 UV    := uv run --project $(BACK)
 
-.PHONY: help install env build migrate run dev test test-back test-front lint format backup player
+.PHONY: help install env build migrate run dev test test-back test-front lint format backup mcp player
 
 help: ## Affiche cette aide
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-11s %s\n", $$1, $$2}'
@@ -43,7 +43,7 @@ dev: env migrate ## Mode développement : Django (8000) + Vite (5173) avec recha
 test: test-back test-front ## Lance tous les tests
 
 test-back: ## Tests du back-end (pytest)
-	cd $(BACK) && uv run pytest -q
+	cd $(BACK) && uv run --group mcp pytest -q
 
 test-front: ## Tests du front-end (vitest)
 	cd $(FRONT) && npm test
@@ -58,6 +58,10 @@ format: ## Formate le code (ruff, prettier)
 
 backup: env ## Sauvegarde datée de la base (copie SQLite + export JSON) dans backups/
 	cd $(BACK) && uv run python ../scripts/backup.py
+
+mcp: ## Lance le serveur MCP (stdio) : LIFE_RPG_AGENT_TOKEN=lra_… make mcp
+	@test -n "$$LIFE_RPG_AGENT_TOKEN" || (echo "Indique le jeton de l'agent : LIFE_RPG_AGENT_TOKEN=lra_… make mcp"; exit 1)
+	cd $(BACK) && uv run --group mcp python -m mcp_server
 
 player: env migrate ## Crée le compte unique : make player USERNAME=kane
 	@test -n "$(USERNAME)" || (echo "Indique un nom : make player USERNAME=kane"; exit 1)

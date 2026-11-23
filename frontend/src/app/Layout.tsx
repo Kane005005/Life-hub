@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { TopBar } from '../components/TopBar'
-import { setSoundEnabled as setSoundEnabledSdk } from '../features/fx/sound'
-import { useCharacter, useLogout } from '../lib/queries'
+import { useSound } from '../features/fx/useSound'
+import { useCharacter, useLogout, useProposals } from '../lib/queries'
 
 export function Layout() {
   const navigate = useNavigate()
   const { data: character } = useCharacter()
   const logout = useLogout()
-  const [soundEnabled, setSoundEnabled] = useState(false)
+  const { enabled: soundEnabled, toggle: toggleSound } = useSound()
+  const proposals = useProposals('PENDING')
   const [pulse, setPulse] = useState(false)
   const previousXp = useRef<number | null>(null)
 
@@ -23,12 +24,6 @@ export function Layout() {
     }
     previousXp.current = xp
   }, [xp])
-
-  function toggleSound() {
-    const next = !soundEnabled
-    setSoundEnabled(next)
-    setSoundEnabledSdk(next)
-  }
 
   async function handleLogout() {
     try {
@@ -50,6 +45,7 @@ export function Layout() {
         onToggleSound={toggleSound}
         pulse={pulse}
         onLogout={handleLogout}
+        pendingProposals={proposals.data?.count ?? 0}
       />
       <main className="lr-main">
         <Outlet />

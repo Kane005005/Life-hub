@@ -11,6 +11,7 @@ type TopBarProps = {
   onToggleSound: () => void
   pulse?: boolean
   onLogout?: () => void
+  pendingProposals?: number
 }
 
 const NAV_ITEMS = [
@@ -32,6 +33,7 @@ export function TopBar({
   onToggleSound,
   pulse = false,
   onLogout,
+  pendingProposals = 0,
 }: TopBarProps) {
   return (
     <header className="lr-topbar">
@@ -41,16 +43,34 @@ export function TopBar({
       </Link>
 
       <nav className="lr-nav" aria-label="Navigation principale">
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end
-            className={({ isActive }) => (isActive ? 'on' : undefined)}
-          >
-            {item.label}
-          </NavLink>
-        ))}
+        {NAV_ITEMS.map((item) => {
+          const isGameMaster = item.to === '/game-master'
+          const pending = isGameMaster ? pendingProposals : 0
+          const label =
+            pending > 0
+              ? `Game Master, ${pending} proposition${pending > 1 ? 's' : ''} en attente`
+              : undefined
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end
+              aria-label={label}
+              className={({ isActive }) => (isActive ? 'on' : undefined)}
+            >
+              {pending > 0 ? (
+                <>
+                  {item.label}
+                  <span className="lr-nav-count" aria-hidden="true">
+                    {pending}
+                  </span>
+                </>
+              ) : (
+                item.label
+              )}
+            </NavLink>
+          )
+        })}
       </nav>
 
       <div className="lr-mini">

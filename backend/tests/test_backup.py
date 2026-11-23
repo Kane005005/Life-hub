@@ -41,3 +41,31 @@ def test_backup_creates_sqlite_copy_and_json(
 
     with sqlite3.connect(backup_dir / "life_rpg.sqlite3") as connection:
         assert connection.execute("SELECT valeur FROM test_backup").fetchone()[0] == "ok"
+
+
+@pytest.mark.django_db(transaction=True)
+def test_backup_keeps_sqlite_copy_when_json_export_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Export JSON en échec : la copie SQLite reste et aucun fichier partiel ne traîne."""
+    db_path = tmp_path / "source.sqlite3"
+    with sqlite3.connect(db_path) as connection:
+        connection.execute("CREATE TABLE t (id INTEGER PRIMARY KEY)")
+
+    monkeypatch.setenv("LIFE_RPG_DB_PATH", str(db_path))
+    monkeypatch.setenv("LIFE_RPG_BACKUP_DIR", str(tmp_path / "backups"))
+
+    def failing_dumpdata(*args: object, **kwargs: object) -> None:
+        Path(str(kwargs["output"])).write_text("[{", encoding="utf-8")  # écriture partielle
+        raise RuntimeError("no such table")
+
+    monkeypatch.setattr("django.core.management.call_command", failing_dumpdata)
+
+    backup = _load_backup_module()
+    assert backup.main([]) == 0
+
+    backup_dir = next((tmp_path / "backups").iterdir())
+    assert (backup_dir / "life_rpg.sqlite3").is_file()
+    assert not (backup_dir / "data.json").exists()
+    assert list(backup_dir.glob("*.partiel")) == []
+    assert "copie SQLite seulement" in capsys.readouterr().out
