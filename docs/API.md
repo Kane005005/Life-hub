@@ -104,3 +104,99 @@ Le rang est renvoyé avec son libellé français : `{"code": "INITIATE", "label"
 | GET | `/api/journal/` | Liste paginée de `JournalEntry`, filtre `event_type` |
 | POST | `/api/journal/rest/` | Enregistre un jour de repos → 201 `{"message": "Repos enregistré. Ta progression est intacte."}`. Ne modifie rien d'autre |
 | GET | `/api/settings/game/` | Paramètres en lecture : `{xp_by_difficulty, credits_per_xp, skill_points_per_level, territory_stat_divisor, territory_stat_display_max, territory_state_thresholds, ranks: [{min_level, code, label}]}` |
+
+---
+
+# Phase 2 — RPG SYSTEM (ajouts au contrat)
+
+Décisions de jeu (validées par Kane, configurables dans l'admin) :
+- **Compétences** : annexe `docs/ARBRE_DE_COMPETENCES.md`. « Missions validées dans la branche » = **nombre de validations** (`QuestCompletion`) des missions du joueur dont `skill_branch` = code de la branche ; une quotidienne validée 15 jours compte 15. La statistique comparée est `stat` (non plafonnée).
+- **Succès** (une seule fois chacun, aucun bonus) : `FIRST_QUEST` 1re validation ; `FIRST_BOSS` 1re validation d'un boss ; `KNOWLEDGE_SEEKER` 5 validations en KNOWLEDGE ; `CREATOR` 1re validation en CREATION ; `EXPLORER` 1re validation d'une mission SIDE. Condition générique : `{"quest_type"?: "...", "territory"?: "...", "count": N}` sur les validations.
+- **Saisons** : 90 jours (`season_length_days`, configurable). À la date de fin, la saison se clôt seule avec son bilan et la suivante s'ouvre aussitôt (« Saison N », objectifs vides). Clôture anticipée possible : la suivante s'ouvre alors le jour même. Si l'app n'a pas servi pendant plus d'une saison, la suivante commence aujourd'hui (pas de saisons vides en série). Sans aucune saison créée, il n'y a pas de saison active.
+- **Boutique** : récompenses réelles créées par l'utilisateur (`REWARD`) et objets cosmétiques (`ARTIFACT`) d'un petit catalogue fourni, achetables avec les crédits et équipables sur l'avatar (un par emplacement : `AURA`, `FRAME`, `EMBLEM`). Titres et badges ne s'achètent pas : ils viennent des succès et des compétences.
+- Achat refusé si crédits insuffisants. Aucune dépense ne touche à l'XP ni au niveau.
+
+## Énumérations ajoutées
+
+| Énumération | Codes |
+| --- | --- |
+| État d'une compétence `state` | `LOCKED`, `UNLOCKABLE`, `UNLOCKED` |
+| Catégorie d'objet `category` | `REWARD`, `ARTIFACT` |
+| Emplacement `slot` | `AURA`, `FRAME`, `EMBLEM` (`null` pour une récompense) |
+| Statut de saison `status` | `ACTIVE`, `CLOSED` |
+| Journal `event_type` (ajouts) | `SKILL_UNLOCKED`, `ACHIEVEMENT_UNLOCKED`, `REWARD_PURCHASED`, `ITEM_EQUIPPED`, `ITEM_UNEQUIPPED`, `SEASON_STARTED`, `SEASON_CLOSED`, `SEASON_UPDATED`, `TITLE_CHANGED` |
+
+## Objets ajoutés
+
+### `SkillNode`
+```json
+{ "code": "knowledge.reading.t2", "name": "Lecteur critique", "tier": 2, "cost": 1,
+  "requires": ["knowledge.reading.t1"], "min_territory_stat": 15, "min_validated_quests": 3,
+  "state": "LOCKED", "unlocked_at": null,
+  "missing": ["Débloque d'abord Lecteur régulier.", "Il te manque 2 validations dans Lecture & culture."] }
+```
+`missing` liste en français tout ce qui manque (vide si débloquable ou débloquée) : points, prérequis, statistique (« Statistique Savoir : 15 requise, 8 actuelle. »), validations.
+
+### `SkillTree`
+```json
+{ "territory": "KNOWLEDGE", "name": "Savoir", "color": "#6F94B5", "stat": 8,
+  "branches": [ { "code": "reading", "name": "Lecture & culture", "validated_quests": 1, "skills": [SkillNode x4] } ] }
+```
+
+### `Achievement`
+```json
+{ "code": "FIRST_QUEST", "name": "First Quest", "label": "Premier pas", "description": "Valider une première mission.",
+  "unlocked": true, "unlocked_at": "…" }
+```
+Libellés français : FIRST_QUEST « Premier pas », FIRST_BOSS « Premier boss », KNOWLEDGE_SEEKER « Chercheur de savoir », CREATOR « Créateur », EXPLORER « Explorateur ».
+
+### `ShopItem`
+```json
+{ "id": 4, "name": "Aura d'émeraude", "description": "…", "category": "ARTIFACT", "slot": "AURA",
+  "cost": 150, "is_available": true, "is_custom": false, "visual": {"color": "#2FD08B"},
+  "owned": false, "equipped": false, "purchases_count": 0 }
+```
+`is_custom` vrai pour une récompense créée par l'utilisateur. Une `REWARD` peut s'acheter plusieurs fois ; un `ARTIFACT` une seule fois.
+
+### `Season`
+```json
+{ "id": 2, "number": 2, "name": "Saison 2", "theme": "", "status": "ACTIVE",
+  "start_date": "2026-11-23", "end_date": "2027-02-20", "days_left": 89, "closed_at": null,
+  "priority_territories": ["TECHNOLOGY"],
+  "objectives": [ { "id": 1, "title": "…", "is_main": true, "is_done": false, "order": 0 } ],
+  "summary": { "xp_total": 0, "xp_by_territory": {"KNOWLEDGE": 0}, "completions": 0,
+               "completions_by_type": {"DAILY": 0}, "levels_gained": 0,
+               "objectives_done": 0, "objectives_total": 1,
+               "achievements_unlocked": [], "skills_unlocked": [] } }
+```
+`summary` est calculé en direct pour une saison active, figé à la clôture. Au plus 1 objectif principal et 3 secondaires.
+
+### `CompletionResult` (ajouts)
+`result.achievements` : `[{ "code", "label" }]` débloqués par cette validation (vide sinon).
+
+### `Character` (ajouts)
+`"active_title": "Lecteur régulier" | null`, `"titles": ["Premier pas", "Lecteur régulier"]` (succès obtenus + compétences débloquées), `"equipment": { "AURA": ShopItem | null, "FRAME": …, "EMBLEM": … }`.
+`PATCH /api/character/` accepte aussi `active_title` (doit appartenir à `titles`, ou `null`).
+
+## Endpoints de la phase 2
+
+| Méthode | Chemin | Rôle |
+| --- | --- | --- |
+| GET | `/api/skills/trees/` | `[SkillTree]` (6 arbres) ; filtre `territory` |
+| POST | `/api/skills/{code}/unlock/` | Débloque → `{ "skill": SkillNode, "skill_points": {available, spent}, "message": "Compétence débloquée : Lecteur régulier." }`. 400 avec `detail` qui liste ce qui manque ; 409 si déjà débloquée |
+| GET | `/api/progression/skills/` | (complété) `{available, spent, unlocked: [{code, name, territory, unlocked_at}], transactions: [...]}` |
+| GET | `/api/achievements/` | `[Achievement]` |
+| GET | `/api/economy/rewards/` | `[ShopItem]` ; filtres `category`, `slot` |
+| POST | `/api/economy/rewards/` | Crée une récompense personnelle (`name`, `description`, `cost` ≥ 1) → `ShopItem` (`REWARD`, `is_custom: true`) |
+| PATCH | `/api/economy/rewards/{id}/` | Modifie une récompense personnelle (`name`, `description`, `cost`, `is_available`) ; 403 sur un objet du catalogue |
+| POST | `/api/economy/rewards/{id}/purchase/` | Achète → `{ "item": ShopItem, "credits": 450, "message": "Récompense obtenue : Un livre. -300 crédits." }`. 400 « Crédits insuffisants : il te manque 120 crédits. » ; 409 si objet déjà possédé ; 400 si indisponible |
+| GET | `/api/economy/inventory/` | `{ "items": [ShopItem possédés], "purchases": [{uuid, item_name, cost, purchased_at}] }` |
+| POST | `/api/economy/inventory/{id}/equip/` | Équipe un objet possédé (remplace celui de l'emplacement) → `Character` |
+| POST | `/api/economy/inventory/{id}/unequip/` | → `Character` |
+| GET | `/api/seasons/` | Liste paginée des saisons (récente d'abord) |
+| POST | `/api/seasons/` | Crée la saison (refus 409 si une saison est active) : `name`, `theme`, `start_date` (défaut aujourd'hui), `priority_territories`, `objectives: [{title, is_main}]` → `Season` |
+| GET | `/api/seasons/current/` | `Season` active (après clôture/ouverture automatiques si la date est passée) ou 404 « Aucune saison active. » |
+| GET / PATCH | `/api/seasons/{id}/` | PATCH sur une saison active : `name`, `theme`, `priority_territories`, `objectives` (liste complète remplacée, ou `is_done` par objectif) ; 409 si close |
+| POST | `/api/seasons/{id}/close/` | Clôture anticipée → `{ "closed": Season, "next": Season }` |
+| GET | `/api/journal/` | (complété) filtres `event_type` répétable, `date_from`, `date_to` (AAAA-MM-JJ), `territory`, `q` (recherche dans le message) |
+| GET | `/api/journal/summary/` | `{ "period": "week"|"month", "from", "to", "xp_by_day": [{date, xp}], "xp_by_territory": {...}, "completions": n, "rests": n, "achievements": n, "skills": n }` ; paramètre `period` (défaut `week`) |
