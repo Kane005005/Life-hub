@@ -22,6 +22,15 @@ class EventType(models.TextChoices):
     SKILL_POINTS_EARNED = "SKILL_POINTS_EARNED", "Points de compétence gagnés"
     REST = "REST", "Repos"
     CHARACTER_UPDATED = "CHARACTER_UPDATED", "Personnage modifié"
+    SKILL_UNLOCKED = "SKILL_UNLOCKED", "Compétence débloquée"
+    ACHIEVEMENT_UNLOCKED = "ACHIEVEMENT_UNLOCKED", "Succès débloqué"
+    REWARD_PURCHASED = "REWARD_PURCHASED", "Récompense obtenue"
+    ITEM_EQUIPPED = "ITEM_EQUIPPED", "Objet équipé"
+    ITEM_UNEQUIPPED = "ITEM_UNEQUIPPED", "Objet retiré"
+    SEASON_STARTED = "SEASON_STARTED", "Saison commencée"
+    SEASON_CLOSED = "SEASON_CLOSED", "Saison terminée"
+    SEASON_UPDATED = "SEASON_UPDATED", "Saison mise à jour"
+    TITLE_CHANGED = "TITLE_CHANGED", "Titre changé"
 
 
 class JournalEntry(models.Model):

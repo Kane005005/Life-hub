@@ -38,7 +38,13 @@ def test_get_character_returns_the_full_contract(api: APIClient) -> None:
         "skill_points",
         "avatar",
         "stats",
+        "active_title",
+        "titles",
+        "equipment",
     }
+    assert data["active_title"] is None
+    assert data["titles"] == []
+    assert data["equipment"] == {"AURA": None, "FRAME": None, "EMBLEM": None}
     assert data["pseudonym"] == "kane"
     assert data["level"] == 1
     assert data["xp_required"] == 100

@@ -51,6 +51,7 @@ class Character(models.Model):
     credits = models.PositiveIntegerField(default=0)
     skill_points_available = models.PositiveIntegerField(default=0)
     skill_points_spent = models.PositiveIntegerField(default=0)
+    active_title = models.CharField(max_length=80, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
