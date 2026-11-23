@@ -55,7 +55,8 @@ function mockApi() {
 
 function patchCall(fetchMock: ReturnType<typeof mockApi>) {
   return fetchMock.mock.calls.find(
-    ([url, init]) => url === '/api/quests/17/' && (init as RequestInit | undefined)?.method === 'PATCH',
+    ([url, init]) =>
+      url === '/api/quests/17/' && (init as RequestInit | undefined)?.method === 'PATCH',
   )
 }
 

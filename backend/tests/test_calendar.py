@@ -321,3 +321,27 @@ def test_range_limits_are_enforced(api: APIClient, frozen: Any) -> None:
     reversed_range = api.get("/api/calendar/?from=2026-11-30&to=2026-11-23")
     assert reversed_range.status_code == 400
     assert "detail" in reversed_range.json()
+
+
+def test_due_entry_is_not_copied_onto_future_days(api: APIClient, frozen: Any) -> None:
+    """Une échéance passée apparaît son jour et aujourd'hui, jamais les jours suivants."""
+    late = new_quest(api, title="Échéance passée", due_date=(TODAY - timedelta(days=1)).isoformat())
+    data = api.get(f"/api/calendar/?from={WEEK_START}&to={WEEK_END}").json()
+    due_days = [
+        day["date"]
+        for day in data["days"]
+        if any(e["kind"] == "DUE" and e["quest"]["id"] == late["id"] for e in day["entries"])
+    ]
+    assert due_days == [(TODAY - timedelta(days=1)).isoformat(), TODAY.isoformat()]
+
+
+def test_weekly_created_mid_week_covers_its_whole_iso_week(api: APIClient, frozen: Any) -> None:
+    """Une hebdomadaire commencée un mardi s'affiche dès le lundi de sa semaine."""
+    weekly = new_quest(api, title="Hebdo", quest_type="WEEKLY", start_date=TODAY.isoformat())
+    data = api.get(f"/api/calendar/?from={WEEK_START - timedelta(days=7)}&to={WEEK_END}").json()
+    shown = [
+        day["date"]
+        for day in data["days"]
+        if any(e["quest"]["id"] == weekly["id"] for e in day["entries"])
+    ]
+    assert shown == [(WEEK_START + timedelta(days=i)).isoformat() for i in range(7)]

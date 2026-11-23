@@ -370,7 +370,7 @@ Règles d'apparition (affichage seulement) :
 - `WEEKLY` : chaque mission hebdomadaire active apparaît sur les sept jours de sa semaine ISO, avec la même règle de début ; `done` vaut vrai toute la semaine après une validation.
 - `SCHEDULED` : mission non récurrente dont `scheduled_date` vaut ce jour, y compris terminée ce jour-là (`done` vrai).
 - `STEP` : étape dont `scheduled_date` vaut ce jour ; `done` = `step.is_done`.
-- `DUE` : mission non récurrente non terminée dont `due_date` est atteinte ou dépassée, sans `scheduled_date` ce jour-là. Une échéance dépassée reste affichée sobrement jusqu'à la validation. `due_passed` vaut vrai si `due_date < today`, sans pénalité.
+- `DUE` : mission non récurrente non terminée, le jour de sa `due_date` (sans `scheduled_date` ce jour-là). Une échéance dépassée apparaît aussi aujourd'hui, sobrement, jusqu'à la validation ; elle n'est pas recopiée sur les jours futurs. `due_passed` vaut vrai si `due_date < today`, sans pénalité.
 
 Ordre : territoire (ordre des territoires), type (`BOSS`, `MAIN`, `SIDE`, `WEEKLY`, `DAILY`), puis titre.
 

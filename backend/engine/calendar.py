@@ -208,10 +208,14 @@ def _entries_for_day(data: _CalendarData, day: date, today: date) -> list[dict]:
             continue
         if quest.status == "ABANDONED":
             continue
-        if day < _quest_start(quest, data.zone):
-            continue
         keys = data.done_keys.get(quest.id, set())
         if quest.quest_type in RECURRING_TYPES:
+            start = _quest_start(quest, data.zone)
+            if quest.quest_type == "WEEKLY":
+                # Une hebdomadaire s'affiche toute sa première semaine ISO.
+                start -= timedelta(days=start.weekday())
+            if day < start:
+                continue
             if quest.status == "PAUSED" and day >= today:
                 continue
             key = period_key(quest.quest_type, day)
@@ -234,9 +238,11 @@ def _entries_for_day(data: _CalendarData, day: date, today: date) -> list[dict]:
                 entries.append(
                     _entry(quest, day, kind="STEP", done=step.is_done, step=step),
                 )
+        # L'échéance s'affiche son jour, et aujourd'hui si elle est passée (sans pénalité).
+        overdue_today = day == today and quest.due_date is not None and quest.due_date < today
         if (
             quest.due_date is not None
-            and quest.due_date <= day
+            and (quest.due_date == day or overdue_today)
             and quest.scheduled_date != day
             and quest.status != "COMPLETED"
         ):

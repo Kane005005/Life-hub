@@ -7,6 +7,7 @@ import type { CssVars } from '../lib/css'
 import { formatDateTime } from '../lib/format'
 import {
   CALENDAR_ENTRY_LABELS,
+  scheduledTimeLabel,
   TERRITORY_BY_CODE,
   TERRITORY_CODES,
   territoryLabel,
@@ -22,6 +23,11 @@ type CalendarDayViewProps = {
 
 function entryTitle(entry: CalendarEntry): string {
   return entry.kind === 'STEP' && entry.step ? entry.step.title : entry.quest.title
+}
+
+function doneLabel(entry: CalendarEntry): string {
+  if (entry.kind === 'WEEKLY') return 'Validée cette semaine'
+  return 'Validée'
 }
 
 function remainingLabel(days: number): string {
@@ -81,9 +87,16 @@ function CalendarCard({ entry, canComplete }: { entry: CalendarEntry; canComplet
         <div className="lr-q-meta">
           <span className="lr-pill">{CALENDAR_ENTRY_LABELS[entry.kind]}</span>
           {entry.quest.scheduled_time ? (
-            <span className="lr-pill">{entry.quest.scheduled_time}</span>
+            <span className="lr-pill">{scheduledTimeLabel(entry.quest.scheduled_time)}</span>
           ) : null}
-          <span className="lr-xp">+{entry.quest.xp_reward} XP</span>
+          {entry.kind === 'STEP' ? (
+            <span className="lr-cal-parent">Récompense à la fin de la mission</span>
+          ) : (
+            <span className="lr-xp">+{entry.quest.xp_reward} XP</span>
+          )}
+          {entry.done && entry.kind !== 'STEP' ? (
+            <span className="lr-pill lr-cal-pill--done">{doneLabel(entry)}</span>
+          ) : null}
           {entry.quest.due_date ? (
             <span className="lr-pill">Échéance {formatDayLabel(entry.quest.due_date)}</span>
           ) : null}
@@ -108,7 +121,7 @@ function CalendarCard({ entry, canComplete }: { entry: CalendarEntry; canComplet
           </p>
         ) : null}
       </div>
-      {canComplete ? (
+      {canComplete && entry.kind !== 'STEP' ? (
         <Button className="lr-cal-validate" onClick={(event) => void handleComplete(event)}>
           Valider
         </Button>

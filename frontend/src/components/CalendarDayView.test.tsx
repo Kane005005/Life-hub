@@ -20,15 +20,16 @@ function jsonResponse(status: number, body?: unknown) {
   return { ok: status >= 200 && status < 300, status, json: async () => body }
 }
 
-function mockApi(todayDay: ReturnType<typeof makeCalendarToday>, otherDay = makeCalendarDay(OTHER_DAY)) {
+function mockApi(
+  todayDay: ReturnType<typeof makeCalendarToday>,
+  otherDay = makeCalendarDay(OTHER_DAY),
+) {
   const fetchMock = vi.fn().mockImplementation((url: string) => {
     if (url === '/api/calendar/today/') {
       return Promise.resolve(jsonResponse(200, todayDay))
     }
     if (url.startsWith('/api/calendar/?')) {
-      return Promise.resolve(
-        jsonResponse(200, makeCalendarRange(OTHER_DAY, OTHER_DAY, [otherDay])),
-      )
+      return Promise.resolve(jsonResponse(200, makeCalendarRange(OTHER_DAY, OTHER_DAY, [otherDay])))
     }
     if (/^\/api\/quests\/\d+\/complete\/$/.test(url)) {
       return Promise.resolve(
@@ -131,7 +132,10 @@ describe('CalendarDayView', () => {
         entries: [makeCalendarEntry('DAILY', { quest: makeCalendarQuest({ id: 3 }) })],
       }),
     )
-    const fetchMock = mockApi(todayDay, makeCalendarDay(OTHER_DAY, { entries: [makeCalendarEntry('DAILY')] }))
+    const fetchMock = mockApi(
+      todayDay,
+      makeCalendarDay(OTHER_DAY, { entries: [makeCalendarEntry('DAILY')] }),
+    )
 
     const { unmount } = renderDay(TODAY)
     expect(await screen.findByRole('button', { name: 'Valider' })).toBeInTheDocument()
@@ -175,9 +179,7 @@ describe('CalendarDayView', () => {
       quest: makeCalendarQuest({ id: 5, title: 'Livre blanc', quest_type: 'MAIN' }),
       step: { id: 9, title: 'Choisir le livre', is_done: false },
     })
-    const fetchMock = mockApi(
-      makeCalendarToday(makeCalendarDay(TODAY, { entries: [stepEntry] })),
-    )
+    const fetchMock = mockApi(makeCalendarToday(makeCalendarDay(TODAY, { entries: [stepEntry] })))
 
     renderDay(TODAY)
 
@@ -192,5 +194,34 @@ describe('CalendarDayView', () => {
         ),
       ).toBe(true)
     })
+  })
+
+  it('ne propose ni XP ni bouton Valider sur une étape', async () => {
+    const stepEntry = makeCalendarEntry('STEP', {
+      quest: makeCalendarQuest({ id: 5, title: 'Livre blanc', quest_type: 'MAIN', xp_reward: 60 }),
+      step: { id: 9, title: 'Choisir le livre', is_done: false },
+    })
+    mockApi(makeCalendarToday(makeCalendarDay(TODAY, { entries: [stepEntry] })))
+
+    renderDay(TODAY)
+
+    const card = await screen.findByRole('article', { name: 'Choisir le livre' })
+    expect(card).toHaveTextContent('Récompense à la fin de la mission')
+    expect(card).not.toHaveTextContent('+60 XP')
+    expect(screen.queryByRole('button', { name: 'Valider' })).not.toBeInTheDocument()
+  })
+
+  it('signale sobrement une mission déjà validée', async () => {
+    const weekly = makeCalendarEntry('WEEKLY', {
+      quest: makeCalendarQuest({ id: 7, title: 'Sport', quest_type: 'WEEKLY' }),
+      done: true,
+    })
+    mockApi(makeCalendarToday(makeCalendarDay(TODAY, { entries: [weekly] })))
+
+    renderDay(TODAY)
+
+    const card = await screen.findByRole('article', { name: 'Sport' })
+    expect(card).toHaveTextContent('Validée cette semaine')
+    expect(card.querySelector('button')).toBeNull()
   })
 })

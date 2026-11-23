@@ -88,7 +88,9 @@ export function CalendarPage() {
     <section className="lr-section lr-cal-page">
       <p className="lr-eyebrow">04 · Calendrier</p>
       <h1 className="lr-title">Calendrier</h1>
-      <p className="lr-lede">Ce que tu fais, quand tu le fais. Sans pression sur les jours calmes.</p>
+      <p className="lr-lede">
+        Ce que tu fais, quand tu le fais. Sans pression sur les jours calmes.
+      </p>
 
       <div className="lr-cal-tabs" role="tablist" aria-label="Vues du calendrier">
         {CALENDAR_VIEWS.map((viewName) => (

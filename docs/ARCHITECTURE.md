@@ -86,6 +86,14 @@ Un test parcourt toutes les routes de `config/urls.py` et vérifie qu'aucune ne 
 - Effets : braises calculées sur le temps réel (durée stable même à faible fréquence d'images), boucle arrêtée sans particules, `devicePixelRatio` plafonné à 2 ; animations sur `transform`, `opacity` et `stroke-dashoffset` seulement.
 - `prefers-reduced-motion` : chaque fichier de styles coupe ses animations, et les effets JS (braises, secousse, éclat, rayons) vérifient la préférence au moment de l'appel. Son coupé par défaut.
 
+### Calendrier journalier (phase 4b)
+
+- `engine/calendar.py` assemble les jours d'une plage (100 jours au plus) en quelques requêtes : missions attendues (`DAILY` chaque jour, `WEEKLY` sur toute la semaine ISO, `SCHEDULED`, `STEP`, `DUE`), validations réelles et résumé (validations, XP et crédits enregistrés, territoire dominant). Il ne calcule aucune récompense et n'a aucune notion de jour manqué ou de série.
+- Planification : `Quest.scheduled_date`, `Quest.scheduled_time`, `QuestStep.scheduled_date`, `QuestProposal.scheduled_date`. Replanifier écrit seulement un événement `QUEST_RESCHEDULED`.
+- Jour de l'utilisateur : `User.time_zone` (Africa/Bamako par défaut), activé à chaque requête par les classes d'authentification (`config/authentication.py`, `apps/ai_engine/authentication.py`) et remis à zéro par `config/middleware.py`.
+- API dans `apps/planning` (`/api/calendar/`, `/api/calendar/today/`, `/api/agent/calendar/` avec la portée `quests`, BODY masqué sans `body`) ; outil MCP `get_calendar`.
+- Front : `pages/CalendarPage.tsx` et `components/Calendar*View.tsx`, styles dans `styles/calendar.css`. Glisser-déposer HTML5 natif avec bouton « Déplacer » pour le clavier et le tactile.
+
 ### API
 
 Contrat lisible : `docs/API.md`. Schéma généré : `docs/openapi.yaml` (`manage.py export_openapi`). Données initiales : `manage.py seed` (6 territoires et paramètres), lancé par `make migrate`.

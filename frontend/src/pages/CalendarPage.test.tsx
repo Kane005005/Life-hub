@@ -2,12 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { eachDate } from '../lib/calendarDates'
-import {
-  makeCalendarDay,
-  makeCalendarRange,
-  makeCalendarToday,
-  todayIso,
-} from '../test/fixtures'
+import { makeCalendarDay, makeCalendarRange, makeCalendarToday, todayIso } from '../test/fixtures'
 import { TestProviders } from '../test/TestProviders'
 import { CalendarPage } from './CalendarPage'
 
@@ -100,7 +95,10 @@ describe('CalendarPage', () => {
     expect(screen.getByRole('tab', { name: 'Saison' })).toHaveAttribute('aria-selected', 'true')
 
     await user.keyboard('{ArrowRight}')
-    expect(screen.getByRole('tab', { name: "Aujourd'hui" })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: "Aujourd'hui" })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
 
     await user.keyboard('{ArrowLeft}')
     expect(screen.getByRole('tab', { name: 'Saison' })).toHaveAttribute('aria-selected', 'true')

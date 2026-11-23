@@ -24,6 +24,34 @@ paths:
                 items:
                   $ref: '#/components/schemas/Achievement'
           description: ''
+  /api/agent/calendar/:
+    get:
+      operationId: agent_calendar
+      description: Renvoie le calendrier autorisé par les portées du jeton d'agent.
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: Premier jour inclus (AAAA-MM-JJ). Semaine ISO courante par défaut.
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: Dernier jour inclus (AAAA-MM-JJ). Semaine ISO courante par défaut.
+      tags:
+      - agent
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarRangeResponse'
+          description: ''
   /api/agent/context/:
     get:
       operationId: agent_context
@@ -218,8 +246,8 @@ paths:
           description: No response body
   /api/auth/me/:
     get:
-      operationId: auth_me_retrieve
-      description: Renvoie l'identifiant et le nom d'utilisateur.
+      operationId: me_retrieve
+      description: Renvoie l'identifiant, le nom et le fuseau de l'utilisateur.
       tags:
       - auth
       security:
@@ -231,7 +259,79 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/Me'
+          description: ''
+    patch:
+      operationId: me_update
+      description: Modifie uniquement le fuseau horaire du compte.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMe'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMe'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMe'
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+  /api/calendar/:
+    get:
+      operationId: calendar_range
+      description: Renvoie les jours, entrées et validations de la plage demandée.
+      parameters:
+      - in: query
+        name: from
+        schema:
+          type: string
+        description: Premier jour inclus (AAAA-MM-JJ). Semaine ISO courante par défaut.
+      - in: query
+        name: to
+        schema:
+          type: string
+        description: Dernier jour inclus (AAAA-MM-JJ). Semaine ISO courante par défaut.
+      tags:
+      - calendar
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarRangeResponse'
+          description: ''
+  /api/calendar/today/:
+    get:
+      operationId: calendar_today
+      description: Renvoie le jour courant, ses validations et l'avancement hebdomadaire.
+      tags:
+      - calendar
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarTodayResponse'
           description: ''
   /api/character/:
     get:
@@ -1110,6 +1210,47 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompletionResult'
           description: ''
+  /api/quests/{id}/steps/{step_id}/:
+    patch:
+      operationId: quests_steps_partial_update
+      description: Planifie une étape sans modifier les récompenses de la mission.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: step_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - quests
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestStepSchedule'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestStepSchedule'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestStepSchedule'
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quest'
+          description: ''
   /api/quests/{id}/steps/{step_id}/toggle/:
     post:
       operationId: quests_steps_toggle_create
@@ -1928,6 +2069,235 @@ components:
       - accent
       - color
       - silhouette
+    CalendarCompletion:
+      type: object
+      description: Validation réellement enregistrée, avec ses montants figés.
+      properties:
+        quest_id:
+          type: integer
+        title:
+          type: string
+        territory:
+          type: string
+        quest_type:
+          type: string
+        xp:
+          type: integer
+        credits:
+          type: integer
+        completed_at:
+          type: string
+          format: date-time
+      required:
+      - completed_at
+      - credits
+      - quest_id
+      - quest_type
+      - territory
+      - title
+      - xp
+    CalendarDay:
+      type: object
+      description: Contenu d'un jour du calendrier.
+      properties:
+        date:
+          type: string
+          format: date
+        is_today:
+          type: boolean
+        iso_week:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarEntry'
+        completions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarCompletion'
+        summary:
+          $ref: '#/components/schemas/CalendarSummary'
+      required:
+      - completions
+      - date
+      - entries
+      - is_today
+      - iso_week
+      - summary
+    CalendarEntry:
+      type: object
+      description: Mission attendue un jour donné, ou échéance souple.
+      properties:
+        kind:
+          type: string
+        quest:
+          $ref: '#/components/schemas/CalendarQuest'
+        step:
+          allOf:
+          - $ref: '#/components/schemas/CalendarStep'
+          nullable: true
+        period_key:
+          type: string
+        done:
+          type: boolean
+        due_passed:
+          type: boolean
+      required:
+      - done
+      - due_passed
+      - kind
+      - period_key
+      - quest
+      - step
+    CalendarQuest:
+      type: object
+      description: Mission réduite telle qu'elle apparaît dans une entrée de calendrier.
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        quest_type:
+          type: string
+        difficulty:
+          type: string
+        territory:
+          type: string
+        status:
+          type: string
+        xp_reward:
+          type: integer
+        credit_reward:
+          type: integer
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
+        scheduled_time:
+          type: string
+        due_date:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - credit_reward
+      - difficulty
+      - due_date
+      - id
+      - quest_type
+      - scheduled_date
+      - scheduled_time
+      - status
+      - territory
+      - title
+      - xp_reward
+    CalendarRangeResponse:
+      type: object
+      description: 'Réponse de ``GET /api/calendar/`` : jours d''une plage inclusive.'
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        today:
+          type: string
+          format: date
+        time_zone:
+          type: string
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarDay'
+      required:
+      - days
+      - from
+      - time_zone
+      - to
+      - today
+    CalendarStep:
+      type: object
+      description: Étape planifiée d'une mission.
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        is_done:
+          type: boolean
+      required:
+      - id
+      - is_done
+      - title
+    CalendarSummary:
+      type: object
+      description: Résumé neutre d'une journée, sans alerte ni série.
+      properties:
+        completions:
+          type: integer
+        xp:
+          type: integer
+        credits:
+          type: integer
+        dominant_territory:
+          type: string
+          nullable: true
+      required:
+      - completions
+      - credits
+      - dominant_territory
+      - xp
+    CalendarTodayResponse:
+      type: object
+      description: Réponse de ``GET /api/calendar/today/``.
+      properties:
+        date:
+          type: string
+          format: date
+        is_today:
+          type: boolean
+        iso_week:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarEntry'
+        completions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarCompletion'
+        summary:
+          $ref: '#/components/schemas/CalendarSummary'
+        time_zone:
+          type: string
+        weekly:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarWeekly'
+      required:
+      - completions
+      - date
+      - entries
+      - is_today
+      - iso_week
+      - summary
+      - time_zone
+      - weekly
+    CalendarWeekly:
+      type: object
+      description: Hebdomadaire en cours avec son avancement dans la semaine ISO.
+      properties:
+        quest:
+          $ref: '#/components/schemas/CalendarQuest'
+        done:
+          type: boolean
+        days_left_in_week:
+          type: integer
+      required:
+      - days_left_in_week
+      - done
+      - quest
     Character:
       type: object
       description: Objet Character complet du contrat d'API.
@@ -2174,6 +2544,7 @@ components:
       enum:
       - QUEST_CREATED
       - QUEST_UPDATED
+      - QUEST_RESCHEDULED
       - QUEST_ACCEPTED
       - QUEST_STEP_DONE
       - QUEST_STEP_UNDONE
@@ -2206,6 +2577,7 @@ components:
       description: |-
         * `QUEST_CREATED` - Mission créée
         * `QUEST_UPDATED` - Mission modifiée
+        * `QUEST_RESCHEDULED` - Mission replanifiée
         * `QUEST_ACCEPTED` - Mission acceptée
         * `QUEST_STEP_DONE` - Étape cochée
         * `QUEST_STEP_UNDONE` - Étape décochée
@@ -2490,6 +2862,26 @@ components:
       required:
       - token
       - user
+    Me:
+      type: object
+      description: Identité du compte connecté ; seul le fuseau horaire est modifiable.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          title: Nom d’utilisateur
+          description: Requis. 150 caractères maximum. Uniquement des lettres, nombres
+            et les caractères « @ », « . », « + », « - » et « _ ».
+        time_zone:
+          type: string
+          maxLength: 64
+      required:
+      - id
+      - time_zone
+      - username
     NeglectedTerritory:
       type: object
       description: Territoire sans XP depuis au moins 14 jours (ou jamais).
@@ -2677,6 +3069,22 @@ components:
           type: string
           nullable: true
           maxLength: 80
+    PatchedMe:
+      type: object
+      description: Identité du compte connecté ; seul le fuseau horaire est modifiable.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          title: Nom d’utilisateur
+          description: Requis. 150 caractères maximum. Uniquement des lettres, nombres
+            et les caractères « @ », « . », « + », « - » et « _ ».
+        time_zone:
+          type: string
+          maxLength: 64
     PatchedQuestProposalUpdate:
       type: object
       description: Champs modifiables d'une proposition en attente.
@@ -2702,6 +3110,10 @@ components:
           type: string
           format: date
           nullable: true
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
         skill_branch:
           type: string
           maxLength: 40
@@ -2711,6 +3123,14 @@ components:
             $ref: '#/components/schemas/QuestStepInput'
         rationale:
           type: string
+    PatchedQuestStepSchedule:
+      type: object
+      description: Date planifiée d'une étape, envoyée par l'utilisateur.
+      properties:
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
     PatchedQuestUpdate:
       type: object
       description: Champs modifiables d'une mission active ; le reste est ignoré.
@@ -2740,6 +3160,14 @@ components:
           type: string
           format: date
           nullable: true
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
+        scheduled_time:
+          type: string
+          default: ''
+          maxLength: 9
         validation_mode:
           $ref: '#/components/schemas/ValidationModeEnum'
         skill_branch:
@@ -2881,6 +3309,13 @@ components:
           type: string
           format: date
           nullable: true
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
+        scheduled_time:
+          type: string
+          maxLength: 9
         xp_reward:
           type: integer
           readOnly: true
@@ -2988,6 +3423,14 @@ components:
           type: string
           format: date
           nullable: true
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
+        scheduled_time:
+          type: string
+          default: ''
+          maxLength: 9
         validation_mode:
           allOf:
           - $ref: '#/components/schemas/ValidationModeEnum'
@@ -3053,6 +3496,11 @@ components:
           format: date
           readOnly: true
           nullable: true
+        scheduled_date:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
         skill_branch:
           type: string
           readOnly: true
@@ -3091,6 +3539,7 @@ components:
       - quest_type
       - rationale
       - reject_reason
+      - scheduled_date
       - skill_branch
       - status
       - steps
@@ -3128,6 +3577,10 @@ components:
           minimum: 0
           default: 0
         due_date:
+          type: string
+          format: date
+          nullable: true
+        scheduled_date:
           type: string
           format: date
           nullable: true
@@ -3180,6 +3633,10 @@ components:
           type: string
           format: date
           nullable: true
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
         skill_branch:
           type: string
           maxLength: 40
@@ -3229,12 +3686,18 @@ components:
           format: date-time
           readOnly: true
           nullable: true
+        scheduled_date:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
       required:
       - done_at
       - id
       - is_done
       - is_required
       - order
+      - scheduled_date
       - title
     QuestStepInput:
       type: object
@@ -3294,6 +3757,14 @@ components:
           type: string
           format: date
           nullable: true
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
+        scheduled_time:
+          type: string
+          default: ''
+          maxLength: 9
         validation_mode:
           $ref: '#/components/schemas/ValidationModeEnum'
         skill_branch:

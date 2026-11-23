@@ -31,9 +31,7 @@ function parsePayload(raw: string): DragPayload | null {
     }
     const candidate = value as Record<string, unknown>
     if (
-      (candidate.kind === 'SCHEDULED' ||
-        candidate.kind === 'DUE' ||
-        candidate.kind === 'STEP') &&
+      (candidate.kind === 'SCHEDULED' || candidate.kind === 'DUE' || candidate.kind === 'STEP') &&
       typeof candidate.questId === 'number'
     ) {
       return {
@@ -232,9 +230,7 @@ export function CalendarWeekView({ date, today }: CalendarWeekViewProps) {
                   planned.map(renderPlanned)
                 )}
               </div>
-              <div className="lr-cal-col-recurring">
-                {recurring.map(renderRecurring)}
-              </div>
+              <div className="lr-cal-col-recurring">{recurring.map(renderRecurring)}</div>
             </section>
           )
         })}

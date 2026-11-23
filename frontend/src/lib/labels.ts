@@ -48,6 +48,17 @@ export const CALENDAR_ENTRY_LABELS = {
   DUE: 'Échéance',
 } as const
 
+export const SCHEDULED_TIME_LABELS: Record<string, string> = {
+  MORNING: 'Matin',
+  AFTERNOON: 'Après-midi',
+  EVENING: 'Soir',
+}
+
+/** Libellé d'un créneau planifié : plage nommée traduite, heure « HH:MM » telle quelle. */
+export function scheduledTimeLabel(value: string): string {
+  return SCHEDULED_TIME_LABELS[value] ?? value
+}
+
 export const QUEST_TYPE_LABELS = {
   DAILY: 'Quotidienne',
   WEEKLY: 'Hebdomadaire',

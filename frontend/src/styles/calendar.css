@@ -69,7 +69,12 @@
 .lr-cal-month,
 .lr-cal-season {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
+  min-width: 0;
+}
+
+.lr-cal-season-bar-section {
   min-width: 0;
 }
 
@@ -208,7 +213,8 @@
 .lr-cal-card-title {
   font-size: 16px;
   line-height: 1.35;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .lr-cal-parent,
@@ -231,6 +237,11 @@
   font-size: 11px;
   letter-spacing: 0.04em;
   text-transform: none;
+}
+
+.lr-pill.lr-cal-pill--done {
+  border-color: var(--lr-emeraude-vive);
+  color: var(--lr-emeraude-vive);
 }
 
 .lr-cal-step {
@@ -324,6 +335,7 @@
 
 .lr-cal-movable-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 6px;
   min-width: 0;
@@ -332,7 +344,8 @@
 .lr-cal-movable-title {
   font-size: 13px;
   line-height: 1.35;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .lr-cal-movable-meta {
@@ -467,6 +480,7 @@
 }
 
 .lr-cal-season-scroll {
+  max-width: 100%;
   overflow-x: auto;
   padding-bottom: 8px;
   scrollbar-width: thin;
@@ -582,7 +596,8 @@
   }
 }
 
-@media (max-width: 720px) {
+/* Sept colonnes seulement quand elles sont assez larges pour des titres lisibles. */
+@media (max-width: 1024px) {
   .lr-cal-week-grid {
     grid-template-columns: 1fr;
   }
@@ -593,7 +608,9 @@
     align-items: baseline;
     gap: 8px;
   }
+}
 
+@media (max-width: 720px) {
   .lr-cal-season-day {
     min-width: 22px;
   }
