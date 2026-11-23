@@ -1,12 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { clearToken, setToken } from './auth'
+import type { QueryClient } from '@tanstack/react-query'
+import { clearToken, getToken, setToken } from './auth'
 import { ApiError, apiRequest } from './api'
 import type {
+  AcceptProposalResult,
   Achievement,
+  AgentToken,
+  AgentTokenInput,
   Character,
   CharacterUpdate,
   CompletionResult,
+  EnergyCheckIn,
+  EnergyLevel,
   GameSettings,
+  Insights,
   Inventory,
   JournalEntry,
   JournalFilters,
@@ -14,10 +21,13 @@ import type {
   LoginResponse,
   Paginated,
   Progression,
+  ProposalStatus,
+  ProposalUpdate,
   PurchaseResult,
   Quest,
   QuestFilters,
   QuestInput,
+  QuestProposal,
   QuestUpdate,
   RewardInput,
   Season,
@@ -64,6 +74,25 @@ export const queryKeys = {
   journalList: (filters?: JournalFilters) => ['journal', filters ?? {}] as const,
   journalSummary: (period: 'week' | 'month') => ['journal', 'summary', period] as const,
   settings: ['settings', 'game'] as const,
+  agentTokens: ['agentTokens'] as const,
+  proposals: ['proposals'] as const,
+  proposalList: (status?: ProposalStatus) => ['proposals', status ?? 'all'] as const,
+  energy: ['energy'] as const,
+  insights: ['insights'] as const,
+}
+
+/** Les décisions sur les propositions changent aussi les quêtes et l'analyse. */
+function invalidateProposalData(client: QueryClient) {
+  const keys = [
+    queryKeys.proposals,
+    queryKeys.quests,
+    queryKeys.journal,
+    queryKeys.insights,
+    queryKeys.world,
+  ]
+  keys.forEach((key) => {
+    void client.invalidateQueries({ queryKey: key })
+  })
 }
 
 function questsPath(filters: QuestFilters = {}): string {
@@ -525,6 +554,148 @@ export function useCloseSeason() {
       void client.invalidateQueries({ queryKey: queryKeys.journal })
     },
   })
+}
+
+/* ---------- Phase 3 — LIFE AI ---------- */
+
+export function useAgentTokens() {
+  return useQuery({
+    queryKey: queryKeys.agentTokens,
+    queryFn: () => apiRequest<AgentToken[]>('GET', '/auth/agent-tokens/'),
+  })
+}
+
+export function useCreateAgentToken() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (input: AgentTokenInput) =>
+      apiRequest<AgentToken>('POST', '/auth/agent-tokens/', input),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.agentTokens })
+      void client.invalidateQueries({ queryKey: queryKeys.journal })
+    },
+  })
+}
+
+export function useRevokeAgentToken() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => apiRequest<void>('DELETE', `/auth/agent-tokens/${id}/`),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.agentTokens })
+      void client.invalidateQueries({ queryKey: queryKeys.journal })
+    },
+  })
+}
+
+export function useProposals(status?: ProposalStatus) {
+  return useQuery({
+    queryKey: queryKeys.proposalList(status),
+    queryFn: () =>
+      apiRequest<Paginated<QuestProposal>>(
+        'GET',
+        `/quest-proposals/${status ? `?status=${status}` : ''}`,
+      ),
+  })
+}
+
+export function useUpdateProposal() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, input }: { id: number; input: ProposalUpdate }) =>
+      apiRequest<QuestProposal>('PATCH', `/quest-proposals/${id}/`, input),
+    onSuccess: () => {
+      invalidateProposalData(client)
+    },
+  })
+}
+
+export function useAcceptProposal() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, input }: { id: number; input?: ProposalUpdate }) =>
+      apiRequest<AcceptProposalResult>(
+        'POST',
+        `/quest-proposals/${id}/accept/`,
+        input,
+        'Proposition déjà décidée.',
+      ),
+    onSuccess: () => {
+      invalidateProposalData(client)
+    },
+  })
+}
+
+export function useRejectProposal() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: number; reason?: string }) =>
+      apiRequest<QuestProposal>('POST', `/quest-proposals/${id}/reject/`, {
+        reason: reason ?? '',
+      }),
+    onSuccess: () => {
+      invalidateProposalData(client)
+    },
+  })
+}
+
+export function useEnergy() {
+  return useQuery({
+    queryKey: queryKeys.energy,
+    queryFn: () => apiRequest<Paginated<EnergyCheckIn>>('GET', '/energy/'),
+  })
+}
+
+export function useRecordEnergy() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { level: EnergyLevel; note?: string }) =>
+      apiRequest<EnergyCheckIn>('POST', '/energy/', {
+        level: input.level,
+        note: input.note ?? '',
+      }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.energy })
+      void client.invalidateQueries({ queryKey: queryKeys.insights })
+      void client.invalidateQueries({ queryKey: queryKeys.journal })
+    },
+  })
+}
+
+export function useInsights() {
+  return useQuery({
+    queryKey: queryKeys.insights,
+    queryFn: () => apiRequest<Insights>('GET', '/analytics/insights/'),
+  })
+}
+
+function todayForFilename(): string {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${month}-${day}`
+}
+
+/** Télécharge l'export JSON complet renvoyé par l'API. */
+export async function downloadExport(): Promise<void> {
+  const token = getToken()
+  const headers: Record<string, string> = { Accept: 'application/json' }
+  if (token) {
+    headers.Authorization = `Token ${token}`
+  }
+  const response = await fetch('/api/export/', { headers })
+  if (!response.ok) {
+    throw new ApiError(response.status, 'Export impossible pour le moment.')
+  }
+  const blob: Blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `life-rpg-export-${todayForFilename()}.json`
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
 }
 
 export function useLogin() {

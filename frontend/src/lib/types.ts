@@ -44,6 +44,14 @@ export type EventType =
   | 'SEASON_CLOSED'
   | 'SEASON_UPDATED'
   | 'TITLE_CHANGED'
+  | 'AGENT_TOKEN_CREATED'
+  | 'AGENT_TOKEN_REVOKED'
+  | 'AGENT_CONTEXT_READ'
+  | 'QUEST_PROPOSED'
+  | 'PROPOSAL_ACCEPTED'
+  | 'PROPOSAL_REJECTED'
+  | 'PROPOSAL_UPDATED'
+  | 'ENERGY_CHECKIN'
 
 export type Rank = {
   code: RankCode
@@ -442,4 +450,122 @@ export type JournalSummary = {
   rests: number
   achievements: number
   skills: number
+}
+
+/* ---------- Phase 3 — LIFE AI ---------- */
+
+export type AgentScope =
+  | 'profile'
+  | 'progression'
+  | 'quests'
+  | 'skills'
+  | 'seasons'
+  | 'journal'
+  | 'energy'
+  | 'body'
+  | 'proposals'
+
+export type AgentToken = {
+  id: number
+  name: string
+  prefix: string
+  scopes: AgentScope[]
+  created_at: string
+  last_used_at: string | null
+  revoked_at: string | null
+  is_active: boolean
+  /** Présent une seule fois, à la création. */
+  token?: string
+}
+
+export type AgentTokenInput = {
+  name: string
+  scopes?: AgentScope[]
+}
+
+export type ProposalStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED'
+
+export type ProposalStep = {
+  title: string
+  is_required: boolean
+}
+
+export type QuestProposal = {
+  id: number
+  uuid: string
+  agent_name: string
+  status: ProposalStatus
+  title: string
+  description: string
+  rationale: string
+  territory: TerritoryCode
+  quest_type: QuestType
+  difficulty: Difficulty
+  priority: Priority
+  estimated_minutes: number
+  due_date: string | null
+  skill_branch: string
+  steps: ProposalStep[]
+  /** Valeur indicative calculée par l'API. Aucune XP n'est attribuée à l'acceptation. */
+  xp_preview: number
+  quest: number | null
+  decided_at: string | null
+  reject_reason: string
+  created_at: string
+}
+
+export type ProposalUpdate = Partial<
+  Pick<
+    QuestProposal,
+    | 'title'
+    | 'description'
+    | 'territory'
+    | 'quest_type'
+    | 'difficulty'
+    | 'priority'
+    | 'estimated_minutes'
+    | 'due_date'
+    | 'skill_branch'
+    | 'steps'
+  >
+>
+
+export type AcceptProposalResult = {
+  proposal: QuestProposal
+  quest: Quest
+}
+
+export type EnergyLevel = 1 | 2 | 3 | 4 | 5
+
+export type EnergyCheckIn = {
+  id: number
+  level: EnergyLevel
+  label: string
+  note: string
+  date: string
+  created_at: string
+}
+
+export type InsightSuggestionKind = 'RECOVERY' | 'OVERLOAD' | 'BALANCE' | 'OVERDUE' | 'MOMENTUM'
+
+export type InsightSuggestion = {
+  kind: InsightSuggestionKind
+  message: string
+}
+
+export type NeglectedTerritory = {
+  code: TerritoryCode
+  days_since_xp: number
+}
+
+export type Insights = {
+  generated_at: string
+  energy: Pick<EnergyCheckIn, 'level' | 'label' | 'date'> | null
+  load: {
+    active_quests: number
+    hard_quests: number
+    overdue: number
+  }
+  neglected_territories: NeglectedTerritory[]
+  suggestions: InsightSuggestion[]
 }

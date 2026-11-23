@@ -15,7 +15,7 @@ const LABELS = [
   'Réglages',
 ]
 
-function renderTopBar(soundEnabled: boolean, onToggleSound = vi.fn()) {
+function renderTopBar(soundEnabled: boolean, onToggleSound = vi.fn(), pendingProposals = 0) {
   return render(
     <MemoryRouter initialEntries={['/']}>
       <TopBar
@@ -24,6 +24,7 @@ function renderTopBar(soundEnabled: boolean, onToggleSound = vi.fn()) {
         xpRequired={400}
         soundEnabled={soundEnabled}
         onToggleSound={onToggleSound}
+        pendingProposals={pendingProposals}
       />
     </MemoryRouter>,
   )
@@ -47,6 +48,25 @@ describe('TopBar', () => {
     const nav = screen.getByRole('navigation', { name: 'Navigation principale' })
     expect(within(nav).getByRole('link', { name: 'Monde' })).toHaveAttribute('aria-current', 'page')
     expect(within(nav).getByRole('link', { name: 'Missions' })).not.toHaveAttribute('aria-current')
+  })
+
+  it('annonce les propositions en attente dans le lien Game Master', () => {
+    renderTopBar(false, vi.fn(), 3)
+
+    const nav = screen.getByRole('navigation', { name: 'Navigation principale' })
+    expect(
+      within(nav).getByRole('link', { name: 'Game Master, 3 propositions en attente' }),
+    ).toHaveAttribute('href', '/game-master')
+    expect(within(nav).getByText('3')).toBeInTheDocument()
+  })
+
+  it('accorde le nom au singulier pour une seule proposition', () => {
+    renderTopBar(false, vi.fn(), 1)
+
+    const nav = screen.getByRole('navigation', { name: 'Navigation principale' })
+    expect(
+      within(nav).getByRole('link', { name: 'Game Master, 1 proposition en attente' }),
+    ).toBeInTheDocument()
   })
 
   it('appelle onToggleSound et reflète aria-pressed', async () => {

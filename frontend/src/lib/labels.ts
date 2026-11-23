@@ -1,11 +1,15 @@
 import { TERRITORIES } from '../tokens'
 import type { TerritoryCode as StatCode, Territory as TokenTerritory } from '../tokens'
 import type {
+  AgentScope,
   CharacterClass,
   Difficulty,
+  EnergyLevel,
   EquipmentSlot,
   EventType,
+  InsightSuggestionKind,
   Priority,
+  ProposalStatus,
   QuestStatus,
   QuestType,
   SeasonStatus,
@@ -80,6 +84,14 @@ export const EVENT_TYPE_LABELS = {
   SEASON_CLOSED: 'Saison terminée',
   SEASON_UPDATED: 'Saison modifiée',
   TITLE_CHANGED: 'Titre modifié',
+  AGENT_TOKEN_CREATED: 'Jeton d’agent créé',
+  AGENT_TOKEN_REVOKED: 'Jeton d’agent révoqué',
+  AGENT_CONTEXT_READ: 'Contexte lu par un agent',
+  QUEST_PROPOSED: 'Mission proposée',
+  PROPOSAL_ACCEPTED: 'Proposition acceptée',
+  PROPOSAL_REJECTED: 'Proposition refusée',
+  PROPOSAL_UPDATED: 'Proposition modifiée',
+  ENERGY_CHECKIN: 'Bilan énergétique enregistré',
 } satisfies Record<EventType, string>
 
 export const STATE_LABELS = {
@@ -169,3 +181,58 @@ export const AVATAR_PALETTE = [
 export function territoryLabel(code: TerritoryCode): string {
   return TERRITORY_LABELS[code] ?? code
 }
+
+/* ---------- Phase 3 — LIFE AI ---------- */
+
+export const AGENT_SCOPE_LABELS = {
+  profile: 'Profil',
+  progression: 'Progression',
+  quests: 'Missions',
+  skills: 'Compétences',
+  seasons: 'Saisons',
+  journal: 'Journal',
+  energy: 'Énergie',
+  body: 'Corps',
+  proposals: 'Propositions',
+} satisfies Record<AgentScope, string>
+
+export const AGENT_SCOPE_DESCRIPTIONS = {
+  profile: 'Pseudonyme, classe, niveau, rang et titre actif.',
+  progression: 'XP, niveaux, statistiques et analyse de progression.',
+  quests: 'Missions actives et récemment validées.',
+  skills: 'Arbres et compétences débloquées, en lecture seule.',
+  seasons: 'Saison active, objectifs et bilan.',
+  journal: 'Les 50 derniers événements.',
+  energy: 'Les 7 derniers bilans énergétiques.',
+  body: 'Données du corps : privées par défaut.',
+  proposals: 'Permet de proposer des missions, jamais de les valider.',
+} satisfies Record<AgentScope, string>
+
+export const AGENT_SCOPE_CODES = Object.keys(AGENT_SCOPE_LABELS) as AgentScope[]
+export const DEFAULT_AGENT_SCOPES: readonly AgentScope[] = ['profile', 'progression', 'quests']
+
+export const PROPOSAL_STATUS_LABELS = {
+  PENDING: 'En attente',
+  ACCEPTED: 'Acceptée',
+  REJECTED: 'Refusée',
+} satisfies Record<ProposalStatus, string>
+
+export const PROPOSAL_STATUS_CODES = Object.keys(PROPOSAL_STATUS_LABELS) as ProposalStatus[]
+
+export const ENERGY_LEVEL_LABELS = {
+  1: 'Très faible',
+  2: 'Faible',
+  3: 'Moyenne',
+  4: 'Bonne',
+  5: 'Excellente',
+} satisfies Record<EnergyLevel, string>
+
+export const ENERGY_LEVELS: readonly EnergyLevel[] = [1, 2, 3, 4, 5]
+
+export const INSIGHT_KIND_LABELS = {
+  RECOVERY: 'Récupération',
+  OVERLOAD: 'Surcharge',
+  BALANCE: 'Équilibre',
+  OVERDUE: 'Échéance',
+  MOMENTUM: 'Élan',
+} satisfies Record<InsightSuggestionKind, string>

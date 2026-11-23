@@ -1,8 +1,13 @@
 import type {
   Achievement,
+  AgentToken,
   Character,
   CompletionResult,
+  EnergyCheckIn,
+  Insights,
   Quest,
+  QuestProposal,
+  ProposalStatus,
   Season,
   ShopItem,
   SkillNode,
@@ -283,6 +288,83 @@ export function makeShopItem(overrides: Partial<ShopItem> = {}): ShopItem {
     owned: false,
     equipped: false,
     purchases_count: 0,
+    ...overrides,
+  }
+}
+
+export function todayIso(): string {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${month}-${day}`
+}
+
+export function makeProposal(overrides: Partial<QuestProposal> = {}): QuestProposal {
+  const status: ProposalStatus = overrides.status ?? 'PENDING'
+  return {
+    id: 7,
+    uuid: 'proposal-7',
+    agent_name: 'Claude Code',
+    status,
+    title: 'Lire 20 pages',
+    description: '',
+    rationale: "Ton territoire Savoir n'a pas bougé depuis 12 jours.",
+    territory: 'KNOWLEDGE',
+    quest_type: 'DAILY',
+    difficulty: 'EASY',
+    priority: 'NORMAL',
+    estimated_minutes: 20,
+    due_date: null,
+    skill_branch: 'reading',
+    steps: [{ title: 'Ouvrir le livre', is_required: true }],
+    xp_preview: 15,
+    quest: status === 'ACCEPTED' ? 12 : null,
+    decided_at: status === 'PENDING' ? null : '2026-11-22T10:00:00Z',
+    reject_reason: '',
+    created_at: '2026-11-23T08:00:00Z',
+    ...overrides,
+  }
+}
+
+export function makeAgentToken(overrides: Partial<AgentToken> = {}): AgentToken {
+  return {
+    id: 3,
+    name: 'Claude Code',
+    prefix: 'lra_a1b2',
+    scopes: ['profile', 'progression', 'quests', 'proposals'],
+    created_at: '2026-11-20T10:00:00Z',
+    last_used_at: null,
+    revoked_at: null,
+    is_active: true,
+    ...overrides,
+  }
+}
+
+export function makeEnergyCheckIn(overrides: Partial<EnergyCheckIn> = {}): EnergyCheckIn {
+  return {
+    id: 1,
+    level: 2,
+    label: 'Faible',
+    note: '',
+    date: todayIso(),
+    created_at: '2026-11-23T08:00:00Z',
+    ...overrides,
+  }
+}
+
+export function makeInsights(overrides: Partial<Insights> = {}): Insights {
+  return {
+    generated_at: '2026-11-23T08:00:00Z',
+    energy: { level: 2, label: 'Faible', date: todayIso() },
+    load: { active_quests: 6, hard_quests: 3, overdue: 1 },
+    neglected_territories: [{ code: 'CREATION', days_since_xp: 21 }],
+    suggestions: [
+      {
+        kind: 'RECOVERY',
+        message:
+          'Énergie faible et 3 missions difficiles en cours : une mission courte ou une pause suffit aujourd’hui.',
+      },
+    ],
     ...overrides,
   }
 }
