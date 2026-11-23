@@ -1,6 +1,6 @@
 # Architecture de LIFE RPG
 
-État : **phase 2 (RPG SYSTEM)**. Ce document est mis à jour à chaque phase.
+État : **phase 3 (LIFE AI)**. Ce document est mis à jour à chaque phase.
 
 ## Vue d'ensemble
 
@@ -66,6 +66,19 @@ La formule de niveau (`100 + 50 × (N − 1)`) est une règle fixe de `engine/ru
 
 Aucun de ces modules ne donne de bonus d'XP ni ne retire quoi que ce soit. `make migrate` lance `seed`, qui charge territoires, arbre, succès et catalogue.
 
+### LIFE AI (phase 3)
+
+| Élément | Rôle |
+| --- | --- |
+| `apps/ai_engine/authentication.py` | Jeton d'agent `Bearer lra_…` : seule l'empreinte SHA-256 est stockée, comparaison à temps constant, révocation immédiate |
+| `config/permissions.py` | `DenyAgentTokens` en tête des permissions par défaut : un agent reçoit 403 partout sauf sous `/api/agent/` (`IsAgent` + `HasAgentScope`) |
+| `engine/agents.py` | Jetons, contexte borné par les portées (BODY masqué sans `body`), propositions (en attente jusqu'à la décision de l'utilisateur ; acceptée = mission `AVAILABLE` d'origine `AI`, sans récompense) |
+| `engine/insights.py`, `engine/energy.py` | Analyse par règles fixes et bilan énergétique ; ne modifient jamais rien |
+| `engine/export.py` | Export JSON des données du joueur (sans aucune empreinte de jeton) |
+| `mcp_server/` | Serveur MCP stdio (`make mcp`) : client de l'API locale, outils `get_context`, `list_my_proposals`, `propose_quests` |
+
+Un test parcourt toutes les routes de `config/urls.py` et vérifie qu'aucune ne répond 2xx à un jeton d'agent. Guide complet : `docs/AGENTS.md`.
+
 ### API
 
 Contrat lisible : `docs/API.md`. Schéma généré : `docs/openapi.yaml` (`manage.py export_openapi`). Données initiales : `manage.py seed` (6 territoires et paramètres), lancé par `make migrate`.
@@ -79,7 +92,7 @@ Contrat lisible : `docs/API.md`. Schéma généré : `docs/openapi.yaml` (`manag
 | `src/tokens/` | Tokens typés (couleurs, territoires, glyphes, durées) |
 | `src/components/` | Composants de base : `HudFrame`, `Button`, `XpGauge`, `TopBar`, `LogoMark`, `SoundToggle` |
 | `src/app/` | Application, routeur, mise en page |
-| `src/pages/` | Connexion, création du personnage, Monde, Héros (succès, arbres de compétences), Missions, Boutique, Saisons, Journal ; Game Master et Réglages arrivent en phase 3 |
+| `src/pages/` | Connexion, création du personnage, Monde, Héros (succès, arbres de compétences), Missions, Game Master (propositions, énergie, analyse), Boutique, Saisons, Journal, Réglages (jetons d'agents, son, sauvegarde, export) |
 | `src/features/fx/` | Braises, secousse du boss, montée de niveau, toasts, sons Web Audio (désactivés par défaut), annonces `aria-live` |
 | `src/lib/` | Client d'API avec jeton, types du contrat, hooks TanStack Query, libellés français |
 

@@ -36,7 +36,7 @@ function AgentTokenRow({ token, revoking, onRevoke }: AgentTokenRowProps) {
     <li className="lr-token">
       <div className="lr-token-head">
         <h3 className="lr-token-name">{token.name}</h3>
-        <span className="lr-pill">{token.is_active ? 'Actif' : 'Révocé'}</span>
+        <span className="lr-pill">{token.is_active ? 'Actif' : 'Révoqué'}</span>
       </div>
       <p className="lr-token-prefix">Préfixe : {token.prefix}</p>
       <div className="lr-q-meta">

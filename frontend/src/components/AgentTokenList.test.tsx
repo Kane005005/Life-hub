@@ -56,7 +56,7 @@ describe('AgentTokenList', () => {
     expect(await screen.findByText('Claude Code')).toBeInTheDocument()
     expect(screen.getByText('Ancien agent')).toBeInTheDocument()
     expect(screen.getByText('Actif')).toBeInTheDocument()
-    expect(screen.getByText('Révocé')).toBeInTheDocument()
+    expect(screen.getByText('Révoqué')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Révoquer' }))
     const dialog = await screen.findByRole('dialog', { name: 'Révoquer ce jeton ?' })

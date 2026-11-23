@@ -3,6 +3,10 @@ import { INSIGHT_KIND_LABELS, TERRITORY_BY_CODE, TERRITORY_LABELS } from '../lib
 import { useInsights } from '../lib/queries'
 import { HudFrame } from './HudFrame'
 
+function plural(count: number, singular: string, pluralForm: string): string {
+  return `${count} ${count > 1 ? pluralForm : singular}`
+}
+
 export function InsightsPanel() {
   const insights = useInsights()
   const data = insights.data
@@ -30,8 +34,9 @@ export function InsightsPanel() {
         <div className="lr-insights-body">
           {load ? (
             <p className="lr-insights-load">
-              {load.active_quests} missions actives, {load.hard_quests} difficiles, {load.overdue}{' '}
-              en retard.
+              {plural(load.active_quests, 'mission active', 'missions actives')},{' '}
+              {plural(load.hard_quests, 'difficile', 'difficiles')},{' '}
+              {plural(load.overdue, 'en retard', 'en retard')}.
             </p>
           ) : null}
 
@@ -48,7 +53,11 @@ export function InsightsPanel() {
                       <span className="lr-pill lr-pill--territory">
                         {TERRITORY_LABELS[item.code] ?? item.code}
                       </span>
-                      <span>depuis {item.days_since_xp} jours</span>
+                      <span>
+                        {item.days_since_xp == null
+                          ? "jamais d'XP pour l'instant"
+                          : `aucun XP depuis ${plural(item.days_since_xp, 'jour', 'jours')}`}
+                      </span>
                     </li>
                   )
                 })}

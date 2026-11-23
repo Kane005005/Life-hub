@@ -555,7 +555,7 @@ export type InsightSuggestion = {
 
 export type NeglectedTerritory = {
   code: TerritoryCode
-  days_since_xp: number
+  days_since_xp: number | null
 }
 
 export type Insights = {

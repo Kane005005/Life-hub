@@ -53,7 +53,7 @@ describe('InsightsPanel', () => {
       await screen.findByText(/6 missions actives, 3 difficiles, 1 en retard/),
     ).toBeInTheDocument()
     expect(screen.getByText('Création')).toBeInTheDocument()
-    expect(screen.getByText('depuis 21 jours')).toBeInTheDocument()
+    expect(screen.getByText('aucun XP depuis 21 jours')).toBeInTheDocument()
     expect(screen.getByText('Récupération')).toBeInTheDocument()
     expect(screen.getByText(/Énergie faible et 3 missions difficiles/)).toBeInTheDocument()
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
