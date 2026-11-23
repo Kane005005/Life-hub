@@ -61,30 +61,41 @@ export function SkillDetail({ node }: SkillDetailProps) {
           <p className="lr-note">Aucun prérequis.</p>
         )}
       </div>
-      <div>
-        <p className="lr-detail-subtitle">Ce qu'il manque</p>
-        {(node.missing ?? []).length > 0 ? (
-          <ul className="lr-detail-quests">
-            {(node.missing ?? []).map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="lr-note">Tout est prêt.</p>
-        )}
-      </div>
-      {error ? (
-        <p role="alert" className="lr-field-error">
-          {error}
+      {node.state === 'UNLOCKED' ? (
+        <p className="lr-note">
+          {node.unlocked_at
+            ? `Compétence acquise le ${new Date(node.unlocked_at).toLocaleDateString('fr-FR')}.`
+            : 'Compétence acquise.'}{' '}
+          Elle ne se perd jamais.
         </p>
-      ) : null}
-      <Button
-        variant="solid"
-        disabled={!canUnlock || unlock.isPending}
-        onClick={() => void handleUnlock()}
-      >
-        Débloquer ({node.cost} {points})
-      </Button>
+      ) : (
+        <>
+          <div>
+            <p className="lr-detail-subtitle">Ce qu'il manque</p>
+            {(node.missing ?? []).length > 0 ? (
+              <ul className="lr-detail-quests">
+                {(node.missing ?? []).map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="lr-note">Tout est prêt.</p>
+            )}
+          </div>
+          {error ? (
+            <p role="alert" className="lr-field-error">
+              {error}
+            </p>
+          ) : null}
+          <Button
+            variant="solid"
+            disabled={!canUnlock || unlock.isPending}
+            onClick={() => void handleUnlock()}
+          >
+            Débloquer ({node.cost} {points})
+          </Button>
+        </>
+      )}
     </HudFrame>
   )
 }

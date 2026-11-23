@@ -39,6 +39,10 @@ def frontend_index(request: HttpRequest) -> HttpResponse:
     """Sert l'index du build React, ou indique qu'il n'est pas encore construit."""
     index = Path(settings.FRONTEND_DIST) / "index.html"
     if index.is_file():
-        return FileResponse(index.open("rb"))
+        response = FileResponse(index.open("rb"))
+        # La page d'entrée change à chaque build : le navigateur doit la revalider,
+        # sinon il garde une ancienne interface. Les fichiers de /assets/ ont un hash.
+        response["Cache-Control"] = "no-cache"
+        return response
     message = "Le front n'est pas construit. Lance make build."
     return HttpResponse(message, status=503, content_type="text/plain; charset=utf-8")

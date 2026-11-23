@@ -25,17 +25,20 @@ export function HeroPage() {
   const selectedTree: TerritoryCode =
     arbreParam && TERRITORY_CODES.includes(arbreParam) ? arbreParam : 'KNOWLEDGE'
   const skillTreesQuery = useSkillTrees(selectedTree)
-  const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null)
+  const [selectedCode, setSelectedCode] = useState<string | null>(null)
   const character = characterQuery.data
   const transactions = historyQuery.data?.results.slice(0, 10) ?? []
   const tree = skillTreesQuery.data?.[0]
 
   useEffect(() => {
-    setSelectedNode(null)
+    setSelectedCode(null)
   }, [selectedTree])
 
   const achievements = useMemo(() => achievementsQuery.data ?? [], [achievementsQuery.data])
   const branches = tree?.branches ?? []
+  // Toujours relire le nœud dans l'arbre à jour : après un déblocage, l'API renvoie le nouvel état.
+  const selectedNode: SkillNode | null =
+    branches.flatMap((branch) => branch.skills).find((node) => node.code === selectedCode) ?? null
 
   return (
     <section className="lr-section">
@@ -106,8 +109,8 @@ export function HeroPage() {
         {tree ? (
           <SkillTreeView
             tree={{ ...tree, branches }}
-            selectedCode={selectedNode?.code}
-            onSelect={(node) => setSelectedNode(node)}
+            selectedCode={selectedCode ?? undefined}
+            onSelect={(node) => setSelectedCode(node.code)}
           />
         ) : (
           <p className="lr-note">Chargement de l'arbre…</p>

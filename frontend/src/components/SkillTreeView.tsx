@@ -14,6 +14,13 @@ function nodeLabel(node: SkillNode): string {
   return `${node.name}, niveau ${node.tier}, ${SKILL_STATE_LABELS[node.state].toLowerCase()}, coût ${node.cost} ${points}`
 }
 
+// Noms de classes écrits en entier : Tailwind supprime les classes construites dynamiquement.
+const NODE_STATE_CLASS: Record<SkillNode['state'], string> = {
+  LOCKED: 'lr-skill-node--locked',
+  UNLOCKABLE: 'lr-skill-node--unlockable',
+  UNLOCKED: 'lr-skill-node--unlocked',
+}
+
 export function SkillTreeView({ tree, selectedCode, onSelect }: SkillTreeViewProps) {
   const refs = useRef<Record<string, HTMLButtonElement | null>>({})
 
@@ -68,7 +75,8 @@ export function SkillTreeView({ tree, selectedCode, onSelect }: SkillTreeViewPro
             <div className="lr-skill-branch-head">
               <p className="lr-skill-branch-name">{branch.name}</p>
               <p className="lr-note">
-                <span className="num">{branch.validated_quests}</span> validations
+                <span className="num">{branch.validated_quests}</span>{' '}
+                {branch.validated_quests > 1 ? 'validations' : 'validation'}
               </p>
             </div>
             <div className="lr-skill-nodes">
@@ -84,7 +92,7 @@ export function SkillTreeView({ tree, selectedCode, onSelect }: SkillTreeViewPro
                       type="button"
                       className={[
                         'lr-skill-node',
-                        `lr-skill-node--${node.state.toLowerCase()}`,
+                        NODE_STATE_CLASS[node.state],
                         selected ? 'is-selected' : '',
                       ]
                         .filter(Boolean)
