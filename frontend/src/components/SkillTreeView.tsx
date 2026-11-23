@@ -133,7 +133,7 @@ export function SkillTreeView({
   const [waveCode, setWaveCode] = useState<string | null>(null)
   const [tooltip, setTooltip] = useState<TooltipTarget | null>(null)
 
-  const branches = tree.branches ?? []
+  const branches = useMemo(() => tree.branches ?? [], [tree.branches])
 
   const skillNames = useMemo(() => {
     const names = new Map<string, string>()
