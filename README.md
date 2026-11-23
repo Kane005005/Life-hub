@@ -81,6 +81,7 @@ docs/       cahier des charges, brand book, prompt de construction, ARCHITECTURE
 | `docs/CAHIER_DES_CHARGES.md` | Cahier des charges fonctionnel et technique |
 | `docs/LIFE_RPG_Cahier_des_charges_v1.0.docx` | Cahier des charges (Word, source du Markdown) |
 | `docs/ARBRE_DE_COMPETENCES.md` | Annexe A : spécification de l'arbre de compétences (6 arbres, 72 compétences, coûts, conditions, API) |
+| `docs/CALENDRIER.md` | Annexe B : calendrier journalier (vues, planification, API, critères) |
 | `docs/skill_tree_seed.json` | Données de départ de l'arbre, chargées en phase 2 |
 | `docs/brand-book.html` | Brand book : identité visuelle, tokens, composants. Ouvre-le dans un navigateur. |
 | `docs/ARCHITECTURE.md` | Architecture technique et état d'avancement |

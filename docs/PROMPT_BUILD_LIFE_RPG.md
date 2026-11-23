@@ -189,3 +189,6 @@ Travaille **phase par phase**. À la fin de chaque phase : tests verts, applicat
 1. Lis les deux documents.
 2. Réponds par un **plan court** : la structure que tu vas créer, les questions ouvertes (s'il y en a) et les risques que tu vois.
 3. Attends mon accord, puis commence la phase 0.
+
+## Phase 4b : Calendrier journalier
+Spécification : `docs/CALENDRIER.md` (annexe B). Branche `phase-4b`, après validation de la phase 4.
