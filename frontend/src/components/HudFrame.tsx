@@ -1,18 +1,21 @@
-import type { HTMLAttributes, ReactNode } from 'react'
+import { createElement } from 'react'
+import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 
-type HudFrameTag = 'div' | 'section' | 'article' | 'aside'
+type HudFrameTag = 'div' | 'section' | 'article' | 'aside' | 'form'
 
-type HudFrameProps = HTMLAttributes<HTMLElement> & {
-  as?: HudFrameTag
+type HudFrameProps<T extends HudFrameTag = 'div'> = {
+  as?: T
   children?: ReactNode
-}
+} & ComponentPropsWithoutRef<T>
 
-export function HudFrame({ as: Tag = 'div', className, children, ...props }: HudFrameProps) {
+export function HudFrame<T extends HudFrameTag = 'div'>({
+  as,
+  className,
+  children,
+  ...props
+}: HudFrameProps<T>) {
   const classes = ['lr-frame', className].filter(Boolean).join(' ')
+  const tag: HudFrameTag = as ?? 'div'
 
-  return (
-    <Tag className={classes} {...props}>
-      {children}
-    </Tag>
-  )
+  return createElement(tag, { ...props, className: classes }, children)
 }

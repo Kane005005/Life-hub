@@ -10,6 +10,8 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from rest_framework.authtoken.models import Token
 
+from engine.services import ensure_character
+
 
 class Command(BaseCommand):
     """Crée le seul compte autorisé, avec les droits d'administration."""
@@ -53,6 +55,7 @@ class Command(BaseCommand):
                 is_staff=True,
                 is_superuser=True,
             )
+            ensure_character(user)
             token = Token.objects.create(user=user)
         self.stdout.write(f"Compte créé : {user.username}.")
         self.stdout.write(f"Jeton d'API : {token.key}")

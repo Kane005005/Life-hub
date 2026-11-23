@@ -1,10 +1,15 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { makeTerritory } from '../test/fixtures'
+import { TestProviders } from '../test/TestProviders'
 import { WorldPage } from './WorldPage'
 
-function createQueryClient() {
-  return new QueryClient({ defaultOptions: { queries: { retry: false } } })
+function jsonResponse(status: number, body?: unknown) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  }
 }
 
 afterEach(() => {
@@ -12,42 +17,30 @@ afterEach(() => {
 })
 
 describe('WorldPage', () => {
-  it('affiche le serveur connecté quand /api/health/ répond ok', async () => {
+  it('affiche la carte et les missions du jour', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({ status: 'ok' }),
+      vi.fn().mockImplementation((url: string) => {
+        if (url === '/api/world/territories/') {
+          return Promise.resolve(jsonResponse(200, [makeTerritory()]))
+        }
+        if (url.startsWith('/api/quests/')) {
+          return Promise.resolve(
+            jsonResponse(200, { count: 0, next: null, previous: null, results: [] }),
+          )
+        }
+        return Promise.resolve(jsonResponse(200, { status: 'ok' }))
       }),
     )
 
     render(
-      <QueryClientProvider client={createQueryClient()}>
+      <TestProviders>
         <WorldPage />
-      </QueryClientProvider>,
+      </TestProviders>,
     )
 
-    expect(await screen.findByText('Serveur local : connecté.')).toBeInTheDocument()
-  })
-
-  it('affiche le message d erreur quand /api/health/ répond 500', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-      }),
-    )
-
-    render(
-      <QueryClientProvider client={createQueryClient()}>
-        <WorldPage />
-      </QueryClientProvider>,
-    )
-
-    expect(
-      await screen.findByText("Serveur local injoignable. Vérifie qu'il tourne, puis relance."),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Ta carte', level: 1 })).toBeInTheDocument()
+    expect(screen.getByText('01 · Le monde')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /Technologie/ })).toBeInTheDocument()
   })
 })

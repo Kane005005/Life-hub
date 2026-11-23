@@ -1,6 +1,6 @@
 # Architecture de LIFE RPG
 
-État : **phase 0 (fondations)**. Ce document est mis à jour à chaque phase.
+État : **phase 1 (LIFE CORE)**. Ce document est mis à jour à chaque phase.
 
 ## Vue d'ensemble
 
@@ -33,12 +33,30 @@ Agents de code ──jeton à portée limitée──▶ /api/agent/…   (phase 
 
 Le modèle utilisateur est personnalisé dès le départ (`accounts.User`) pour pouvoir évoluer sans migration douloureuse.
 
-### Endpoints disponibles en phase 0
+### Life Engine (phase 1)
 
-| Méthode | Chemin | Accès |
-| --- | --- | --- |
-| GET | `/api/health/` | libre |
-| GET | `/api/schema/` | authentifié (schéma OpenAPI) |
+Toute écriture de progression passe par `engine/services.py`, sous `transaction.atomic()` avec verrouillage du personnage :
+
+- `complete_quest` : vérifie le statut et les étapes obligatoires, calcule l'XP depuis `GameSettings`, crée `QuestCompletion` (unique par mission et par période : idempotence en base), `XPTransaction`, `CreditTransaction`, une `SkillPointTransaction` par niveau gagné, met à jour le personnage et le territoire, puis écrit le journal.
+- Missions `DAILY` et `WEEKLY` récurrentes (une validation par jour local ou par semaine ISO) ; `MAIN`, `SIDE`, `BOSS` validées une seule fois. Les étapes ne rapportent rien : la récompense tombe à la validation finale.
+- Le repos (`record_rest`) et l'abandon ne retirent jamais rien. Aucune fonction ne retire d'XP.
+
+### Paramètres du système (`progression.GameSettings`, modifiables dans l'admin)
+
+| Paramètre | Défaut |
+| --- | --- |
+| `xp_by_difficulty` | TRIVIAL 5, EASY 15, MEDIUM 30, HARD 60, EPIC 100, LEGENDARY 200 |
+| `credits_per_xp` | 1 |
+| `skill_points_per_level` | 1 |
+| `territory_stat_divisor` / `territory_stat_display_max` | 10 / 100 |
+| `territory_state_thresholds` | DEVELOPMENT 30, MASTERY 70 (DISCOVERY en dessous) |
+| `ranks` | 1 Initié, 10 Explorateur, 20 Bâtisseur, 30 Spécialiste, 40 Maître, 50 Architecte |
+
+La formule de niveau (`100 + 50 × (N − 1)`) est une règle fixe de `engine/rules.py`, volontairement non configurable.
+
+### API
+
+Contrat lisible : `docs/API.md`. Schéma généré : `docs/openapi.yaml` (`manage.py export_openapi`). Données initiales : `manage.py seed` (6 territoires et paramètres), lancé par `make migrate`.
 
 ## Front-end (`frontend/`)
 
@@ -49,8 +67,9 @@ Le modèle utilisateur est personnalisé dès le départ (`accounts.User`) pour 
 | `src/tokens/` | Tokens typés (couleurs, territoires, glyphes, durées) |
 | `src/components/` | Composants de base : `HudFrame`, `Button`, `XpGauge`, `TopBar`, `LogoMark`, `SoundToggle` |
 | `src/app/` | Application, routeur, mise en page |
-| `src/pages/` | Pages (Monde en phase 0, les autres en attente) |
-| `src/lib/api.ts` | Accès à l'API (TanStack Query) |
+| `src/pages/` | Connexion, création du personnage, Monde, Héros, Missions, Journal ; les autres espaces arrivent en phases 2 et 3 |
+| `src/features/fx/` | Braises, secousse du boss, montée de niveau, toasts, sons Web Audio (désactivés par défaut), annonces `aria-live` |
+| `src/lib/` | Client d'API avec jeton, types du contrat, hooks TanStack Query, libellés français |
 
 Polices auto-hébergées via `@fontsource` : l'interface fonctionne hors ligne. Le front n'applique aucune règle de jeu : il affiche ce que l'API renvoie.
 
