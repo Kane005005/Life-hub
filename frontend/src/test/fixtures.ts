@@ -1,6 +1,12 @@
 import type {
   Achievement,
   AgentToken,
+  CalendarDay,
+  CalendarEntry,
+  CalendarEntryKind,
+  CalendarQuest,
+  CalendarRange,
+  CalendarToday,
   Character,
   CompletionResult,
   EnergyCheckIn,
@@ -46,6 +52,8 @@ export function makeQuest(overrides: Partial<Quest> = {}): Quest {
     priority: 'NORMAL',
     estimated_minutes: 30,
     start_date: null,
+    scheduled_date: null,
+    scheduled_time: '',
     due_date: null,
     xp_reward: 25,
     credit_reward: 5,
@@ -65,6 +73,7 @@ export function makeQuest(overrides: Partial<Quest> = {}): Quest {
         is_required: true,
         is_done: false,
         done_at: null,
+        scheduled_date: null,
       },
     ],
     created_at: '2026-11-20T10:00:00Z',
@@ -108,6 +117,83 @@ export function makeCompletionResult(overrides: Partial<CompletionResult> = {}):
       level_message: 'Tu passes niveau 3.',
       achievements: [],
     },
+    ...overrides,
+  }
+}
+
+export function makeCalendarQuest(overrides: Partial<CalendarQuest> = {}): CalendarQuest {
+  return {
+    id: 17,
+    title: 'Réviser le contrat API',
+    quest_type: 'DAILY',
+    difficulty: 'EASY',
+    territory: 'TECHNOLOGY',
+    status: 'IN_PROGRESS',
+    xp_reward: 25,
+    credit_reward: 5,
+    scheduled_date: null,
+    scheduled_time: '',
+    due_date: null,
+    ...overrides,
+  }
+}
+
+export function makeCalendarEntry(
+  kind: CalendarEntryKind = 'DAILY',
+  overrides: Partial<CalendarEntry> = {},
+): CalendarEntry {
+  const questType = kind === 'DAILY' || kind === 'WEEKLY' ? kind : 'MAIN'
+  return {
+    kind,
+    quest: makeCalendarQuest({ quest_type: questType }),
+    step: null,
+    period_key: '2026-11-24',
+    done: false,
+    due_passed: false,
+    ...overrides,
+  }
+}
+
+export function makeCalendarDay(
+  date: string = todayIso(),
+  overrides: Partial<CalendarDay> = {},
+): CalendarDay {
+  return {
+    date,
+    is_today: true,
+    iso_week: '2026-W48',
+    entries: [],
+    completions: [],
+    summary: { completions: 0, xp: 0, credits: 0, dominant_territory: null },
+    ...overrides,
+  }
+}
+
+export function makeCalendarRange(
+  from: string,
+  to: string,
+  days: CalendarDay[],
+  overrides: Partial<CalendarRange> = {},
+): CalendarRange {
+  return {
+    from,
+    to,
+    today: days.find((day) => day.is_today)?.date ?? from,
+    time_zone: 'Africa/Bamako',
+    days,
+    ...overrides,
+  }
+}
+
+export function makeCalendarToday(
+  day: CalendarDay = makeCalendarDay(),
+  overrides: Partial<CalendarToday> = {},
+): CalendarToday {
+  return {
+    ...day,
+    is_today: true,
+    time_zone: 'Africa/Bamako',
+    weekly: [],
     ...overrides,
   }
 }
@@ -315,6 +401,7 @@ export function makeProposal(overrides: Partial<QuestProposal> = {}): QuestPropo
     priority: 'NORMAL',
     estimated_minutes: 20,
     due_date: null,
+    scheduled_date: null,
     skill_branch: 'reading',
     steps: [{ title: 'Ouvrir le livre', is_required: true }],
     xp_preview: 15,

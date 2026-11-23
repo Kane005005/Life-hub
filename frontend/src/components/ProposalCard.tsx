@@ -3,6 +3,7 @@ import type { MouseEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useFx } from '../features/fx/useFx'
 import { ApiError } from '../lib/api'
+import { formatIsoDate } from '../lib/calendarDates'
 import type { CssVars } from '../lib/css'
 import { formatDate, formatDateTime } from '../lib/format'
 import {
@@ -49,7 +50,7 @@ function initialValues(proposal: QuestProposal): QuestFieldValues {
   }
 }
 
-function toProposalInput(values: QuestFieldValues): ProposalUpdate {
+function toProposalInput(values: QuestFieldValues, scheduledDate: string): ProposalUpdate {
   return {
     title: values.title.trim(),
     description: values.description,
@@ -60,6 +61,7 @@ function toProposalInput(values: QuestFieldValues): ProposalUpdate {
     estimated_minutes:
       values.estimated_minutes === '' ? undefined : Number(values.estimated_minutes),
     due_date: values.due_date || null,
+    scheduled_date: scheduledDate || null,
     skill_branch: values.skill_branch,
     steps: values.steps
       .filter((step) => step.title.trim())
@@ -77,6 +79,7 @@ type ProposalEditFormProps = {
 
 function ProposalEditForm({ proposal, busy, onSave, onAccept, onCancel }: ProposalEditFormProps) {
   const [values, setValues] = useState<QuestFieldValues>(() => initialValues(proposal))
+  const [scheduledDate, setScheduledDate] = useState(proposal.scheduled_date ?? '')
   const [error, setError] = useState('')
   const nextStepId = useRef((proposal.steps ?? []).length + 1)
   const skillTrees = useSkillTrees(values.territory)
@@ -117,9 +120,9 @@ function ProposalEditForm({ proposal, busy, onSave, onAccept, onCancel }: Propos
     setError('')
     try {
       if (kind === 'save') {
-        await onSave(toProposalInput(values))
+        await onSave(toProposalInput(values, scheduledDate))
       } else {
-        await onAccept(toProposalInput(values))
+        await onAccept(toProposalInput(values, scheduledDate))
       }
     } catch {
       setError('Enregistrement impossible. Réessaie.')
@@ -137,6 +140,18 @@ function ProposalEditForm({ proposal, busy, onSave, onAccept, onCancel }: Propos
         onUpdateStep={updateStep}
         onRemoveStep={removeStep}
       />
+      <label className="lr-field">
+        <span>Date proposée</span>
+        <input
+          type="date"
+          name="scheduled_date"
+          value={scheduledDate}
+          onChange={(event) => setScheduledDate(event.target.value)}
+        />
+      </label>
+      <button type="button" className="lr-btn lr-btn--quiet" onClick={() => setScheduledDate('')}>
+        Effacer la date
+      </button>
       {error ? (
         <p role="alert" className="lr-field-error">
           {error}
@@ -259,6 +274,9 @@ export function ProposalCard({ proposal }: { proposal: QuestProposal }) {
         <span className="lr-pill lr-pill--indicative">+{proposal.xp_preview} XP indicatifs</span>
         {proposal.due_date ? (
           <span className="lr-pill">Échéance {formatDate(proposal.due_date)}</span>
+        ) : null}
+        {proposal.scheduled_date ? (
+          <span className="lr-pill">Date proposée : {formatIsoDate(proposal.scheduled_date)}</span>
         ) : null}
       </div>
 

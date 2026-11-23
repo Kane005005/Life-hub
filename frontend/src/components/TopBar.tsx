@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Monde' },
   { to: '/heros', label: 'Héros' },
   { to: '/missions', label: 'Missions' },
+  { to: '/calendrier', label: 'Calendrier' },
   { to: '/game-master', label: 'Game Master' },
   { to: '/boutique', label: 'Boutique' },
   { to: '/saisons', label: 'Saisons' },

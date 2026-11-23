@@ -73,7 +73,7 @@ describe('SettingsPage', () => {
 
     expect(screen.getByText('08 · Réglages')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Réglages', level: 1 })).toBeInTheDocument()
-    for (const title of ['Agents', 'Son', 'Sauvegarde', 'Export', 'Compte']) {
+    for (const title of ['Fuseau horaire', 'Agents', 'Son', 'Sauvegarde', 'Export', 'Compte']) {
       expect(screen.getByRole('heading', { name: title, level: 2 })).toBeInTheDocument()
     }
     expect(screen.getByText('Voir docs/AGENTS.md dans le dépôt')).toBeInTheDocument()
@@ -123,6 +123,43 @@ describe('SettingsPage', () => {
     expect(URL.createObjectURL).toHaveBeenCalled()
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:export')
     expect(await screen.findByText('Export téléchargé.')).toBeInTheDocument()
+  })
+
+  it('enregistre le fuseau horaire via /api/auth/me/', async () => {
+    const user = userEvent.setup()
+    const fetchMock = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+      if (url === '/api/auth/me/' && init?.method !== 'PATCH') {
+        return Promise.resolve(
+          jsonResponse(200, { id: 1, username: 'kane', time_zone: 'Africa/Bamako' }),
+        )
+      }
+      if (url === '/api/auth/me/' && init?.method === 'PATCH') {
+        return Promise.resolve(
+          jsonResponse(200, { id: 1, username: 'kane', time_zone: 'Europe/Paris' }),
+        )
+      }
+      return Promise.resolve(jsonResponse(200, {}))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderSettings()
+
+    const select = await screen.findByRole('combobox', { name: 'Fuseau horaire' })
+    expect(select).toHaveValue('Africa/Bamako')
+    expect(screen.getByText('Ton jour commence à minuit dans ce fuseau.')).toBeInTheDocument()
+    await user.selectOptions(select, 'Europe/Paris')
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }))
+
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(
+        ([url, init]) =>
+          url === '/api/auth/me/' && (init as RequestInit | undefined)?.method === 'PATCH',
+      )
+      expect(call).toBeDefined()
+      const body = JSON.parse((call?.[1] as RequestInit).body as string) as Record<string, unknown>
+      expect(body).toEqual({ time_zone: 'Europe/Paris' })
+    })
+    expect(await screen.findByText('Fuseau horaire enregistré.')).toBeInTheDocument()
   })
 
   it('déconnecte depuis le bouton Quitter', async () => {

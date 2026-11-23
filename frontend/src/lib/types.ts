@@ -134,6 +134,7 @@ export type QuestStep = {
   is_required: boolean
   is_done: boolean
   done_at: string | null
+  scheduled_date: string | null
 }
 
 export type Quest = {
@@ -147,6 +148,8 @@ export type Quest = {
   priority: Priority
   estimated_minutes: number
   start_date: string | null
+  scheduled_date: string | null
+  scheduled_time: string
   due_date: string | null
   xp_reward: number
   credit_reward: number
@@ -187,6 +190,85 @@ export type CompletionResult = {
   result: CompletionOutcome
 }
 
+/* ---------- Phase 4b — Calendrier ---------- */
+
+export type CalendarEntryKind = 'DAILY' | 'WEEKLY' | 'SCHEDULED' | 'STEP' | 'DUE'
+
+export type CalendarQuest = {
+  id: number
+  title: string
+  quest_type: QuestType
+  difficulty: Difficulty
+  territory: TerritoryCode
+  status: QuestStatus
+  xp_reward: number
+  credit_reward: number
+  scheduled_date: string | null
+  scheduled_time: string
+  due_date: string | null
+}
+
+export type CalendarStep = {
+  id: number
+  title: string
+  is_done: boolean
+  scheduled_date?: string | null
+}
+
+export type CalendarEntry = {
+  kind: CalendarEntryKind
+  quest: CalendarQuest
+  step: CalendarStep | null
+  period_key: string
+  done: boolean
+  due_passed: boolean
+}
+
+export type CalendarCompletion = {
+  quest_id: number
+  title: string
+  territory: TerritoryCode
+  quest_type: QuestType
+  xp: number
+  credits: number
+  completed_at: string
+}
+
+export type CalendarSummary = {
+  completions: number
+  xp: number
+  credits: number
+  dominant_territory: TerritoryCode | null
+}
+
+export type CalendarDay = {
+  date: string
+  is_today: boolean
+  iso_week: string
+  entries: CalendarEntry[]
+  completions: CalendarCompletion[]
+  summary: CalendarSummary
+}
+
+export type CalendarWeeklyProgress = {
+  quest: CalendarQuest
+  done: boolean
+  days_left_in_week: number
+}
+
+export type CalendarToday = CalendarDay & {
+  time_zone: string
+  weekly: CalendarWeeklyProgress[]
+}
+
+export type CalendarRange = {
+  from: string
+  to: string
+  today: string
+  time_zone: string
+  days: CalendarDay[]
+}
+
 export type JournalEntry = {
   uuid: string
   event_type: EventType
@@ -223,6 +305,8 @@ export type QuestInput = {
   priority?: Priority
   estimated_minutes?: number
   start_date?: string | null
+  scheduled_date?: string | null
+  scheduled_time?: string
   due_date?: string | null
   validation_mode?: ValidationMode
   skill_branch?: string
@@ -232,6 +316,7 @@ export type QuestInput = {
 export type AuthUser = {
   id: number
   username: string
+  time_zone: string
 }
 
 export type LoginResponse = {
@@ -504,6 +589,7 @@ export type QuestProposal = {
   priority: Priority
   estimated_minutes: number
   due_date: string | null
+  scheduled_date: string | null
   skill_branch: string
   steps: ProposalStep[]
   /** Valeur indicative calculée par l'API. Aucune XP n'est attribuée à l'acceptation. */
@@ -525,6 +611,7 @@ export type ProposalUpdate = Partial<
     | 'priority'
     | 'estimated_minutes'
     | 'due_date'
+    | 'scheduled_date'
     | 'skill_branch'
     | 'steps'
   >

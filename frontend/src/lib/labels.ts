@@ -29,6 +29,25 @@ export const TERRITORY_LABELS = {
   INNER_WORLD: 'Monde intérieur',
 } satisfies Record<TerritoryCode, string>
 
+export const CALENDAR_VIEW_LABELS = {
+  jour: "Aujourd'hui",
+  semaine: 'Semaine',
+  mois: 'Mois',
+  saison: 'Saison',
+} as const
+
+export type CalendarView = keyof typeof CALENDAR_VIEW_LABELS
+
+export const CALENDAR_VIEWS = Object.keys(CALENDAR_VIEW_LABELS) as CalendarView[]
+
+export const CALENDAR_ENTRY_LABELS = {
+  DAILY: 'Quotidienne',
+  WEEKLY: 'Hebdomadaire',
+  SCHEDULED: 'Planifiée',
+  STEP: 'Étape',
+  DUE: 'Échéance',
+} as const
+
 export const QUEST_TYPE_LABELS = {
   DAILY: 'Quotidienne',
   WEEKLY: 'Hebdomadaire',

@@ -126,6 +126,32 @@ describe('ProposalCard', () => {
     expect(await screen.findByText('Proposition refusée.')).toBeInTheDocument()
   })
 
+  it('affiche et permet d’effacer la date proposée', async () => {
+    const user = userEvent.setup()
+    const fetchMock = mockApi()
+    const proposal = makeProposal({ scheduled_date: '2026-11-25' })
+
+    render(
+      <TestProviders>
+        <ProposalCard proposal={proposal} />
+      </TestProviders>,
+    )
+
+    expect(screen.getByText('Date proposée : 25/11/2026')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Modifier' }))
+    const input = screen.getByLabelText('Date proposée')
+    expect(input).toHaveValue('2026-11-25')
+    await user.click(screen.getByRole('button', { name: 'Effacer la date' }))
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }))
+
+    await waitFor(() => {
+      const call = findCall(fetchMock, '/api/quest-proposals/7/', 'PATCH')
+      expect(call).toBeDefined()
+      const body = JSON.parse((call?.[1] as RequestInit).body as string) as Record<string, unknown>
+      expect(body.scheduled_date).toBeNull()
+    })
+  })
+
   it('affiche une proposition décidée sans bouton de décision', () => {
     mockApi()
 

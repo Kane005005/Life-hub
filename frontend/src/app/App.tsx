@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { FxProvider } from '../features/fx/FxProvider'
 import { SoundProvider } from '../features/fx/SoundProvider'
+import { CalendarPage } from '../pages/CalendarPage'
 import { GameMasterPage } from '../pages/GameMasterPage'
 import { HeroPage } from '../pages/HeroPage'
 import { JournalPage } from '../pages/JournalPage'
@@ -37,6 +38,7 @@ export default function App() {
                     <Route path="/" element={<WorldPage />} />
                     <Route path="/heros" element={<HeroPage />} />
                     <Route path="/missions" element={<QuestsPage />} />
+                    <Route path="/calendrier" element={<CalendarPage />} />
                     <Route path="/game-master" element={<GameMasterPage />} />
                     <Route path="/boutique" element={<ShopPage />} />
                     <Route path="/saisons" element={<SeasonsPage />} />

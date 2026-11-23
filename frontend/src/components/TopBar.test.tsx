@@ -8,6 +8,7 @@ const LABELS = [
   'Monde',
   'Héros',
   'Missions',
+  'Calendrier',
   'Game Master',
   'Boutique',
   'Saisons',
@@ -31,11 +32,11 @@ function renderTopBar(soundEnabled: boolean, onToggleSound = vi.fn(), pendingPro
 }
 
 describe('TopBar', () => {
-  it('affiche les huit liens de navigation', () => {
+  it('affiche les neuf liens de navigation', () => {
     renderTopBar(false)
 
     const nav = screen.getByRole('navigation', { name: 'Navigation principale' })
-    expect(within(nav).getAllByRole('link')).toHaveLength(8)
+    expect(within(nav).getAllByRole('link')).toHaveLength(9)
 
     LABELS.forEach((label) => {
       expect(within(nav).getByRole('link', { name: label })).toBeInTheDocument()

@@ -7,6 +7,9 @@ import type {
   Achievement,
   AgentToken,
   AgentTokenInput,
+  AuthUser,
+  CalendarRange,
+  CalendarToday,
   Character,
   CharacterUpdate,
   CompletionResult,
@@ -67,6 +70,9 @@ export const queryKeys = {
     ['shop', 'items', filters ?? {}] as const,
   inventory: ['inventory'] as const,
   wallet: ['wallet'] as const,
+  calendar: ['calendar'] as const,
+  calendarRange: (from: string, to: string) => ['calendar', 'range', from, to] as const,
+  calendarToday: ['calendar', 'today'] as const,
   seasons: ['seasons'] as const,
   season: (id: number) => ['seasons', id] as const,
   currentSeason: ['seasons', 'current'] as const,
@@ -81,11 +87,17 @@ export const queryKeys = {
   insights: ['insights'] as const,
 }
 
+/** Toute écriture qui touche une mission rafraîchit aussi le calendrier. */
+function invalidateCalendar(client: QueryClient) {
+  void client.invalidateQueries({ queryKey: queryKeys.calendar })
+}
+
 /** Les décisions sur les propositions changent aussi les quêtes et l'analyse. */
 function invalidateProposalData(client: QueryClient) {
   const keys = [
     queryKeys.proposals,
     queryKeys.quests,
+    queryKeys.calendar,
     queryKeys.journal,
     queryKeys.insights,
     queryKeys.world,
@@ -146,8 +158,92 @@ function journalPath(filters: JournalFilters = {}): string {
 export function useMe() {
   return useQuery({
     queryKey: queryKeys.me,
-    queryFn: () => apiRequest<{ id: number; username: string }>('GET', '/auth/me/'),
+    queryFn: () => apiRequest<AuthUser>('GET', '/auth/me/'),
     retry: false,
+  })
+}
+
+export function useUpdateTimeZone() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (timeZone: string) =>
+      apiRequest<AuthUser>(
+        'PATCH',
+        '/auth/me/',
+        { time_zone: timeZone },
+        'Fuseau horaire inconnu.',
+      ),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.me })
+      invalidateCalendar(client)
+    },
+  })
+}
+
+export function useCalendar(from: string, to: string, enabled = true) {
+  return useQuery<CalendarRange>({
+    queryKey: queryKeys.calendarRange(from, to),
+    queryFn: () =>
+      apiRequest<CalendarRange>(
+        'GET',
+        `/calendar/?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+      ),
+    enabled: enabled && Boolean(from) && Boolean(to),
+  })
+}
+
+export function useCalendarToday(enabled = true) {
+  return useQuery<CalendarToday>({
+    queryKey: queryKeys.calendarToday,
+    queryFn: () => apiRequest<CalendarToday>('GET', '/calendar/today/'),
+    enabled,
+  })
+}
+
+export function useRescheduleQuest() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      id,
+      scheduled_date,
+      scheduled_time,
+    }: {
+      id: number
+      scheduled_date: string | null
+      scheduled_time?: string
+    }) =>
+      apiRequest<Quest>('PATCH', `/quests/${id}/`, {
+        scheduled_date,
+        ...(scheduled_time === undefined ? {} : { scheduled_time }),
+      }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.quests })
+      void client.invalidateQueries({ queryKey: queryKeys.journal })
+      invalidateCalendar(client)
+    },
+  })
+}
+
+export function useRescheduleStep() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      id,
+      stepId,
+      scheduled_date,
+    }: {
+      id: number
+      stepId: number
+      scheduled_date: string | null
+    }) =>
+      apiRequest<Quest>('PATCH', `/quests/${id}/steps/${stepId}/`, {
+        scheduled_date,
+      }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.quests })
+      void client.invalidateQueries({ queryKey: queryKeys.journal })
+      invalidateCalendar(client)
+    },
   })
 }
 
@@ -232,6 +328,7 @@ export function useCreateQuest() {
       void client.invalidateQueries({ queryKey: queryKeys.quests })
       void client.invalidateQueries({ queryKey: queryKeys.journal })
       void client.invalidateQueries({ queryKey: queryKeys.world })
+      invalidateCalendar(client)
     },
   })
 }
@@ -245,6 +342,7 @@ export function useUpdateQuest() {
       void client.invalidateQueries({ queryKey: queryKeys.quests })
       void client.invalidateQueries({ queryKey: queryKeys.journal })
       void client.invalidateQueries({ queryKey: queryKeys.world })
+      invalidateCalendar(client)
     },
   })
 }
@@ -256,6 +354,7 @@ export function useAcceptQuest() {
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: queryKeys.quests })
       void client.invalidateQueries({ queryKey: queryKeys.journal })
+      invalidateCalendar(client)
     },
   })
 }
@@ -288,6 +387,7 @@ export function useCompleteQuest() {
       void client.invalidateQueries({ queryKey: queryKeys.inventory })
       void client.invalidateQueries({ queryKey: queryKeys.wallet })
       void client.invalidateQueries({ queryKey: queryKeys.seasons })
+      invalidateCalendar(client)
     },
   })
 }
@@ -300,6 +400,7 @@ export function useAbandonQuest() {
       void client.invalidateQueries({ queryKey: queryKeys.quests })
       void client.invalidateQueries({ queryKey: queryKeys.journal })
       void client.invalidateQueries({ queryKey: queryKeys.world })
+      invalidateCalendar(client)
     },
   })
 }
@@ -312,6 +413,7 @@ export function useToggleStep() {
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: queryKeys.quests })
       void client.invalidateQueries({ queryKey: queryKeys.journal })
+      invalidateCalendar(client)
     },
   })
 }
