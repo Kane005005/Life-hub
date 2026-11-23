@@ -1,7 +1,10 @@
 """Sérialiseurs de l'authentification par jeton."""
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
+
+from apps.accounts.timezones import check_time_zone
 
 
 class LoginSerializer(serializers.Serializer):
@@ -18,6 +21,25 @@ class UserSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = ("id", "username")
         read_only_fields = ("id", "username")
+
+
+class MeSerializer(serializers.ModelSerializer):
+    """Identité du compte connecté ; seul le fuseau horaire est modifiable."""
+
+    time_zone = serializers.CharField(max_length=64)
+
+    class Meta:
+        model = get_user_model()
+        fields = ("id", "username", "time_zone")
+        read_only_fields = ("id", "username")
+
+    def validate_time_zone(self, value: str) -> str:
+        """Refuse un fuseau IANA inconnu avec le message du contrat."""
+        try:
+            check_time_zone(value)
+        except DjangoValidationError:
+            raise serializers.ValidationError("Fuseau horaire inconnu.") from None
+        return value
 
 
 class LoginResponseSerializer(serializers.Serializer):

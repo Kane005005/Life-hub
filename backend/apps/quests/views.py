@@ -17,6 +17,7 @@ from apps.quests.serializers import (
     CompletionResultSerializer,
     QuestCreateSerializer,
     QuestSerializer,
+    QuestStepScheduleSerializer,
     QuestUpdateSerializer,
 )
 from apps.world.models import Territory
@@ -26,6 +27,7 @@ from engine.services import (
     accept_quest,
     complete_quest,
     create_quest,
+    reschedule_step,
     update_quest,
 )
 from engine.services import (
@@ -151,5 +153,22 @@ class QuestViewSet(
         quest = self.get_object()
         step = get_object_or_404(QuestStep, pk=step_id, quest=quest)
         toggle_quest_step(step)
+        updated = Quest.objects.get(pk=quest.pk)
+        return Response(QuestSerializer(updated).data)
+
+    @extend_schema(request=QuestStepScheduleSerializer, responses=QuestSerializer)
+    @action(detail=True, methods=["patch"], url_path=r"steps/(?P<step_id>\d+)")
+    def schedule_step(
+        self,
+        request: Request,
+        pk: str | None = None,
+        step_id: str | None = None,
+    ) -> Response:
+        """Planifie une étape sans modifier les récompenses de la mission."""
+        quest = self.get_object()
+        step = get_object_or_404(QuestStep, pk=step_id, quest=quest)
+        serializer = QuestStepScheduleSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        reschedule_step(step, serializer.validated_data.get("scheduled_date"))
         updated = Quest.objects.get(pk=quest.pk)
         return Response(QuestSerializer(updated).data)

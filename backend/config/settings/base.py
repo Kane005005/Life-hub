@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "apps.character",
     "apps.world",
     "apps.quests",
+    "apps.planning",
     "apps.progression",
     "apps.skills",
     "apps.economy",
@@ -59,6 +60,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "config.middleware.UserTimeZoneMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -99,7 +101,7 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = "accounts.User"
 
 LANGUAGE_CODE = "fr-fr"
-TIME_ZONE = os.environ.get("LIFE_RPG_TIME_ZONE") or "UTC"
+TIME_ZONE = os.environ.get("LIFE_RPG_TIME_ZONE") or "Africa/Bamako"
 USE_I18N = True
 USE_TZ = True
 
@@ -108,7 +110,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        "config.authentication.UserTokenAuthentication",
         "apps.ai_engine.authentication.AgentTokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],

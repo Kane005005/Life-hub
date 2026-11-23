@@ -16,7 +16,7 @@ from mcp_server import server as mcp_module  # noqa: E402
 
 TOKEN = "lra_token_de_test"
 API_URL = "http://127.0.0.1:8000/api"
-EXPECTED_TOOLS = {"get_context", "list_my_proposals", "propose_quests"}
+EXPECTED_TOOLS = {"get_context", "get_calendar", "list_my_proposals", "propose_quests"}
 
 
 @pytest.fixture(autouse=True)
@@ -77,6 +77,26 @@ def test_get_context_sends_bearer_token_and_context_path() -> None:
     assert requests[0].headers["Authorization"] == f"Bearer {TOKEN}"
     assert requests[0].content == b""
     assert "Claude Code" in result
+
+
+def test_get_calendar_sends_bearer_token_and_optional_date_range() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(200, json={"today": "2026-11-24", "days": []})
+
+    mcp_module.set_client(_client(handler))
+    result = mcp_module.get_calendar("2026-11-23", "2026-11-29")
+
+    assert requests[0].method == "GET"
+    assert requests[0].url.path == "/api/agent/calendar/"
+    assert dict(requests[0].url.params) == {"from": "2026-11-23", "to": "2026-11-29"}
+    assert requests[0].headers["Authorization"] == f"Bearer {TOKEN}"
+    assert "2026-11-24" in result
+
+    mcp_module.get_calendar()
+    assert dict(requests[1].url.params) == {}
 
 
 def test_list_my_proposals_sends_bearer_token_and_proposals_path() -> None:
@@ -161,6 +181,6 @@ def test_missing_token_is_reported_on_stderr(
     assert "lra_" in error
 
 
-def test_exposed_tools_are_exactly_the_three_agent_tools() -> None:
+def test_exposed_tools_are_exactly_the_four_agent_tools() -> None:
     assert set(mcp_module.TOOL_NAMES) == EXPECTED_TOOLS
     assert _registered_tool_names() == EXPECTED_TOOLS

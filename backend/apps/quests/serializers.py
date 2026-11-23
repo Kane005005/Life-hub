@@ -1,5 +1,7 @@
 """Sérialiseurs des missions, étapes et résultats de validation."""
 
+import re
+
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -8,14 +10,23 @@ from apps.world.models import Territory
 from engine.rules import is_recurring
 from engine.rules import period_key as period_key_for
 
+SCHEDULED_TIME_PATTERN = re.compile(r"(?:MORNING|AFTERNOON|EVENING|(?:[01]\d|2[0-3]):[0-5]\d)?")
+
+
+def check_scheduled_time(value: str) -> str:
+    """Accepte une plage nommée, une heure HH:MM ou une chaîne vide."""
+    if not SCHEDULED_TIME_PATTERN.fullmatch(value):
+        raise serializers.ValidationError("Heure de planification invalide.")
+    return value
+
 
 class QuestStepSerializer(serializers.ModelSerializer):
     """Étape d'une mission, sans récompense propre."""
 
     class Meta:
         model = QuestStep
-        fields = ("id", "title", "order", "is_required", "is_done", "done_at")
-        read_only_fields = ("id", "title", "order", "is_required", "is_done", "done_at")
+        fields = ("id", "title", "order", "is_required", "is_done", "done_at", "scheduled_date")
+        read_only_fields = fields
 
 
 class QuestSerializer(serializers.ModelSerializer):
@@ -43,6 +54,8 @@ class QuestSerializer(serializers.ModelSerializer):
             "estimated_minutes",
             "start_date",
             "due_date",
+            "scheduled_date",
+            "scheduled_time",
             "xp_reward",
             "credit_reward",
             "validation_mode",
@@ -105,6 +118,10 @@ class QuestCreateSerializer(serializers.Serializer):
     estimated_minutes = serializers.IntegerField(required=False, min_value=0, default=0)
     start_date = serializers.DateField(required=False, allow_null=True)
     due_date = serializers.DateField(required=False, allow_null=True)
+    scheduled_date = serializers.DateField(required=False, allow_null=True)
+    scheduled_time = serializers.CharField(
+        max_length=9, required=False, allow_blank=True, default=""
+    )
     validation_mode = serializers.ChoiceField(
         choices=ValidationMode.choices,
         default=ValidationMode.MANUAL,
@@ -123,6 +140,10 @@ class QuestCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError("Territoire inconnu.")
         return value
 
+    def validate_scheduled_time(self, value: str) -> str:
+        """Refuse une plage horaire inconnue."""
+        return check_scheduled_time(value)
+
 
 class QuestUpdateSerializer(serializers.Serializer):
     """Champs modifiables d'une mission active ; le reste est ignoré."""
@@ -136,6 +157,10 @@ class QuestUpdateSerializer(serializers.Serializer):
     estimated_minutes = serializers.IntegerField(required=False, min_value=0)
     start_date = serializers.DateField(required=False, allow_null=True)
     due_date = serializers.DateField(required=False, allow_null=True)
+    scheduled_date = serializers.DateField(required=False, allow_null=True)
+    scheduled_time = serializers.CharField(
+        max_length=9, required=False, allow_blank=True, default=""
+    )
     validation_mode = serializers.ChoiceField(choices=ValidationMode.choices, required=False)
     skill_branch = serializers.CharField(max_length=40, required=False, allow_blank=True)
 
@@ -144,6 +169,16 @@ class QuestUpdateSerializer(serializers.Serializer):
         if not Territory.objects.filter(code=value).exists():
             raise serializers.ValidationError("Territoire inconnu.")
         return value
+
+    def validate_scheduled_time(self, value: str) -> str:
+        """Refuse une plage horaire inconnue."""
+        return check_scheduled_time(value)
+
+
+class QuestStepScheduleSerializer(serializers.Serializer):
+    """Date planifiée d'une étape, envoyée par l'utilisateur."""
+
+    scheduled_date = serializers.DateField(required=False, allow_null=True)
 
 
 class CompleteQuestInputSerializer(serializers.Serializer):

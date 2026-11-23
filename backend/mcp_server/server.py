@@ -2,7 +2,8 @@
 
 Aucun accès à la base de données, aucun import Django : les outils parlent à
 ``http://127.0.0.1:8000/api`` avec un jeton d'agent à portées limitées. L'agent
-ne peut que lire le contexte et proposer des missions : l'utilisateur décide.
+ne peut que lire le contexte et le calendrier, et proposer des missions :
+l'utilisateur décide.
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 
 import httpx
 from mcp.server.mcpserver import MCPServer
@@ -27,6 +28,14 @@ GET_CONTEXT_DESCRIPTION = (
     "compétences, saison, journal et bilans énergétiques selon les portées du jeton. "
     "Lecture seule : ne modifie rien et ne valide rien. Certaines clés sont absentes si "
     "le jeton n'a pas la portée correspondante (les données BODY sont masquées sans 'body')."
+)
+
+GET_CALENDAR_DESCRIPTION = (
+    "Lit le calendrier journalier de Kane sur la plage demandée (from_date et to_date au "
+    "format AAAA-MM-JJ, 100 jours maximum ; sans dates, la semaine ISO courante). Nécessite "
+    "la portée 'quests'. Sans 'body', les missions et validations du territoire BODY sont "
+    "retirées et le résumé est recalculé. Lecture seule : aucune validation, aucune "
+    "réplanification et aucune récompense."
 )
 
 LIST_PROPOSALS_DESCRIPTION = (
@@ -162,6 +171,15 @@ def get_context() -> str:
     return get_client().get("agent/context/")
 
 
+def get_calendar(from_date: str = "", to_date: str = "") -> str:
+    """Renvoie le calendrier agent, avec une plage de dates facultative."""
+    params = {key: value for key, value in (("from", from_date), ("to", to_date)) if value}
+    path = "agent/calendar/"
+    if params:
+        path = f"{path}?{urlencode(params)}"
+    return get_client().get(path)
+
+
 def list_my_proposals() -> str:
     """Renvoie les propositions de missions de l'agent et leur statut."""
     return get_client().get("agent/quest-proposals/")
@@ -174,6 +192,7 @@ def propose_quests(proposals: list[dict[str, Any]]) -> str:
 
 TOOL_DEFINITIONS: tuple[tuple[str, Callable[..., str], str], ...] = (
     ("get_context", get_context, GET_CONTEXT_DESCRIPTION),
+    ("get_calendar", get_calendar, GET_CALENDAR_DESCRIPTION),
     ("list_my_proposals", list_my_proposals, LIST_PROPOSALS_DESCRIPTION),
     ("propose_quests", propose_quests, PROPOSE_QUESTS_DESCRIPTION),
 )
@@ -188,6 +207,7 @@ server = MCPServer(
 )
 
 server.tool(name="get_context", description=GET_CONTEXT_DESCRIPTION)(get_context)
+server.tool(name="get_calendar", description=GET_CALENDAR_DESCRIPTION)(get_calendar)
 server.tool(name="list_my_proposals", description=LIST_PROPOSALS_DESCRIPTION)(list_my_proposals)
 server.tool(name="propose_quests", description=PROPOSE_QUESTS_DESCRIPTION)(propose_quests)
 

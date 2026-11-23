@@ -68,6 +68,7 @@ PROPOSAL_EDITABLE_FIELDS = (
     "priority",
     "estimated_minutes",
     "due_date",
+    "scheduled_date",
     "skill_branch",
     "steps",
     "rationale",
@@ -298,6 +299,10 @@ def _validate_proposal_fields(item: Mapping) -> dict:
         due_date = _parse_date(item.get("due_date"))
     except ValueError:
         raise EngineError("Date d'échéance invalide.") from None
+    try:
+        scheduled_date = _parse_date(item.get("scheduled_date"))
+    except ValueError:
+        raise EngineError("Date de planification invalide.") from None
     skill_branch = str(item.get("skill_branch", ""))
     _validate_skill_branch(territory, skill_branch)
 
@@ -327,6 +332,7 @@ def _validate_proposal_fields(item: Mapping) -> dict:
         "priority": priority,
         "estimated_minutes": estimated,
         "due_date": due_date,
+        "scheduled_date": scheduled_date,
         "skill_branch": skill_branch,
         "steps": clean_steps,
         "rationale": str(item.get("rationale", "")),
@@ -427,6 +433,7 @@ def accept_proposal(
             "priority": proposal.priority,
             "estimated_minutes": proposal.estimated_minutes,
             "due_date": proposal.due_date,
+            "scheduled_date": proposal.scheduled_date,
             "skill_branch": proposal.skill_branch,
         },
         steps=proposal.steps,

@@ -10,7 +10,12 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.serializers import LoginResponseSerializer, LoginSerializer, UserSerializer
+from apps.accounts.serializers import (
+    LoginResponseSerializer,
+    LoginSerializer,
+    MeSerializer,
+    UserSerializer,
+)
 
 
 class LoginView(APIView):
@@ -48,9 +53,17 @@ class LogoutView(APIView):
 
 
 class MeView(APIView):
-    """Renvoie l'identité du compte authentifié."""
+    """Renvoie l'identité du compte authentifié et gère son fuseau horaire."""
 
-    @extend_schema(responses=UserSerializer)
+    @extend_schema(operation_id="me_retrieve", responses=MeSerializer)
     def get(self, request: Request) -> Response:
-        """Renvoie l'identifiant et le nom d'utilisateur."""
-        return Response(UserSerializer(request.user).data)
+        """Renvoie l'identifiant, le nom et le fuseau de l'utilisateur."""
+        return Response(MeSerializer(request.user).data)
+
+    @extend_schema(operation_id="me_update", request=MeSerializer, responses=MeSerializer)
+    def patch(self, request: Request) -> Response:
+        """Modifie uniquement le fuseau horaire du compte."""
+        serializer = MeSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)

@@ -11,6 +11,7 @@ class EventType(models.TextChoices):
 
     QUEST_CREATED = "QUEST_CREATED", "Mission créée"
     QUEST_UPDATED = "QUEST_UPDATED", "Mission modifiée"
+    QUEST_RESCHEDULED = "QUEST_RESCHEDULED", "Mission replanifiée"
     QUEST_ACCEPTED = "QUEST_ACCEPTED", "Mission acceptée"
     QUEST_STEP_DONE = "QUEST_STEP_DONE", "Étape cochée"
     QUEST_STEP_UNDONE = "QUEST_STEP_UNDONE", "Étape décochée"

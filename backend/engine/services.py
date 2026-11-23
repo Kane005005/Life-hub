@@ -53,9 +53,19 @@ QUEST_EDITABLE_FIELDS = (
     "estimated_minutes",
     "start_date",
     "due_date",
+    "scheduled_date",
+    "scheduled_time",
     "validation_mode",
     "skill_branch",
 )
+PLANNING_FIELDS = frozenset({"scheduled_date", "scheduled_time", "due_date"})
+
+
+def _reschedule_message(day: date | None) -> str:
+    """Renvoie le message du journal pour une replanification."""
+    if day is None:
+        return "Planification retirée."
+    return f"Mission replanifiée au {day:%d/%m/%Y}."
 
 
 @dataclass(frozen=True)
@@ -228,6 +238,8 @@ def create_quest(
         estimated_minutes=int(data.get("estimated_minutes", 0) or 0),
         start_date=_parse_date(data.get("start_date")),
         due_date=_parse_date(data.get("due_date")),
+        scheduled_date=_parse_date(data.get("scheduled_date")),
+        scheduled_time=str(data.get("scheduled_time", "") or ""),
         xp_reward=xp,
         credit_reward=credits_for_xp(xp, settings.credits_per_xp),
         validation_mode=str(data.get("validation_mode", "MANUAL")),
@@ -253,12 +265,15 @@ def update_quest(quest: Quest, data: Mapping[str, object]) -> Quest:
         raise QuestStateError("Cette mission est terminée. Elle ne peut plus être modifiée.")
 
     difficulty_changed = "difficulty" in data and data["difficulty"] != quest.difficulty
+    changed_fields: set[str] = set()
     for field in QUEST_EDITABLE_FIELDS:
         if field not in data:
             continue
         value = data[field]
-        if field in ("start_date", "due_date"):
+        if field in ("start_date", "due_date", "scheduled_date"):
             value = _parse_date(value)
+        if getattr(quest, field) != value:
+            changed_fields.add(field)
         setattr(quest, field, value)
 
     if "skill_branch" in data or "territory" in data:
@@ -271,7 +286,15 @@ def update_quest(quest: Quest, data: Mapping[str, object]) -> Quest:
         quest.credit_reward = credits_for_xp(xp, settings.credits_per_xp)
 
     quest.save()
-    log_event(quest.owner, "QUEST_UPDATED", "Mission mise à jour.", quest=quest)
+    if changed_fields and changed_fields <= PLANNING_FIELDS:
+        log_event(
+            quest.owner,
+            "QUEST_RESCHEDULED",
+            _reschedule_message(quest.scheduled_date),
+            quest=quest,
+        )
+    else:
+        log_event(quest.owner, "QUEST_UPDATED", "Mission mise à jour.", quest=quest)
     return quest
 
 
@@ -315,6 +338,24 @@ def toggle_step(step: QuestStep) -> QuestStep:
     event_type = "QUEST_STEP_DONE" if step.is_done else "QUEST_STEP_UNDONE"
     message = "Étape cochée." if step.is_done else "Étape décochée."
     log_event(quest.owner, event_type, message, quest=quest)
+    return step
+
+
+@transaction.atomic
+def reschedule_step(step: QuestStep, scheduled_date: date | None) -> QuestStep:
+    """Planifie une étape sans toucher aux récompenses ni au statut."""
+    quest = Quest.objects.select_for_update().get(pk=step.quest_id)
+    step = QuestStep.objects.select_for_update().get(pk=step.pk)
+    if quest.status in ("COMPLETED", "ABANDONED"):
+        raise QuestStateError("Cette mission est terminée. Ses étapes ne peuvent plus changer.")
+    step.scheduled_date = _parse_date(scheduled_date)
+    step.save(update_fields=["scheduled_date"])
+    log_event(
+        quest.owner,
+        "QUEST_RESCHEDULED",
+        _reschedule_message(step.scheduled_date),
+        quest=quest,
+    )
     return step
 
 

@@ -92,6 +92,7 @@ class QuestProposal(models.Model):
     )
     estimated_minutes = models.PositiveIntegerField(default=0)
     due_date = models.DateField(null=True, blank=True)
+    scheduled_date = models.DateField(null=True, blank=True)
     skill_branch = models.CharField(max_length=40, blank=True, default="")
     steps = models.JSONField(default=list)
     rationale = models.TextField(blank=True, default="")

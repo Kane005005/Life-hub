@@ -86,6 +86,7 @@ class QuestProposalSerializer(serializers.ModelSerializer):
             "priority",
             "estimated_minutes",
             "due_date",
+            "scheduled_date",
             "skill_branch",
             "steps",
             "xp_preview",
@@ -108,6 +109,7 @@ class QuestProposalInputSerializer(serializers.Serializer):
     priority = serializers.ChoiceField(choices=Priority.choices, default=Priority.NORMAL)
     estimated_minutes = serializers.IntegerField(required=False, min_value=0, default=0)
     due_date = serializers.DateField(required=False, allow_null=True)
+    scheduled_date = serializers.DateField(required=False, allow_null=True)
     skill_branch = serializers.CharField(
         max_length=40, required=False, allow_blank=True, default=""
     )
@@ -142,6 +144,7 @@ class QuestProposalUpdateSerializer(serializers.Serializer):
     priority = serializers.ChoiceField(choices=Priority.choices, required=False)
     estimated_minutes = serializers.IntegerField(required=False, min_value=0)
     due_date = serializers.DateField(required=False, allow_null=True)
+    scheduled_date = serializers.DateField(required=False, allow_null=True)
     skill_branch = serializers.CharField(max_length=40, required=False, allow_blank=True)
     steps = QuestStepInputSerializer(many=True, required=False)
     rationale = serializers.CharField(required=False, allow_blank=True)

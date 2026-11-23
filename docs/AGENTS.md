@@ -16,7 +16,7 @@ Un agent peut lire le contexte autorisé par son jeton et proposer des missions.
 - débloquer une compétence, acheter un objet, équiper un objet, dépenser des crédits ;
 - créer, modifier ou supprimer une mission existante, un objectif, une saison ou une donnée
   du joueur ;
-- modifier silencieusement une échéance ou un objectif ;
+- modifier silencieusement une échéance, une date planifiée ou un objectif ;
 - accepter ou refuser sa propre proposition, ni décider à la place de Kane.
 
 Une proposition acceptée devient une mission `AVAILABLE` d'origine `AI`. Elle ne rapporte
@@ -58,7 +58,7 @@ révoqué. »).
 | --- | --- |
 | `profile` | Pseudonyme, classe, niveau, rang, titre actif |
 | `progression` | XP, niveaux, statistiques des territoires, analyse de progression |
-| `quests` | Missions actives et récemment validées |
+| `quests` | Missions actives, récemment validées et calendrier journalier (`/api/agent/calendar/`) |
 | `skills` | Arbres et compétences débloquées (lecture seule) |
 | `seasons` | Saison active, objectifs, bilan |
 | `journal` | 50 derniers événements |
@@ -143,6 +143,7 @@ Une proposition utile est courte, précise et justifiée. Codes utiles : territo
   "priority": "NORMAL",
   "estimated_minutes": 20,
   "due_date": null,
+  "scheduled_date": null,
   "skill_branch": "reading",
   "steps": [{"title": "Lire 20 pages", "is_required": true}]
 }
@@ -157,8 +158,12 @@ portée `body`, ne les lis pas, ne les mentionne pas et ne propose pas de missio
 
 ## 5. Serveur MCP local
 
-Le paquet `backend/mcp_server/` expose trois outils via le protocole MCP en stdio :
-`get_context`, `list_my_proposals` et `propose_quests`. Il n'existe **aucun** outil de
+Le paquet `backend/mcp_server/` expose quatre outils via le protocole MCP en stdio :
+`get_context`, `get_calendar`, `list_my_proposals` et `propose_quests`. `get_calendar`
+lit `/api/agent/calendar/` avec la portée `quests` ; ses arguments `from_date` et
+`to_date` sont des dates `AAAA-MM-JJ` facultatives (100 jours maximum, semaine ISO
+courante par défaut). Sans `body`, les entrées et validations BODY sont retirées.
+Il n'existe **aucun** outil de
 validation, d'attribution, d'achat, de déblocage ou de suppression. Il n'ouvre aucune base
 de données et n'importe pas Django : il est uniquement client de l'API locale. Les erreurs
 de l'API sont renvoyées en texte lisible (message `detail` et code HTTP), sans trace Python.
@@ -204,7 +209,8 @@ d'erreur. Ne commite jamais un jeton, même révoqué.
 ## 6. Journal et confidentialité
 
 Chaque action d'un agent est tracée dans le journal LIFE RPG avec `actor` = nom de l'agent :
-lecture du contexte (`AGENT_CONTEXT_READ`), proposition (`QUEST_PROPOSED`). La création et
+lecture du contexte (`AGENT_CONTEXT_READ`), lecture du calendrier (`AGENT_CONTEXT_READ`,
+message « <agent> a lu le calendrier. »), proposition (`QUEST_PROPOSED`). La création et
 la révocation d'un jeton sont journalisées avec `actor` = `user`. Kane peut vérifier dans
 le journal ce que chaque agent a lu et proposé.
 

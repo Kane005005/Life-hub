@@ -102,6 +102,8 @@ class Quest(models.Model):
     estimated_minutes = models.PositiveIntegerField(default=0)
     start_date = models.DateField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
+    scheduled_date = models.DateField(null=True, blank=True)
+    scheduled_time = models.CharField(max_length=9, blank=True, default="")
     xp_reward = models.PositiveIntegerField(default=0)
     credit_reward = models.PositiveIntegerField(default=0)
     validation_mode = models.CharField(
@@ -140,6 +142,7 @@ class QuestStep(models.Model):
     is_required = models.BooleanField(default=True)
     is_done = models.BooleanField(default=False)
     done_at = models.DateTimeField(null=True, blank=True)
+    scheduled_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

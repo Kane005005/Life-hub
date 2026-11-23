@@ -298,3 +298,107 @@ Objet borné : seules les clés des portées du jeton sont présentes.
 | GET | `/api/export/` | utilisateur | Export JSON complet des données du joueur (téléchargement `life-rpg-export-AAAA-MM-JJ.json`) |
 
 Nouveaux `event_type` du journal : `AGENT_TOKEN_CREATED`, `AGENT_TOKEN_REVOKED`, `AGENT_CONTEXT_READ`, `QUEST_PROPOSED`, `PROPOSAL_ACCEPTED`, `PROPOSAL_REJECTED`, `PROPOSAL_UPDATED`, `ENERGY_CHECKIN`.
+
+---
+
+# Phase 4b : calendrier
+
+Le calendrier **affiche et planifie** : il ne change aucune règle de gain (XP, crédits, niveaux, points), ne punit jamais un jour manqué et n'ajoute aucun champ « manqué », « raté », « série » ou « streak ».
+
+## Jour de l'utilisateur
+
+- `accounts.User.time_zone` : nom de fuseau IANA, défaut `"Africa/Bamako"`, validé avec `zoneinfo`.
+- `GET /api/auth/me/` renvoie `{ "id", "username", "time_zone" }`.
+- `PATCH /api/auth/me/` accepte uniquement `{"time_zone": "Europe/Paris"}`. Un fuseau inconnu donne 400 avec `{"time_zone": ["Fuseau horaire inconnu."]}`. Les autres champs sont ignorés.
+- Pendant chaque requête authentifiée (jeton utilisateur ou jeton d'agent), le fuseau du compte est activé : `timezone.localdate()` donne le jour de l'utilisateur, y compris pour les clés de période des Daily et Weekly. Un middleware nettoie le fuseau à l'entrée et à la sortie de la requête.
+- `TIME_ZONE` par défaut des réglages : `"Africa/Bamako"` (surchargeable par `LIFE_RPG_TIME_ZONE`). Bamako est en UTC+0 sans heure d'été : aucune clé de période existante ne change.
+
+## Champs de planification
+
+- `Quest` : `scheduled_date` (date ou `null`), `scheduled_time` (`""`, `MORNING`, `AFTERNOON`, `EVENING` ou `HH:MM`), `due_date` (déjà présent).
+- `QuestStep` : `scheduled_date` (date ou `null`).
+- `QuestProposal` : `scheduled_date` (date ou `null`), proposable par l'agent, modifiable par l'utilisateur, copiée sur la mission à l'acceptation.
+- `PATCH /api/quests/{id}/` accepte `scheduled_date`, `scheduled_time`, `due_date` (`null` efface la valeur). Si seuls ces champs changent, le journal reçoit `QUEST_RESCHEDULED` (« Mission replanifiée au 25/11/2026. » ou « Planification retirée. ») au lieu de `QUEST_UPDATED`. Aucune récompense ni statut ne change : l'XP n'est recalculée que si la difficulté change.
+- `PATCH /api/quests/{id}/steps/{step_id}/` accepte `{"scheduled_date": "2026-11-25" | null}` et renvoie la `Quest` complète, avec le même événement `QUEST_RESCHEDULED`.
+- `QuestSerializer` expose `scheduled_date`, `scheduled_time`, `due_date` ; chaque étape expose `scheduled_date`.
+- Une mission terminée ou abandonnée reste refusée avec 409 pour toute modification.
+
+## `GET /api/calendar/?from=AAAA-MM-JJ&to=AAAA-MM-JJ`
+
+Plage inclusive, `from <= to`, 100 jours maximum (sinon 400 `{"detail": "La plage est limitée à 100 jours."}`). Sans paramètres : semaine ISO courante.
+
+```json
+{
+  "from": "2026-11-23", "to": "2026-11-29", "today": "2026-11-24", "time_zone": "Africa/Bamako",
+  "days": [ CalendarDay, ... ]
+}
+```
+
+### `CalendarDay`
+
+```json
+{
+  "date": "2026-11-24",
+  "is_today": true,
+  "iso_week": "2026-W48",
+  "entries": [ CalendarEntry, ... ],
+  "completions": [ CalendarCompletion, ... ],
+  "summary": { "completions": 2, "xp": 20, "credits": 20, "dominant_territory": "INNER_WORLD" }
+}
+```
+
+`dominant_territory` = territoire avec le plus de validations ce jour-là (égalité : le plus d'XP, puis l'ordre des territoires), sinon `null`. Un jour sans validation a simplement `completions: 0`, sans aucune autre clé.
+
+### `CalendarEntry`
+
+```json
+{
+  "kind": "DAILY" | "WEEKLY" | "SCHEDULED" | "STEP" | "DUE",
+  "quest": { "id": 3, "title": "Méditer 10 minutes", "quest_type": "DAILY", "difficulty": "TRIVIAL",
+             "territory": "INNER_WORLD", "status": "AVAILABLE", "xp_reward": 5, "credit_reward": 5,
+             "scheduled_date": null, "scheduled_time": "", "due_date": null },
+  "step": null | { "id": 9, "title": "Choisir le livre n°1", "is_done": false },
+  "period_key": "2026-11-24" | "2026-W48" | "once",
+  "done": false,
+  "due_passed": false
+}
+```
+
+Règles d'apparition (affichage seulement) :
+
+- `DAILY` : chaque mission quotidienne active (`AVAILABLE`, `ACCEPTED`, `IN_PROGRESS`) apparaît chaque jour à partir de son jour de création local (ou `start_date`). Les jours passés inclus dans la plage apparaissent aussi, validés ou non. Une Daily en pause n'apparaît pas les jours futurs.
+- `WEEKLY` : chaque mission hebdomadaire active apparaît sur les sept jours de sa semaine ISO, avec la même règle de début ; `done` vaut vrai toute la semaine après une validation.
+- `SCHEDULED` : mission non récurrente dont `scheduled_date` vaut ce jour, y compris terminée ce jour-là (`done` vrai).
+- `STEP` : étape dont `scheduled_date` vaut ce jour ; `done` = `step.is_done`.
+- `DUE` : mission non récurrente non terminée dont `due_date` est atteinte ou dépassée, sans `scheduled_date` ce jour-là. Une échéance dépassée reste affichée sobrement jusqu'à la validation. `due_passed` vaut vrai si `due_date < today`, sans pénalité.
+
+Ordre : territoire (ordre des territoires), type (`BOSS`, `MAIN`, `SIDE`, `WEEKLY`, `DAILY`), puis titre.
+
+### `CalendarCompletion`
+
+```json
+{ "quest_id": 3, "title": "Méditer 10 minutes", "territory": "INNER_WORLD", "quest_type": "DAILY",
+  "xp": 5, "credits": 5, "completed_at": "2026-11-24T07:12:00Z" }
+```
+
+Les validations sont prises d'après `completed_at` dans le fuseau de l'utilisateur. Les XP et crédits affichés sont les `xp_awarded` et `credits_awarded` enregistrés sur la validation, et les `xp_reward` et `credit_reward` de la mission : aucun recalcul.
+
+## `GET /api/calendar/today/`
+
+Même forme qu'un `CalendarDay` pour aujourd'hui, plus :
+
+```json
+{ "...CalendarDay": "...", "time_zone": "Africa/Bamako",
+  "weekly": [ { "quest": {...}, "done": false, "days_left_in_week": 6 } ] }
+```
+
+`weekly` = hebdomadaires actives de la semaine en cours, avec `done` pour la semaine et les jours restants dans la semaine ISO, aujourd'hui compris.
+
+## Agents
+
+- `GET /api/agent/calendar/?from=&to=` : jeton d'agent avec la portée `quests` (libellé « Missions »). Même forme que le calendrier utilisateur. Sans la portée `body`, les entrées et validations du territoire BODY sont retirées et le résumé est recalculé. Journal : `AGENT_CONTEXT_READ` (« <agent> a lu le calendrier. »).
+- Un agent ne peut ni valider une mission, ni la replanifier (`PATCH /api/quests/{id}/`, `PATCH /api/quests/{id}/steps/{step_id}/` → 403), ni modifier son fuseau (`PATCH /api/auth/me/` → 403).
+- La proposition d'une mission peut porter `scheduled_date` ; l'utilisateur peut la modifier avant d'accepter, et la mission créée reçoit cette date sans aucune récompense.
+- Outil MCP : `get_calendar(from_date: str = "", to_date: str = "")` appelle `GET agent/calendar/`.
+
+`event_type` ajouté au journal : `QUEST_RESCHEDULED`.

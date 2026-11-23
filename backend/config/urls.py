@@ -20,6 +20,7 @@ urlpatterns = [
     path("api/", include("apps.character.urls")),
     path("api/", include("apps.world.urls")),
     path("api/", include("apps.quests.urls")),
+    path("api/", include("apps.planning.urls")),
     path("api/", include("apps.progression.urls")),
     path("api/", include("apps.skills.urls")),
     path("api/", include("apps.achievements.urls")),

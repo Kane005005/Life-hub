@@ -14,6 +14,7 @@ from drf_spectacular.extensions import OpenApiAuthenticationExtension
 from rest_framework.authentication import BaseAuthentication, get_authorization_header
 from rest_framework.exceptions import AuthenticationFailed
 
+from apps.accounts.timezones import user_zone_info
 from apps.ai_engine.models import AgentToken
 
 TOKEN_PREFIX = "lra_"
@@ -61,6 +62,7 @@ class AgentTokenAuthentication(BaseAuthentication):
         ):
             token.last_used_at = now
             token.save(update_fields=["last_used_at"])
+        timezone.activate(user_zone_info(token.owner))
         return (token.owner, token)
 
     def authenticate_header(self, request) -> str:
