@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import type { CompletionResult } from '../../lib/types'
+import { prefersReducedMotion } from './motion'
 import { useFx } from './useFx'
 import { playSfx } from './sound'
 
@@ -31,13 +32,11 @@ export function useCelebrate(): Celebrate {
       toast(result.result.message)
 
       if (result.result.levels_gained > 0) {
-        window.setTimeout(
-          () => {
-            showLevelUp(result.result.level_after, result.result.level_message)
-            playSfx('lvl')
-          },
-          isBoss ? 600 : 300,
-        )
+        const delay = prefersReducedMotion() ? 0 : isBoss ? 600 : 300
+        window.setTimeout(() => {
+          showLevelUp(result.result.level_after, result.result.level_message)
+          playSfx('lvl')
+        }, delay)
       }
 
       const achievements = result.result.achievements ?? []

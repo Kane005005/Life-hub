@@ -1,3 +1,5 @@
+import { prefersReducedMotion } from '../features/fx/motion'
+
 type XpGaugeProps = {
   level: number
   xp: number
@@ -11,7 +13,7 @@ export function XpGauge({ level, xp, xpRequired, variant = 'full', pulse = false
   const classes = [
     'lr-gauge',
     variant === 'mini' ? 'lr-gauge--mini' : undefined,
-    pulse ? 'lr-gauge--pulse' : undefined,
+    pulse && !prefersReducedMotion() ? 'lr-gauge--pulse' : undefined,
   ]
     .filter(Boolean)
     .join(' ')
@@ -34,7 +36,9 @@ export function XpGauge({ level, xp, xpRequired, variant = 'full', pulse = false
         aria-valuenow={xp}
         aria-label={`Niveau ${level}, ${xp} sur ${xpRequired} XP`}
       >
-        <span className="lr-fill" style={{ width: `${percent}%` }} />
+        <span className="lr-fill" style={{ width: `${percent}%` }}>
+          <span className="lr-fill-inner" style={{ transform: `scaleX(${percent / 100})` }} />
+        </span>
       </div>
     </div>
   )

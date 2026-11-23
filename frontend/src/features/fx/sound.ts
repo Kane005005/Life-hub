@@ -5,6 +5,7 @@ interface AudioWindow extends Window {
 }
 
 let enabled = false
+let activated = false
 let context: AudioContext | null = null
 
 function audioContext(): AudioContext | null {
@@ -52,9 +53,19 @@ export function isSoundEnabled(): boolean {
   return enabled
 }
 
-export function setSoundEnabled(value: boolean): void {
+/**
+ * Active ou coupe le son. Le contexte audio n'est créé que sur une activation
+ * explicite (clic sur l'interrupteur), jamais au montage de l'application.
+ */
+export function setSoundEnabled(value: boolean, activate = false): void {
   enabled = value
-  if (!value) {
+  if (activate) {
+    activated = true
+  }
+  if (!value || !activated) {
+    return
+  }
+  if (!activate && !context) {
     return
   }
   const ac = audioContext()
@@ -64,7 +75,7 @@ export function setSoundEnabled(value: boolean): void {
 }
 
 export function playSfx(kind: SfxKind): void {
-  if (!enabled) {
+  if (!enabled || !activated) {
     return
   }
   const ac = audioContext()

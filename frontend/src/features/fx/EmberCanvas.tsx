@@ -41,6 +41,7 @@ export function EmberCanvas({ children }: EmberCanvasProps) {
     const context = canvas?.getContext('2d')
     if (!context) {
       running.current = false
+      frame.current = null
       return
     }
     context.clearRect(0, 0, window.innerWidth, window.innerHeight)
