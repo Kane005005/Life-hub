@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AchievementGrid } from '../components/AchievementGrid'
@@ -26,16 +26,26 @@ export function HeroPage() {
     arbreParam && TERRITORY_CODES.includes(arbreParam) ? arbreParam : 'KNOWLEDGE'
   const skillTreesQuery = useSkillTrees(selectedTree)
   const [selectedCode, setSelectedCode] = useState<string | null>(null)
+  const [unlockFx, setUnlockFx] = useState<{ code: string; key: number } | null>(null)
+  const unlockFxKey = useRef(0)
   const character = characterQuery.data
   const transactions = historyQuery.data?.results.slice(0, 10) ?? []
   const tree = skillTreesQuery.data?.[0]
 
   useEffect(() => {
     setSelectedCode(null)
+    setUnlockFx(null)
   }, [selectedTree])
 
   const achievements = useMemo(() => achievementsQuery.data ?? [], [achievementsQuery.data])
   const branches = tree?.branches ?? []
+  const unlockedCount = tree
+    ? branches.reduce(
+        (total, branch) =>
+          total + branch.skills.filter((skill) => skill.state === 'UNLOCKED').length,
+        0,
+      )
+    : null
   // Toujours relire le nœud dans l'arbre à jour : après un déblocage, l'API renvoie le nouvel état.
   const selectedNode: SkillNode | null =
     branches.flatMap((branch) => branch.skills).find((node) => node.code === selectedCode) ?? null
@@ -85,37 +95,55 @@ export function HeroPage() {
       <h2 className="lr-subtitle" id="competences">
         Compétences
       </h2>
+      <div className="lr-skill-territories" role="group" aria-label="Territoire de l'arbre">
+        {TERRITORY_CODES.map((code) => {
+          const isSelected = selectedTree === code
+          const count = isSelected ? unlockedCount : null
+          return (
+            <button
+              key={code}
+              type="button"
+              className={isSelected ? 'lr-skill-territory is-selected' : 'lr-skill-territory'}
+              aria-label={TERRITORY_LABELS[code]}
+              aria-pressed={isSelected}
+              style={{ '--c': TERRITORY_BY_CODE[code].color } as CSSProperties}
+              onClick={() => setSearchParams({ arbre: code })}
+            >
+              <span>{TERRITORY_LABELS[code]}</span>
+              {count !== null ? (
+                <span className="lr-skill-territory-count" aria-hidden="true">
+                  {count}/12
+                </span>
+              ) : null}
+            </button>
+          )
+        })}
+      </div>
       {character ? (
         <SkillPointsBadge
           available={character.skill_points.available}
           spent={character.skill_points.spent}
         />
       ) : null}
-      <div className="lr-choices" role="group" aria-label="Territoire de l'arbre">
-        {TERRITORY_CODES.map((code) => (
-          <button
-            key={code}
-            type="button"
-            className={selectedTree === code ? 'lr-tab is-selected' : 'lr-tab'}
-            aria-pressed={selectedTree === code}
-            style={{ '--c': TERRITORY_BY_CODE[code].color } as CSSProperties}
-            onClick={() => setSearchParams({ arbre: code })}
-          >
-            {TERRITORY_LABELS[code]}
-          </button>
-        ))}
-      </div>
       <div className="lr-skill-layout">
         {tree ? (
           <SkillTreeView
             tree={{ ...tree, branches }}
             selectedCode={selectedCode ?? undefined}
             onSelect={(node) => setSelectedCode(node.code)}
+            celebratingCode={unlockFx?.code}
+            celebrationKey={unlockFx?.key}
           />
         ) : (
           <p className="lr-note">Chargement de l'arbre…</p>
         )}
-        <SkillDetail node={selectedNode} />
+        <SkillDetail
+          node={selectedNode}
+          onUnlocked={(code) => {
+            unlockFxKey.current += 1
+            setUnlockFx({ code, key: unlockFxKey.current })
+          }}
+        />
       </div>
 
       <h2 className="lr-subtitle">Progression récente</h2>

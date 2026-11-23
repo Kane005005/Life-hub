@@ -1,0 +1,494 @@
+/* F6 — arbre de compétences façon RPG. */
+
+.lr-skill-tree {
+  --c: var(--lr-emeraude-vive);
+  position: relative;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.lr-skill-tree .lr-skill-tree-head {
+  display: grid;
+  gap: 2px;
+}
+
+.lr-skill-territories {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0 4px;
+}
+
+.lr-skill-territory {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  min-width: 0;
+  padding: 9px 4px 11px;
+  border: 1px solid var(--lr-line2);
+  background: rgba(11, 16, 14, 0.7);
+  color: var(--lr-muted);
+  font-family: var(--lr-font-hud);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-align: center;
+  clip-path: polygon(
+    10px 0,
+    calc(100% - 10px) 0,
+    100% 50%,
+    calc(100% - 10px) 100%,
+    10px 100%,
+    0 50%
+  );
+}
+
+.lr-skill-territory:hover {
+  color: var(--lr-ivoire);
+  border-color: var(--c);
+}
+
+.lr-skill-territory.is-selected {
+  color: var(--c);
+  border-color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+}
+
+.lr-skill-territory-count {
+  font-size: 10px;
+  color: var(--lr-muted);
+}
+
+.lr-skill-points-card {
+  max-width: 440px;
+}
+
+.lr-skill-points-card .lr-skill-points-label {
+  color: var(--lr-muted);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.lr-skill-points-main {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.lr-skill-points-number {
+  font-family: var(--lr-font-display);
+  font-size: 56px;
+  line-height: 0.9;
+  color: var(--lr-emeraude-vive);
+}
+
+.lr-skill-points-unit {
+  font-family: var(--lr-font-hud);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: var(--lr-ivoire);
+}
+
+.lr-skill-points-spent {
+  font-family: var(--lr-font-hud);
+  font-size: 11px;
+  color: var(--lr-muted);
+}
+
+.lr-skill-tree .lr-skill-branches-head {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  text-align: center;
+}
+
+.lr-skill-tree .lr-skill-branch-head {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lr-skill-tree .lr-skill-branch-name {
+  font-family: var(--lr-font-hud);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lr-ivoire);
+  overflow-wrap: anywhere;
+}
+
+.lr-skill-tree .lr-skill-branch-count {
+  font-family: var(--lr-font-hud);
+  font-size: 11px;
+  color: var(--lr-muted);
+}
+
+.lr-skill-tree .lr-skill-canvas {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 720 / 630;
+}
+
+.lr-skill-tree .lr-skill-constellation,
+.lr-skill-tree .lr-skill-svg,
+.lr-skill-tree .lr-skill-hits {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.lr-skill-tree .lr-skill-constellation,
+.lr-skill-tree .lr-skill-svg {
+  pointer-events: none;
+}
+
+.lr-skill-tree .lr-skill-constellation {
+  overflow: hidden;
+}
+
+.lr-skill-tree .lr-skill-constellation-line {
+  fill: none;
+  stroke: var(--lr-argent);
+  stroke-width: 0.7;
+  opacity: 0.12;
+}
+
+.lr-skill-tree .lr-skill-star {
+  fill: var(--lr-ivoire);
+}
+
+.lr-skill-tree .lr-skill-star--twinkle {
+  animation: lr-skill-twinkle 6s ease-in-out infinite;
+}
+
+@keyframes lr-skill-twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.lr-skill-tree .lr-skill-link {
+  fill: none;
+  stroke: var(--lr-line2);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 8;
+  opacity: 0.75;
+}
+
+.lr-skill-tree .lr-skill-link--dim {
+  stroke: var(--lr-line2);
+  opacity: 0.35;
+}
+
+.lr-skill-tree .lr-skill-link--awaken {
+  animation: lr-skill-link-awaken 600ms var(--lr-ease) both;
+}
+
+.lr-skill-tree .lr-skill-link--energy {
+  stroke: var(--c);
+  stroke-width: 2;
+  stroke-dasharray: 6 12;
+  opacity: 0.85;
+  animation: lr-skill-energy 2.4s linear infinite;
+}
+
+@keyframes lr-skill-link-awaken {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 0.75;
+  }
+}
+
+@keyframes lr-skill-energy {
+  to {
+    stroke-dashoffset: -36;
+  }
+}
+
+.lr-skill-tree .lr-skill-node-visual {
+  pointer-events: none;
+}
+
+.lr-skill-tree .lr-skill-node-halo,
+.lr-skill-tree .lr-skill-node-selection,
+.lr-skill-tree .lr-skill-node-flash,
+.lr-skill-tree .lr-skill-node-wave {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.lr-skill-tree .lr-skill-node-halo {
+  fill: var(--c);
+  opacity: 0;
+}
+
+.lr-skill-tree .lr-skill-node-hex {
+  fill: #0a100e;
+  stroke: var(--lr-line2);
+  stroke-width: 1.5;
+}
+
+.lr-skill-tree .lr-skill-node-selection {
+  fill: none;
+  stroke: var(--lr-emeraude-vive);
+  stroke-width: 2;
+  opacity: 0;
+}
+
+.lr-skill-tree .lr-skill-node-glyph path,
+.lr-skill-tree .lr-skill-glyph path,
+.lr-skill-tree .lr-skill-glyph circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lr-skill-tree .lr-skill-glyph {
+  color: var(--c);
+}
+
+.lr-skill-tree .lr-skill-node-tier,
+.lr-skill-tree .lr-skill-node-name-line {
+  font-family: var(--lr-font-hud);
+  text-anchor: middle;
+  fill: var(--lr-ivoire);
+}
+
+.lr-skill-tree .lr-skill-node-tier {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.lr-skill-tree .lr-skill-node-name-line {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--locked {
+  opacity: 1;
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--locked .lr-skill-node-hex {
+  fill: #0a100e;
+  stroke: var(--lr-line2);
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--locked .lr-skill-node-tier,
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--locked .lr-skill-node-name-line {
+  fill: var(--lr-muted);
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--locked .lr-skill-glyph {
+  color: var(--lr-line2);
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--unlockable .lr-skill-node-hex {
+  fill: #101b17;
+  stroke: var(--c);
+  stroke-width: 2;
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--unlockable .lr-skill-node-halo {
+  animation: lr-skill-halo-pulse 2.4s var(--lr-ease) infinite;
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--unlocked .lr-skill-node-hex {
+  fill: color-mix(in srgb, var(--c) 20%, #0a100e);
+  stroke: var(--c);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--c) 65%, transparent));
+}
+
+@keyframes lr-skill-halo-pulse {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.45;
+    transform: scale(1.08);
+  }
+}
+
+.lr-skill-tree .lr-skill-node-visual.is-selected .lr-skill-node-selection {
+  opacity: 1;
+}
+
+.lr-skill-tree .lr-skill-node-visual.is-selected .lr-skill-node-hex {
+  stroke-width: 3;
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--awaken .lr-skill-node-halo {
+  animation: lr-skill-awaken 600ms var(--lr-ease) both;
+}
+
+@keyframes lr-skill-awaken {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+}
+
+.lr-skill-tree .lr-skill-node-flash {
+  fill: #ffffff;
+  opacity: 0;
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--flash .lr-skill-node-flash {
+  animation: lr-skill-flash 240ms var(--lr-ease) both;
+}
+
+.lr-skill-tree .lr-skill-node-wave {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 2;
+  opacity: 0;
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--wave .lr-skill-node-wave {
+  animation: lr-skill-wave 600ms var(--lr-ease) both;
+}
+
+@keyframes lr-skill-flash {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+
+  40% {
+    opacity: 0.9;
+    transform: scale(1.12);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes lr-skill-wave {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+.lr-skill-tree .lr-skill-node-hit.lr-skill-node {
+  position: absolute;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+  opacity: 1;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.lr-skill-tree .lr-skill-node-hit.is-selected {
+  outline: none;
+}
+
+.lr-skill-tree .lr-skill-node-hit:focus-visible {
+  outline: 2px solid var(--lr-emeraude-vive);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+.lr-skill-tooltip {
+  position: absolute;
+  z-index: 5;
+  width: min(240px, 62vw);
+  padding: 10px 12px;
+  border: 1px solid var(--c);
+  background: rgba(9, 16, 13, 0.97);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.lr-skill-tooltip--right {
+  transform: translate(18px, -50%);
+}
+
+.lr-skill-tooltip--left {
+  transform: translate(calc(-100% - 18px), -50%);
+}
+
+.lr-skill-tooltip--above {
+  transform: translate(-50%, calc(-100% - 24px));
+}
+
+.lr-skill-tooltip-name {
+  font-family: var(--lr-font-hud);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lr-ivoire);
+}
+
+.lr-skill-tooltip-meta {
+  font-family: var(--lr-font-hud);
+  font-size: 11px;
+  color: var(--c);
+}
+
+.lr-skill-tooltip-label {
+  margin-top: 6px;
+  font-family: var(--lr-font-hud);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lr-muted);
+}
+
+.lr-skill-tooltip-value {
+  font-size: 12px;
+  color: var(--lr-ivoire);
+}
+
+@media (max-width: 560px) {
+  .lr-skill-territories {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lr-skill-tree *,
+  .lr-skill-tree *::before,
+  .lr-skill-tree *::after,
+  .lr-skill-tooltip {
+    animation: none !important;
+    transition: none !important;
+  }
+}

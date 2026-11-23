@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { playSfx } from '../features/fx/sound'
 import { useFx } from '../features/fx/useFx'
 import { ApiError } from '../lib/api'
 import { SKILL_STATE_LABELS } from '../lib/labels'
@@ -9,11 +10,12 @@ import { HudFrame } from './HudFrame'
 
 type SkillDetailProps = {
   node: SkillNode | null
+  onUnlocked?: (code: string) => void
 }
 
-export function SkillDetail({ node }: SkillDetailProps) {
+export function SkillDetail({ node, onUnlocked }: SkillDetailProps) {
   const unlock = useUnlockSkill()
-  const { announce, burst } = useFx()
+  const { announce, toast } = useFx()
   const [error, setError] = useState('')
 
   if (!node) {
@@ -33,9 +35,9 @@ export function SkillDetail({ node }: SkillDetailProps) {
     try {
       const result = await unlock.mutateAsync(node.code)
       announce(result.message)
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        burst(window.innerWidth / 2, window.innerHeight / 2, 18)
-      }
+      toast(result.message)
+      playSfx('ach')
+      onUnlocked?.(node.code)
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.detail : 'Déblocage impossible.')
     }
