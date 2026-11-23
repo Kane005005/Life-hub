@@ -71,19 +71,68 @@ describe('EmberCanvas', () => {
     expect(frame).toHaveBeenCalledTimes(1)
 
     let steps = 0
+    const start = performance.now()
     act(() => {
       while (callbacks.length > 0 && steps < 100) {
         const callback = callbacks.shift()
         if (!callback) {
           break
         }
-        callback(performance.now())
+        callback(start + steps * (1000 / 60)) // images espacées comme à 60 images/s
         steps += 1
       }
     })
 
     expect(steps).toBeGreaterThan(1)
     expect(steps).toBeLessThan(100)
+    expect(callbacks).toHaveLength(0)
+    expect(frame).toHaveBeenCalledTimes(steps)
+    expect(context.clearRect).toHaveBeenCalled()
+  })
+
+  it('garde une durée d’environ une seconde même à 30 images par seconde', () => {
+    stubMotion()
+    const context = stubContext()
+    const callbacks: FrameRequestCallback[] = []
+    const frame = vi.fn((callback: FrameRequestCallback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    })
+    vi.stubGlobal('requestAnimationFrame', frame)
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+
+    let embers: EmberApi = { burst: () => undefined }
+    function Probe() {
+      embers = useEmbers()
+      return null
+    }
+
+    render(
+      <EmberCanvas>
+        <Probe />
+      </EmberCanvas>,
+    )
+    act(() => {
+      embers.burst(30, 30, 12)
+    })
+    expect(frame).toHaveBeenCalledTimes(1)
+
+    let steps = 0
+    const start = performance.now()
+    act(() => {
+      while (callbacks.length > 0 && steps < 100) {
+        const callback = callbacks.shift()
+        if (!callback) {
+          break
+        }
+        callback(start + steps * (1000 / 30)) // PC lent : 30 images/s
+        steps += 1
+      }
+    })
+
+    expect(steps).toBeGreaterThan(1)
+    // À 60 images/s il faut ~62 images ; à 30 images/s, la moitié suffit.
+    expect(steps).toBeLessThan(40)
     expect(callbacks).toHaveLength(0)
     expect(frame).toHaveBeenCalledTimes(steps)
     expect(context.clearRect).toHaveBeenCalled()

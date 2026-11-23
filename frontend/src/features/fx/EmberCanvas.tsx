@@ -13,6 +13,7 @@ type Particle = {
   color: string
 }
 
+const FRAME_MS = 1000 / 60
 const TWO_PI = Math.PI * 2
 
 type EmberCanvasProps = {
@@ -24,6 +25,7 @@ export function EmberCanvas({ children }: EmberCanvasProps) {
   const particles = useRef<Particle[]>([])
   const running = useRef(false)
   const frame = useRef<number | null>(null)
+  const lastTime = useRef<number | null>(null)
 
   const sizeCanvas = useCallback(() => {
     const canvas = canvasRef.current
@@ -36,7 +38,7 @@ export function EmberCanvas({ children }: EmberCanvasProps) {
     canvas.getContext('2d')?.setTransform(ratio, 0, 0, ratio, 0, 0)
   }, [])
 
-  const step = useCallback(() => {
+  const step = useCallback((timestamp?: number) => {
     const canvas = canvasRef.current
     const context = canvas?.getContext('2d')
     if (!context) {
@@ -44,13 +46,20 @@ export function EmberCanvas({ children }: EmberCanvasProps) {
       frame.current = null
       return
     }
+    // Pas de temps réel : sur un PC lent (30 images/s ou moins), l'effet dure
+    // toujours environ une seconde, comme à 60 images/s. Plafonné pour éviter les sauts.
+    const now = typeof timestamp === 'number' ? timestamp : performance.now()
+    const elapsed =
+      lastTime.current === null || now <= lastTime.current ? FRAME_MS : now - lastTime.current
+    lastTime.current = now
+    const k = Math.min(elapsed / FRAME_MS, 4)
     context.clearRect(0, 0, window.innerWidth, window.innerHeight)
     particles.current = particles.current.filter((particle) => {
-      particle.x += particle.vx
-      particle.y += particle.vy
-      particle.vy += 0.14
-      particle.vx *= 0.985
-      particle.life -= 0.016
+      particle.x += particle.vx * k
+      particle.y += particle.vy * k
+      particle.vy += 0.14 * k
+      particle.vx *= Math.pow(0.985, k)
+      particle.life -= 0.016 * k
       if (particle.life <= 0) {
         return false
       }
@@ -67,6 +76,7 @@ export function EmberCanvas({ children }: EmberCanvasProps) {
     } else {
       running.current = false
       frame.current = null
+      lastTime.current = null
       context.clearRect(0, 0, window.innerWidth, window.innerHeight)
     }
   }, [])

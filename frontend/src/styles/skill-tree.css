@@ -117,7 +117,17 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--lr-ivoire);
-  overflow-wrap: anywhere;
+  /* Couper entre les mots, jamais au milieu (« PROGRAMMATIO / N »). */
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+}
+
+@media (max-width: 560px) {
+  .lr-skill-tree .lr-skill-branch-name {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+  }
 }
 
 .lr-skill-tree .lr-skill-branch-count {
@@ -153,8 +163,11 @@
 .lr-skill-tree .lr-skill-constellation-line {
   fill: none;
   stroke: var(--lr-argent);
-  stroke-width: 0.7;
-  opacity: 0.12;
+  stroke-width: 0.6;
+  /* Pointillé très discret : le décor ne doit pas se confondre avec les liaisons de l'arbre. */
+  stroke-dasharray: 1 7;
+  stroke-linecap: round;
+  opacity: 0.07;
 }
 
 .lr-skill-tree .lr-skill-star {
@@ -297,9 +310,11 @@
 }
 
 .lr-skill-tree .lr-skill-node-visual.lr-skill-node--unlockable .lr-skill-node-hex {
-  fill: #101b17;
+  /* Débloquable : contour pointillé dans la couleur, intérieur sombre, halo qui pulse. */
+  fill: #0d1613;
   stroke: var(--c);
-  stroke-width: 2;
+  stroke-width: 1.6;
+  stroke-dasharray: 5 3;
 }
 
 .lr-skill-tree .lr-skill-node-visual.lr-skill-node--unlockable .lr-skill-node-halo {
@@ -307,10 +322,23 @@
 }
 
 .lr-skill-tree .lr-skill-node-visual.lr-skill-node--unlocked .lr-skill-node-hex {
-  fill: color-mix(in srgb, var(--c) 20%, #0a100e);
-  stroke: var(--c);
+  /* Débloqué : allumé, rempli de la couleur du territoire, contour plein et lueur. */
+  fill: color-mix(in srgb, var(--c) 55%, #0a100e);
+  stroke: color-mix(in srgb, var(--c) 70%, #ede9df);
   stroke-width: 2.5;
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--c) 65%, transparent));
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--c) 75%, transparent));
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--unlocked .lr-skill-node-tier {
+  fill: #06120d;
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--unlocked .lr-skill-glyph {
+  color: #06120d;
+}
+
+.lr-skill-tree .lr-skill-node-visual.lr-skill-node--unlocked .lr-skill-node-name-line {
+  fill: var(--lr-ivoire);
 }
 
 @keyframes lr-skill-halo-pulse {

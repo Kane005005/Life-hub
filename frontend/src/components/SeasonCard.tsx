@@ -5,7 +5,7 @@ import { useFx } from '../features/fx/useFx'
 import { ApiError } from '../lib/api'
 import { formatDate } from '../lib/format'
 import { SEASON_STATUS_LABELS, TERRITORY_BY_CODE, territoryLabel } from '../lib/labels'
-import { useUpdateSeason } from '../lib/queries'
+import { useAchievements, useSkillTrees, useUpdateSeason } from '../lib/queries'
 import type { Season, SeasonObjective, TerritoryCode } from '../lib/types'
 import { HudFrame } from './HudFrame'
 
@@ -29,7 +29,8 @@ function timeProgress(season: Season): { total: number; elapsed: number; ready: 
   if (start === null || end === null || end < start || daysLeft === null) {
     return { total: 0, elapsed: 0, ready: false }
   }
-  const total = Math.max(1, Math.round((end - start) / DAY_MS))
+  // Dates de début et de fin incluses : une saison du 23/11 au 20/02 dure 90 jours.
+  const total = Math.max(1, Math.round((end - start) / DAY_MS) + 1)
   const elapsed = Math.min(total, Math.max(0, total - daysLeft))
   return { total, elapsed, ready: true }
 }
@@ -47,6 +48,25 @@ export function SeasonCard({ season, featured = false }: SeasonCardProps) {
   const xpByTerritory = summary?.xp_by_territory ?? {}
   const achievementsUnlocked = summary?.achievements_unlocked ?? []
   const skillsUnlocked = summary?.skills_unlocked ?? []
+  // Le bilan renvoie des codes : on affiche les noms lus dans l'API (succès, arbres).
+  const achievementsQuery = useAchievements()
+  const skillTreesQuery = useSkillTrees()
+  const achievementNames = new Map<string, string>()
+  if (Array.isArray(achievementsQuery.data)) {
+    for (const achievement of achievementsQuery.data) {
+      achievementNames.set(achievement.code, achievement.label)
+    }
+  }
+  const skillNames = new Map<string, string>()
+  if (Array.isArray(skillTreesQuery.data)) {
+    for (const tree of skillTreesQuery.data) {
+      for (const branch of tree.branches ?? []) {
+        for (const skill of branch.skills ?? []) {
+          skillNames.set(skill.code, skill.name)
+        }
+      }
+    }
+  }
   const objectivesDone = summary?.objectives_done ?? 0
   const objectivesTotal = summary?.objectives_total ?? 0
   const objectiveWidth =
@@ -113,7 +133,7 @@ export function SeasonCard({ season, featured = false }: SeasonCardProps) {
           <div className="lr-season-time-head">
             <span className="lr-detail-subtitle">Temps de la saison</span>
             <span className="num">
-              {progress.elapsed} / {progress.total} jours
+              Jour {progress.elapsed} sur {progress.total}
             </span>
           </div>
           <div
@@ -257,9 +277,9 @@ export function SeasonCard({ season, featured = false }: SeasonCardProps) {
             <p className="lr-detail-subtitle">Succès obtenus</p>
             {achievementsUnlocked.length > 0 ? (
               <ul className="lr-season-unlock-list">
-                {achievementsUnlocked.map((name) => (
-                  <li key={name} className="lr-pill lr-season-unlock">
-                    {name}
+                {achievementsUnlocked.map((code) => (
+                  <li key={code} className="lr-pill lr-season-unlock">
+                    {achievementNames.get(code) ?? code}
                   </li>
                 ))}
               </ul>
@@ -271,9 +291,9 @@ export function SeasonCard({ season, featured = false }: SeasonCardProps) {
             <p className="lr-detail-subtitle">Compétences obtenues</p>
             {skillsUnlocked.length > 0 ? (
               <ul className="lr-season-unlock-list">
-                {skillsUnlocked.map((name) => (
-                  <li key={name} className="lr-pill lr-season-unlock">
-                    {name}
+                {skillsUnlocked.map((code) => (
+                  <li key={code} className="lr-pill lr-season-unlock">
+                    {skillNames.get(code) ?? code}
                   </li>
                 ))}
               </ul>

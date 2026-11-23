@@ -87,4 +87,16 @@ describe('SeasonCard', () => {
       screen.queryByRole('progressbar', { name: 'Temps écoulé de la saison' }),
     ).not.toBeInTheDocument()
   })
+
+  it('compte le jour en cours : premier jour d’une saison de 90 jours', () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, makeSeason())))
+    render(
+      <TestProviders>
+        <SeasonCard
+          season={makeSeason({ start_date: '2026-11-23', end_date: '2027-02-20', days_left: 89 })}
+        />
+      </TestProviders>,
+    )
+    expect(screen.getByText('Jour 1 sur 90')).toBeInTheDocument()
+  })
 })
