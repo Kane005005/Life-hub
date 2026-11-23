@@ -109,9 +109,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
+        "apps.ai_engine.authentication.AgentTokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "config.permissions.DenyAgentTokens",
+        "rest_framework.permissions.IsAuthenticated",
+    ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "config.exceptions.api_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -121,7 +125,14 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     "TITLE": "LIFE RPG API",
     "VERSION": "0.1.0",
-    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAuthenticated"],
+    "DESCRIPTION": (
+        "API locale de LIFE RPG. Les agents de code s'authentifient avec un jeton "
+        "Bearer lra_… et n'accèdent qu'aux endpoints /api/agent/."
+    ),
+    "SERVE_PERMISSIONS": [
+        "config.permissions.DenyAgentTokens",
+        "rest_framework.permissions.IsAuthenticated",
+    ],
 }
 
 FRONTEND_DIST = ROOT_DIR / "frontend" / "dist"

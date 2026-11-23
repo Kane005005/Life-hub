@@ -50,3 +50,17 @@ class AlreadyOwned(EngineError):
 
 class SeasonError(EngineError):
     """L'opération sur la saison est impossible."""
+
+
+class ProposalDecided(EngineError):
+    """La proposition a déjà été acceptée ou refusée."""
+
+    def __init__(self, message: str = "Cette proposition a déjà été décidée.") -> None:
+        super().__init__(message)
+
+
+class AgentScopeError(EngineError):
+    """Le jeton de l'agent n'a pas la portée requise pour cette action."""
+
+    def __init__(self, message: str = "Cette action n'est pas accordée à ton jeton.") -> None:
+        super().__init__(message)

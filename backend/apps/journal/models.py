@@ -31,6 +31,14 @@ class EventType(models.TextChoices):
     SEASON_CLOSED = "SEASON_CLOSED", "Saison terminée"
     SEASON_UPDATED = "SEASON_UPDATED", "Saison mise à jour"
     TITLE_CHANGED = "TITLE_CHANGED", "Titre changé"
+    AGENT_TOKEN_CREATED = "AGENT_TOKEN_CREATED", "Jeton d'agent créé"
+    AGENT_TOKEN_REVOKED = "AGENT_TOKEN_REVOKED", "Jeton d'agent révoqué"
+    AGENT_CONTEXT_READ = "AGENT_CONTEXT_READ", "Contexte lu par un agent"
+    QUEST_PROPOSED = "QUEST_PROPOSED", "Missions proposées"
+    PROPOSAL_ACCEPTED = "PROPOSAL_ACCEPTED", "Proposition acceptée"
+    PROPOSAL_REJECTED = "PROPOSAL_REJECTED", "Proposition refusée"
+    PROPOSAL_UPDATED = "PROPOSAL_UPDATED", "Proposition mise à jour"
+    ENERGY_CHECKIN = "ENERGY_CHECKIN", "Bilan énergétique"
 
 
 class JournalEntry(models.Model):

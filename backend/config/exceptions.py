@@ -9,12 +9,14 @@ from rest_framework.status import (
 from rest_framework.views import exception_handler as drf_exception_handler
 
 from engine.exceptions import (
+    AgentScopeError,
     AlreadyCompleted,
     AlreadyOwned,
     AlreadyUnlocked,
     EngineError,
     InsufficientCredits,
     NotOwnedError,
+    ProposalDecided,
     QuestStateError,
     SeasonError,
     SkillLockedError,
@@ -29,7 +31,14 @@ def api_exception_handler(exc: Exception, context: dict) -> Response | None:
     view = context.get("view")
     is_completion = getattr(view, "action", None) == "complete"
 
-    if isinstance(exc, (AlreadyCompleted, AlreadyUnlocked, AlreadyOwned, SeasonError)):
+    conflict_types = (
+        AlreadyCompleted,
+        AlreadyUnlocked,
+        AlreadyOwned,
+        SeasonError,
+        ProposalDecided,
+    )
+    if isinstance(exc, conflict_types):
         return Response({"detail": message}, status=HTTP_409_CONFLICT)
 
     if isinstance(exc, QuestStateError):
@@ -39,7 +48,7 @@ def api_exception_handler(exc: Exception, context: dict) -> Response | None:
         status_code = HTTP_409_CONFLICT if conflict else HTTP_400_BAD_REQUEST
         return Response({"detail": message}, status=status_code)
 
-    if isinstance(exc, NotOwnedError):
+    if isinstance(exc, (NotOwnedError, AgentScopeError)):
         return Response({"detail": message}, status=HTTP_403_FORBIDDEN)
 
     if isinstance(exc, (SkillLockedError, InsufficientCredits)):

@@ -2,6 +2,8 @@ openapi: 3.0.3
 info:
   title: LIFE RPG API
   version: 0.1.0
+  description: API locale de LIFE RPG. Les agents de code s'authentifient avec un
+    jeton Bearer lra_… et n'accèdent qu'aux endpoints /api/agent/.
 paths:
   /api/achievements/:
     get:
@@ -11,6 +13,7 @@ paths:
       - achievements
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -21,6 +24,158 @@ paths:
                 items:
                   $ref: '#/components/schemas/Achievement'
           description: ''
+  /api/agent/context/:
+    get:
+      operationId: agent_context
+      description: Renvoie le contexte selon les portées du jeton, sans BODY sans
+        portée body.
+      tags:
+      - agent
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentContext'
+          description: ''
+  /api/agent/quest-proposals/:
+    get:
+      operationId: agent_proposals_list
+      description: Renvoie les propositions créées par ce jeton, des plus récentes
+        aux plus anciennes.
+      tags:
+      - agent
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuestProposal'
+          description: ''
+    post:
+      operationId: agent_proposals_create
+      description: 'Une proposition (objet) ou plusieurs via {"proposals": [...]}
+        (10 max). Les champs serveur (status, xp_preview, quest…) sont ignorés.'
+      tags:
+      - agent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestProposalInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestProposalInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestProposalInput'
+        required: true
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuestProposal'
+          description: ''
+  /api/analytics/insights/:
+    get:
+      operationId: analytics_insights
+      description: Renvoie charge, territoires négligés et suggestions du jour.
+      tags:
+      - analytics
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Insights'
+          description: ''
+  /api/auth/agent-tokens/:
+    get:
+      operationId: agent_tokens_list
+      description: Renvoie tous les jetons du compte, révoqués compris, sans secret.
+      tags:
+      - auth
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentToken'
+          description: ''
+    post:
+      operationId: agent_tokens_create
+      description: Crée un jeton ; le secret complet n'est renvoyé qu'à la création.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentTokenCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentTokenCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentTokenCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTokenCreateResponse'
+          description: ''
+  /api/auth/agent-tokens/{id}/:
+    delete:
+      operationId: agent_tokens_revoke
+      description: Révoque le jeton (204) ; il reste listé avec is_active à false.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - auth
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/auth/login/:
     post:
       operationId: auth_login_create
@@ -56,6 +211,7 @@ paths:
       - auth
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '204':
@@ -68,6 +224,7 @@ paths:
       - auth
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -84,6 +241,7 @@ paths:
       - character
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -110,6 +268,7 @@ paths:
               $ref: '#/components/schemas/PatchedCharacterUpdate'
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -137,6 +296,7 @@ paths:
               $ref: '#/components/schemas/PatchedAvatarUpdate'
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -153,6 +313,7 @@ paths:
       - economy
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -175,6 +336,7 @@ paths:
       - economy
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -197,6 +359,7 @@ paths:
       - economy
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -222,6 +385,7 @@ paths:
       - economy
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -251,6 +415,7 @@ paths:
         required: true
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '201':
@@ -284,6 +449,7 @@ paths:
               $ref: '#/components/schemas/PatchedRewardUpdate'
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -306,6 +472,7 @@ paths:
       - economy
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -329,6 +496,7 @@ paths:
       - economy
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -345,6 +513,7 @@ paths:
       - economy
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -352,6 +521,77 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Wallet'
+          description: ''
+  /api/energy/:
+    get:
+      operationId: energy_list
+      description: Renvoie la liste paginée des bilans énergétiques.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un numéro de page de l'ensemble des résultats.
+        schema:
+          type: integer
+      tags:
+      - energy
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEnergyCheckInList'
+          description: ''
+    post:
+      operationId: energy_create
+      description: Bilans énergétiques paginés du joueur ; le POST remplace celui
+        du jour.
+      tags:
+      - energy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnergyCheckIn'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EnergyCheckIn'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EnergyCheckIn'
+        required: true
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyCheckIn'
+          description: ''
+  /api/export/:
+    get:
+      operationId: export
+      description: Export JSON complet des données du joueur, sans aucun secret d'agent.
+      tags:
+      - export
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
           description: ''
   /api/health/:
     get:
@@ -406,6 +646,7 @@ paths:
       - journal
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -422,6 +663,7 @@ paths:
       - journal
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '201':
@@ -443,6 +685,7 @@ paths:
       - journal
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -459,6 +702,7 @@ paths:
       - progression
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -482,6 +726,7 @@ paths:
       - progression
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -498,6 +743,7 @@ paths:
       - progression
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -505,6 +751,137 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SkillPointsResponse'
+          description: ''
+  /api/quest-proposals/:
+    get:
+      operationId: quest_proposals_list
+      description: Renvoie les propositions du compte, filtrables par statut.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un numéro de page de l'ensemble des résultats.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - quest-proposals
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuestProposalList'
+          description: ''
+  /api/quest-proposals/{id}/:
+    patch:
+      operationId: quest_proposals_update
+      description: Modifie une proposition en attente ; 409 si elle est déjà décidée.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - quest-proposals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestProposalUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestProposalUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestProposalUpdate'
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestProposal'
+          description: ''
+  /api/quest-proposals/{id}/accept/:
+    post:
+      operationId: quest_proposals_accept
+      description: Accepte avec modifications facultatives ; la mission ne rapporte
+        rien encore.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - quest-proposals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestProposalUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestProposalUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestProposalUpdate'
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalAcceptResponse'
+          description: ''
+  /api/quest-proposals/{id}/reject/:
+    post:
+      operationId: quest_proposals_reject
+      description: Refuse la proposition avec un motif facultatif ; 409 si déjà décidée.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - quest-proposals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposalRejectInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProposalRejectInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProposalRejectInput'
+      security:
+      - tokenAuth: []
+      - AgentTokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestProposal'
           description: ''
   /api/quests/:
     get:
@@ -521,6 +898,7 @@ paths:
       - quests
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -548,6 +926,7 @@ paths:
         required: true
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '201':
@@ -571,6 +950,7 @@ paths:
       - quests
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -604,6 +984,7 @@ paths:
               $ref: '#/components/schemas/QuestUpdate'
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -637,6 +1018,7 @@ paths:
               $ref: '#/components/schemas/PatchedQuestUpdate'
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -660,6 +1042,7 @@ paths:
       - quests
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -683,6 +1066,7 @@ paths:
       - quests
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -717,6 +1101,7 @@ paths:
               $ref: '#/components/schemas/CompleteQuestInput'
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -746,6 +1131,7 @@ paths:
       - quests
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -878,6 +1264,7 @@ paths:
       - schema
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -907,6 +1294,7 @@ paths:
       - seasons
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -933,6 +1321,7 @@ paths:
               $ref: '#/components/schemas/SeasonCreate'
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '201':
@@ -955,6 +1344,7 @@ paths:
       - seasons
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -987,6 +1377,7 @@ paths:
               $ref: '#/components/schemas/PatchedSeasonUpdate'
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -1009,6 +1400,7 @@ paths:
       - seasons
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -1025,6 +1417,7 @@ paths:
       - seasons
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -1041,6 +1434,7 @@ paths:
       - settings
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -1064,6 +1458,7 @@ paths:
       - skills
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -1085,6 +1480,7 @@ paths:
       - skills
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -1103,6 +1499,7 @@ paths:
       - world
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -1119,6 +1516,7 @@ paths:
       - world
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -1143,6 +1541,7 @@ paths:
       - world
       security:
       - tokenAuth: []
+      - AgentTokenAuth: []
       - cookieAuth: []
       responses:
         '200':
@@ -1178,6 +1577,343 @@ components:
       - name
       - unlocked
       - unlocked_at
+    AgentActiveQuest:
+      type: object
+      description: Mission active résumée pour le contexte d'agent.
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        territory:
+          type: string
+        quest_type:
+          type: string
+        difficulty:
+          type: string
+        status:
+          type: string
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        skill_branch:
+          type: string
+      required:
+      - difficulty
+      - due_date
+      - id
+      - quest_type
+      - skill_branch
+      - status
+      - territory
+      - title
+    AgentContext:
+      type: object
+      description: 'Contexte borné d''un agent : seules les clés de ses portées sont
+        présentes.'
+      properties:
+        agent:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        generated_at:
+          type: string
+          format: date-time
+        profile:
+          $ref: '#/components/schemas/AgentProfile'
+        progression:
+          $ref: '#/components/schemas/AgentProgression'
+        quests:
+          $ref: '#/components/schemas/AgentQuests'
+        skills:
+          $ref: '#/components/schemas/AgentSkills'
+        seasons:
+          $ref: '#/components/schemas/AgentSeasons'
+        journal:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentJournalEntry'
+        energy:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnergyCheckIn'
+        proposals:
+          $ref: '#/components/schemas/AgentProposalsSummary'
+      required:
+      - agent
+      - generated_at
+      - scopes
+    AgentContextBranch:
+      type: object
+      description: Branche de compétences résumée, sans le détail des nœuds.
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        validated_quests:
+          type: integer
+      required:
+      - code
+      - name
+      - validated_quests
+    AgentContextTree:
+      type: object
+      description: Arbre de compétences résumé pour le contexte d'agent.
+      properties:
+        territory:
+          type: string
+        branches:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentContextBranch'
+      required:
+      - branches
+      - territory
+    AgentJournalEntry:
+      type: object
+      description: Événement du journal résumé pour le contexte d'agent.
+      properties:
+        event_type:
+          type: string
+        message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - created_at
+      - event_type
+      - message
+    AgentProfile:
+      type: object
+      description: Profil minimal lisible avec la portée profile.
+      properties:
+        pseudonym:
+          type: string
+        character_class:
+          type: string
+        level:
+          type: integer
+        rank:
+          $ref: '#/components/schemas/Rank'
+        active_title:
+          type: string
+          nullable: true
+      required:
+      - active_title
+      - character_class
+      - level
+      - pseudonym
+      - rank
+    AgentProgression:
+      type: object
+      description: Progression lisible avec la portée progression.
+      properties:
+        level:
+          type: integer
+        xp_in_level:
+          type: integer
+        xp_required:
+          type: integer
+        total_xp:
+          type: integer
+        territories:
+          type: array
+          items:
+            $ref: '#/components/schemas/TerritoryStat'
+        insights:
+          $ref: '#/components/schemas/Insights'
+      required:
+      - insights
+      - level
+      - territories
+      - total_xp
+      - xp_in_level
+      - xp_required
+    AgentProposalsSummary:
+      type: object
+      description: File d'attente des propositions, lisible avec la portée proposals.
+      properties:
+        pending:
+          type: integer
+      required:
+      - pending
+    AgentQuests:
+      type: object
+      description: Missions actives et validations récentes, bornées.
+      properties:
+        active:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentActiveQuest'
+        recent_completions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentRecentCompletion'
+      required:
+      - active
+      - recent_completions
+    AgentRecentCompletion:
+      type: object
+      description: Validation récente résumée pour le contexte d'agent.
+      properties:
+        title:
+          type: string
+        territory:
+          type: string
+        completed_at:
+          type: string
+          format: date-time
+      required:
+      - completed_at
+      - territory
+      - title
+    AgentSeasons:
+      type: object
+      description: Saison active lisible avec la portée seasons.
+      properties:
+        current:
+          allOf:
+          - $ref: '#/components/schemas/Season'
+          nullable: true
+      required:
+      - current
+    AgentSkills:
+      type: object
+      description: Compétences lisibles avec la portée skills.
+      properties:
+        available_points:
+          type: integer
+        unlocked:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentUnlockedSkill'
+        trees:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentContextTree'
+      required:
+      - available_points
+      - trees
+      - unlocked
+    AgentToken:
+      type: object
+      description: Jeton d'agent renvoyé par l'API, sans le secret ni son empreinte.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        prefix:
+          type: string
+          readOnly: true
+        scopes:
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        last_used_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        revoked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        is_active:
+          type: boolean
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - is_active
+      - last_used_at
+      - name
+      - prefix
+      - revoked_at
+      - scopes
+    AgentTokenCreate:
+      type: object
+      description: Données acceptées à la création d'un jeton ; portées inconnues
+        refusées.
+      properties:
+        name:
+          type: string
+          maxLength: 60
+        scopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScopesEnum'
+      required:
+      - name
+    AgentTokenCreateResponse:
+      type: object
+      description: 'Réponse de création : le secret complet n''apparaît qu''une seule
+        fois.'
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        prefix:
+          type: string
+          readOnly: true
+        scopes:
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        last_used_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        revoked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        is_active:
+          type: boolean
+          readOnly: true
+        token:
+          type: string
+      required:
+      - created_at
+      - id
+      - is_active
+      - last_used_at
+      - name
+      - prefix
+      - revoked_at
+      - scopes
+      - token
+    AgentUnlockedSkill:
+      type: object
+      description: Compétence débloquée, résumée pour le contexte d'agent.
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        territory:
+          type: string
+      required:
+      - code
+      - name
+      - territory
     Avatar:
       type: object
       description: Apparence minimaliste renvoyée dans le Character.
@@ -1387,6 +2123,33 @@ components:
         * `HARD` - Difficile
         * `EPIC` - Épique
         * `LEGENDARY` - Légendaire
+    EnergyCheckIn:
+      type: object
+      description: Bilan énergétique renvoyé par l'API, avec son libellé français.
+      properties:
+        id:
+          type: integer
+        level:
+          type: integer
+        label:
+          type: string
+          description: Renvoie le libellé du niveau sur l'échelle du cahier §8.3.
+          readOnly: true
+        note:
+          type: string
+        date:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - created_at
+      - date
+      - id
+      - label
+      - level
+      - note
     Equipment:
       type: object
       description: Équipement cosmétique par emplacement.
@@ -1431,6 +2194,14 @@ components:
       - SEASON_CLOSED
       - SEASON_UPDATED
       - TITLE_CHANGED
+      - AGENT_TOKEN_CREATED
+      - AGENT_TOKEN_REVOKED
+      - AGENT_CONTEXT_READ
+      - QUEST_PROPOSED
+      - PROPOSAL_ACCEPTED
+      - PROPOSAL_REJECTED
+      - PROPOSAL_UPDATED
+      - ENERGY_CHECKIN
       type: string
       description: |-
         * `QUEST_CREATED` - Mission créée
@@ -1455,6 +2226,14 @@ components:
         * `SEASON_CLOSED` - Saison terminée
         * `SEASON_UPDATED` - Saison mise à jour
         * `TITLE_CHANGED` - Titre changé
+        * `AGENT_TOKEN_CREATED` - Jeton d'agent créé
+        * `AGENT_TOKEN_REVOKED` - Jeton d'agent révoqué
+        * `AGENT_CONTEXT_READ` - Contexte lu par un agent
+        * `QUEST_PROPOSED` - Missions proposées
+        * `PROPOSAL_ACCEPTED` - Proposition acceptée
+        * `PROPOSAL_REJECTED` - Proposition refusée
+        * `PROPOSAL_UPDATED` - Proposition mise à jour
+        * `ENERGY_CHECKIN` - Bilan énergétique
     GameSettings:
       type: object
       description: Paramètres du jeu exposés en lecture seule.
@@ -1499,6 +2278,73 @@ components:
       - app
       - status
       - version
+    InsightEnergy:
+      type: object
+      description: Dernier bilan énergétique résumé dans l'analyse.
+      properties:
+        level:
+          type: integer
+        label:
+          type: string
+        date:
+          type: string
+          format: date
+      required:
+      - date
+      - label
+      - level
+    InsightLoad:
+      type: object
+      description: Charge de missions actives du joueur.
+      properties:
+        active_quests:
+          type: integer
+        hard_quests:
+          type: integer
+        overdue:
+          type: integer
+      required:
+      - active_quests
+      - hard_quests
+      - overdue
+    InsightSuggestion:
+      type: object
+      description: 'Suggestion en lecture seule : elle ne change rien.'
+      properties:
+        kind:
+          type: string
+        message:
+          type: string
+      required:
+      - kind
+      - message
+    Insights:
+      type: object
+      description: Analyse de progression par règles fixes.
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+        energy:
+          allOf:
+          - $ref: '#/components/schemas/InsightEnergy'
+          nullable: true
+        load:
+          $ref: '#/components/schemas/InsightLoad'
+        neglected_territories:
+          type: array
+          items:
+            $ref: '#/components/schemas/NeglectedTerritory'
+        suggestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/InsightSuggestion'
+      required:
+      - energy
+      - generated_at
+      - load
+      - neglected_territories
+      - suggestions
     InventoryPurchase:
       type: object
       description: Historique d'achat dans l'inventaire.
@@ -1644,6 +2490,18 @@ components:
       required:
       - token
       - user
+    NeglectedTerritory:
+      type: object
+      description: Territoire sans XP depuis au moins 14 jours (ou jamais).
+      properties:
+        code:
+          type: string
+        days_since_xp:
+          type: integer
+          nullable: true
+      required:
+      - code
+      - days_since_xp
     OriginEnum:
       enum:
       - USER
@@ -1675,6 +2533,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CreditTransaction'
+    PaginatedEnergyCheckInList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnergyCheckIn'
     PaginatedJournalEntryList:
       type: object
       required:
@@ -1721,6 +2602,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Quest'
+    PaginatedQuestProposalList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestProposal'
     PaginatedXPTransactionList:
       type: object
       required:
@@ -1773,6 +2677,40 @@ components:
           type: string
           nullable: true
           maxLength: 80
+    PatchedQuestProposalUpdate:
+      type: object
+      description: Champs modifiables d'une proposition en attente.
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        territory:
+          type: string
+          maxLength: 20
+        quest_type:
+          $ref: '#/components/schemas/QuestTypeEnum'
+        difficulty:
+          $ref: '#/components/schemas/DifficultyEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityEnum'
+        estimated_minutes:
+          type: integer
+          minimum: 0
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        skill_branch:
+          type: string
+          maxLength: 40
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestStepInput'
+        rationale:
+          type: string
     PatchedQuestUpdate:
       type: object
       description: Champs modifiables d'une mission active ; le reste est ignoré.
@@ -1872,6 +2810,25 @@ components:
       - total_xp
       - xp_in_level
       - xp_required
+    ProposalAcceptResponse:
+      type: object
+      description: 'Réponse d''acceptation : la proposition décidée et la mission
+        créée.'
+      properties:
+        proposal:
+          $ref: '#/components/schemas/QuestProposal'
+        quest:
+          $ref: '#/components/schemas/Quest'
+      required:
+      - proposal
+      - quest
+    ProposalRejectInput:
+      type: object
+      description: Motif facultatif joint au refus d'une proposition.
+      properties:
+        reason:
+          type: string
+          default: ''
     PurchaseResponse:
       type: object
       description: Réponse d'achat.
@@ -1938,7 +2895,7 @@ components:
           readOnly: true
         status:
           allOf:
-          - $ref: '#/components/schemas/StatusEnum'
+          - $ref: '#/components/schemas/QuestStatusEnum'
           readOnly: true
         skill_branch:
           type: string
@@ -2046,6 +3003,208 @@ components:
       required:
       - territory
       - title
+    QuestProposal:
+      type: object
+      description: Proposition de mission, avec les champs calculés par le serveur.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        agent_name:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/QuestProposalStatusEnum'
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        rationale:
+          type: string
+          readOnly: true
+        territory:
+          type: string
+          readOnly: true
+        quest_type:
+          allOf:
+          - $ref: '#/components/schemas/QuestTypeEnum'
+          readOnly: true
+        difficulty:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          readOnly: true
+        priority:
+          allOf:
+          - $ref: '#/components/schemas/PriorityEnum'
+          readOnly: true
+        estimated_minutes:
+          type: integer
+          readOnly: true
+        due_date:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        skill_branch:
+          type: string
+          readOnly: true
+        steps:
+          readOnly: true
+        xp_preview:
+          type: integer
+          readOnly: true
+        quest:
+          type: integer
+          readOnly: true
+          nullable: true
+        decided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        reject_reason:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - agent_name
+      - created_at
+      - decided_at
+      - description
+      - difficulty
+      - due_date
+      - estimated_minutes
+      - id
+      - priority
+      - quest
+      - quest_type
+      - rationale
+      - reject_reason
+      - skill_branch
+      - status
+      - steps
+      - territory
+      - title
+      - uuid
+      - xp_preview
+    QuestProposalInput:
+      type: object
+      description: Champs acceptés d'une proposition ; les champs serveur sont ignorés.
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          default: ''
+        territory:
+          type: string
+          maxLength: 20
+        quest_type:
+          allOf:
+          - $ref: '#/components/schemas/QuestTypeEnum'
+          default: SIDE
+        difficulty:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          default: MEDIUM
+        priority:
+          allOf:
+          - $ref: '#/components/schemas/PriorityEnum'
+          default: NORMAL
+        estimated_minutes:
+          type: integer
+          minimum: 0
+          default: 0
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        skill_branch:
+          type: string
+          default: ''
+          maxLength: 40
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestStepInput'
+        rationale:
+          type: string
+          default: ''
+      required:
+      - territory
+      - title
+    QuestProposalStatusEnum:
+      enum:
+      - PENDING
+      - ACCEPTED
+      - REJECTED
+      type: string
+      description: |-
+        * `PENDING` - En attente
+        * `ACCEPTED` - Acceptée
+        * `REJECTED` - Refusée
+    QuestProposalUpdate:
+      type: object
+      description: Champs modifiables d'une proposition en attente.
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        territory:
+          type: string
+          maxLength: 20
+        quest_type:
+          $ref: '#/components/schemas/QuestTypeEnum'
+        difficulty:
+          $ref: '#/components/schemas/DifficultyEnum'
+        priority:
+          $ref: '#/components/schemas/PriorityEnum'
+        estimated_minutes:
+          type: integer
+          minimum: 0
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        skill_branch:
+          type: string
+          maxLength: 40
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestStepInput'
+        rationale:
+          type: string
+    QuestStatusEnum:
+      enum:
+      - AVAILABLE
+      - ACCEPTED
+      - IN_PROGRESS
+      - COMPLETED
+      - PAUSED
+      - ABANDONED
+      type: string
+      description: |-
+        * `AVAILABLE` - Disponible
+        * `ACCEPTED` - Acceptée
+        * `IN_PROGRESS` - En cours
+        * `COMPLETED` - Terminée
+        * `PAUSED` - En pause
+        * `ABANDONED` - Abandonnée
     QuestStep:
       type: object
       description: Étape d'une mission, sans récompense propre.
@@ -2175,6 +3334,28 @@ components:
       required:
       - cost
       - name
+    ScopesEnum:
+      enum:
+      - profile
+      - progression
+      - quests
+      - skills
+      - seasons
+      - journal
+      - energy
+      - body
+      - proposals
+      type: string
+      description: |-
+        * `profile` - profile
+        * `progression` - progression
+        * `quests` - quests
+        * `skills` - skills
+        * `seasons` - seasons
+        * `journal` - journal
+        * `energy` - energy
+        * `body` - body
+        * `proposals` - proposals
     Season:
       type: object
       description: Représentation complète d'une saison.
@@ -2631,22 +3812,6 @@ components:
       - message
       - skill
       - skill_points
-    StatusEnum:
-      enum:
-      - AVAILABLE
-      - ACCEPTED
-      - IN_PROGRESS
-      - COMPLETED
-      - PAUSED
-      - ABANDONED
-      type: string
-      description: |-
-        * `AVAILABLE` - Disponible
-        * `ACCEPTED` - Acceptée
-        * `IN_PROGRESS` - En cours
-        * `COMPLETED` - Terminée
-        * `PAUSED` - En pause
-        * `ABANDONED` - Abandonnée
     TerritoryDetail:
       type: object
       description: Statistique d'un territoire avec ses missions actives.
@@ -2852,6 +4017,11 @@ components:
       - territory
       - uuid
   securitySchemes:
+    AgentTokenAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: lra_…
+      description: 'Jeton d''agent LIFE RPG : en-tête Authorization: Bearer lra_…'
     cookieAuth:
       type: apiKey
       in: cookie

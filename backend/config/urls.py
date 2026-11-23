@@ -26,6 +26,8 @@ urlpatterns = [
     path("api/", include("apps.economy.urls")),
     path("api/", include("apps.seasons.urls")),
     path("api/", include("apps.journal.urls")),
+    path("api/", include("apps.ai_engine.urls")),
+    path("api/", include("apps.analytics.urls")),
     path(
         "assets/<path:path>",
         serve,
