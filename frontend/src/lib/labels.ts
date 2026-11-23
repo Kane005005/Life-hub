@@ -3,11 +3,15 @@ import type { TerritoryCode as StatCode, Territory as TokenTerritory } from '../
 import type {
   CharacterClass,
   Difficulty,
+  EquipmentSlot,
   EventType,
   Priority,
   QuestStatus,
   QuestType,
+  SeasonStatus,
+  ShopCategory,
   Silhouette,
+  SkillState,
   TerritoryCode,
   TerritoryState,
 } from './types'
@@ -67,6 +71,15 @@ export const EVENT_TYPE_LABELS = {
   SKILL_POINTS_EARNED: 'Point de compétence gagné',
   REST: 'Repos',
   CHARACTER_UPDATED: 'Personnage modifié',
+  SKILL_UNLOCKED: 'Compétence débloquée',
+  ACHIEVEMENT_UNLOCKED: 'Succès débloqué',
+  REWARD_PURCHASED: 'Récompense obtenue',
+  ITEM_EQUIPPED: 'Objet équipé',
+  ITEM_UNEQUIPPED: 'Objet retiré',
+  SEASON_STARTED: 'Saison commencée',
+  SEASON_CLOSED: 'Saison terminée',
+  SEASON_UPDATED: 'Saison modifiée',
+  TITLE_CHANGED: 'Titre modifié',
 } satisfies Record<EventType, string>
 
 export const STATE_LABELS = {
@@ -74,6 +87,28 @@ export const STATE_LABELS = {
   DEVELOPMENT: 'Développement',
   MASTERY: 'Maîtrise',
 } satisfies Record<TerritoryState, string>
+
+export const SKILL_STATE_LABELS = {
+  LOCKED: 'Verrouillée',
+  UNLOCKABLE: 'Débloquable',
+  UNLOCKED: 'Débloquée',
+} satisfies Record<SkillState, string>
+
+export const SHOP_CATEGORY_LABELS = {
+  REWARD: 'Récompense',
+  ARTIFACT: 'Objet',
+} satisfies Record<ShopCategory, string>
+
+export const SLOT_LABELS = {
+  AURA: 'Aura',
+  FRAME: 'Cadre',
+  EMBLEM: 'Emblème',
+} satisfies Record<EquipmentSlot, string>
+
+export const SEASON_STATUS_LABELS = {
+  ACTIVE: 'En cours',
+  CLOSED: 'Terminée',
+} satisfies Record<SeasonStatus, string>
 
 export const CLASS_LABELS = {
   ARCHITECT: 'Architecte',

@@ -15,9 +15,11 @@ export function HeroCard({ character }: HeroCardProps) {
         silhouette={character.avatar.silhouette}
         color={character.avatar.color}
         accent={character.avatar.accent}
+        equipment={character.equipment}
         label={`Avatar de ${character.pseudonym}`}
       />
       <h4>{character.pseudonym}</h4>
+      {character.active_title ? <p className="lr-card-title">{character.active_title}</p> : null}
       <p className="lr-card-class">{CLASS_LABELS[character.character_class]}</p>
       <span className="lr-rank">{character.rank.label}</span>
       <div className="lr-card-gauge">

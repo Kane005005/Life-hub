@@ -1,4 +1,4 @@
-/** Types du contrat API de la phase 1. Le front ne calcule aucune règle de jeu. */
+/** Types du contrat API. Le front ne calcule aucune règle de jeu. */
 
 export type TerritoryCode =
   'KNOWLEDGE' | 'BODY' | 'CAREER' | 'TECHNOLOGY' | 'CREATION' | 'INNER_WORLD'
@@ -16,6 +16,11 @@ export type CharacterClass = 'ARCHITECT' | 'CREATOR' | 'EXPLORER' | 'STRATEGIST'
 export type RankCode = 'INITIATE' | 'EXPLORER' | 'BUILDER' | 'SPECIALIST' | 'MASTER' | 'ARCHITECT'
 export type Silhouette = 'A' | 'B' | 'C'
 
+export type SkillState = 'LOCKED' | 'UNLOCKABLE' | 'UNLOCKED'
+export type ShopCategory = 'REWARD' | 'ARTIFACT'
+export type EquipmentSlot = 'AURA' | 'FRAME' | 'EMBLEM'
+export type SeasonStatus = 'ACTIVE' | 'CLOSED'
+
 export type EventType =
   | 'QUEST_CREATED'
   | 'QUEST_UPDATED'
@@ -30,6 +35,15 @@ export type EventType =
   | 'SKILL_POINTS_EARNED'
   | 'REST'
   | 'CHARACTER_UPDATED'
+  | 'SKILL_UNLOCKED'
+  | 'ACHIEVEMENT_UNLOCKED'
+  | 'REWARD_PURCHASED'
+  | 'ITEM_EQUIPPED'
+  | 'ITEM_UNEQUIPPED'
+  | 'SEASON_STARTED'
+  | 'SEASON_CLOSED'
+  | 'SEASON_UPDATED'
+  | 'TITLE_CHANGED'
 
 export type Rank = {
   code: RankCode
@@ -63,6 +77,29 @@ export type SkillPoints = {
   spent: number
 }
 
+export type ArtifactVisual = {
+  color?: string
+  style?: 'silver' | 'double' | string
+  sign?: string
+}
+
+export type ShopItem = {
+  id: number
+  name: string
+  description: string
+  category: ShopCategory
+  slot: EquipmentSlot | null
+  cost: number
+  is_available: boolean
+  is_custom: boolean
+  visual: ArtifactVisual | null
+  owned: boolean
+  equipped: boolean
+  purchases_count: number
+}
+
+export type CharacterEquipment = Record<EquipmentSlot, ShopItem | null>
+
 export type Character = {
   pseudonym: string
   bio: string
@@ -77,6 +114,9 @@ export type Character = {
   skill_points: SkillPoints
   avatar: Avatar
   stats: TerritoryStat[]
+  active_title?: string | null
+  titles?: string[]
+  equipment?: CharacterEquipment
 }
 
 export type QuestStep = {
@@ -116,6 +156,11 @@ export type Quest = {
   completed_at: string | null
 }
 
+export type UnlockedAchievement = {
+  code: string
+  label: string
+}
+
 export type CompletionOutcome = {
   xp: number
   credits: number
@@ -126,6 +171,7 @@ export type CompletionOutcome = {
   skill_points_gained: number
   message: string
   level_message: string | null
+  achievements?: UnlockedAchievement[]
 }
 
 export type CompletionResult = {
@@ -209,7 +255,11 @@ export type XpTransaction = {
 }
 
 export type JournalFilters = {
-  event_type?: EventType
+  event_type?: EventType | EventType[]
+  date_from?: string
+  date_to?: string
+  territory?: TerritoryCode
+  q?: string
 }
 
 export type QuestFilters = {
@@ -221,7 +271,166 @@ export type QuestFilters = {
 }
 
 export type CharacterUpdate = Partial<
-  Pick<Character, 'pseudonym' | 'bio' | 'character_class' | 'is_onboarded'>
+  Pick<Character, 'pseudonym' | 'bio' | 'character_class' | 'is_onboarded' | 'active_title'>
 >
 
 export type QuestUpdate = Partial<QuestInput>
+
+export type SkillNode = {
+  code: string
+  name: string
+  tier: number
+  cost: number
+  requires: string[]
+  min_territory_stat: number
+  min_validated_quests: number
+  state: SkillState
+  unlocked_at: string | null
+  missing: string[]
+}
+
+export type SkillBranch = {
+  code: string
+  name: string
+  validated_quests: number
+  skills: SkillNode[]
+}
+
+export type SkillTree = {
+  territory: TerritoryCode
+  name: string
+  color: string
+  stat: number
+  branches: SkillBranch[]
+}
+
+export type SkillUnlockResult = {
+  skill: SkillNode
+  skill_points: SkillPoints
+  message: string
+}
+
+export type SkillPointTransaction = {
+  uuid: string
+  amount: number
+  kind: string
+  reason: string
+  balance_after: number
+  created_at: string
+}
+
+export type UnlockedSkill = {
+  code: string
+  name: string
+  territory: TerritoryCode
+  unlocked_at: string
+}
+
+export type SkillsSummary = {
+  available: number
+  spent: number
+  unlocked: UnlockedSkill[]
+  transactions: SkillPointTransaction[]
+}
+
+export type Achievement = {
+  code: string
+  name: string
+  label: string
+  description: string
+  unlocked: boolean
+  unlocked_at: string | null
+}
+
+export type RewardInput = {
+  name: string
+  description?: string
+  cost: number
+  is_available?: boolean
+}
+
+export type PurchaseResult = {
+  item: ShopItem
+  credits: number
+  message: string
+}
+
+export type PurchaseRecord = {
+  uuid: string
+  item_name: string
+  cost: number
+  purchased_at: string
+}
+
+export type Inventory = {
+  items: ShopItem[]
+  purchases: PurchaseRecord[]
+}
+
+export type SeasonObjective = {
+  id: number
+  title: string
+  is_main: boolean
+  is_done: boolean
+  order: number
+}
+
+export type SeasonSummary = {
+  xp_total: number
+  xp_by_territory: Partial<Record<TerritoryCode, number>>
+  completions: number
+  completions_by_type: Record<string, number>
+  levels_gained: number
+  objectives_done: number
+  objectives_total: number
+  achievements_unlocked: string[]
+  skills_unlocked: string[]
+}
+
+export type Season = {
+  id: number
+  number: number
+  name: string
+  theme: string
+  status: SeasonStatus
+  start_date: string
+  end_date: string
+  days_left: number
+  closed_at: string | null
+  priority_territories: TerritoryCode[]
+  objectives: SeasonObjective[]
+  summary: SeasonSummary
+}
+
+export type SeasonObjectiveInput = {
+  title: string
+  is_main: boolean
+  is_done?: boolean
+}
+
+export type SeasonInput = {
+  name: string
+  theme?: string
+  start_date?: string
+  priority_territories?: TerritoryCode[]
+  objectives?: SeasonObjectiveInput[]
+}
+
+export type SeasonUpdate = Partial<SeasonInput>
+
+export type SeasonCloseResult = {
+  closed: Season
+  next: Season
+}
+
+export type JournalSummary = {
+  period: 'week' | 'month'
+  from: string
+  to: string
+  xp_by_day: { date: string; xp: number }[]
+  xp_by_territory: Partial<Record<TerritoryCode, number>>
+  completions: number
+  rests: number
+  achievements: number
+  skills: number
+}
