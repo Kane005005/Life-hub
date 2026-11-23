@@ -14,7 +14,7 @@ from apps.progression.serializers import (
     SkillPointTransactionSerializer,
     XPTransactionSerializer,
 )
-from apps.skills.models import SkillPointTransaction
+from apps.skills.models import SkillPointTransaction, SkillUnlock
 from engine.services import character_snapshot, ensure_character
 
 
@@ -52,15 +52,27 @@ class SkillPointsView(APIView):
 
     @extend_schema(responses=SkillPointsResponseSerializer)
     def get(self, request: Request) -> Response:
-        """Renvoie le solde et les transactions de points."""
+        """Renvoie le solde, les compétences débloquées et les transactions."""
         character = ensure_character(request.user)
         transactions = SkillPointTransaction.objects.filter(character=character).order_by(
             "-created_at", "-id"
         )
+        unlocked = [
+            {
+                "code": unlock.skill.code,
+                "name": unlock.skill.name,
+                "territory": unlock.skill.branch.tree.territory.code,
+                "unlocked_at": unlock.unlocked_at,
+            }
+            for unlock in SkillUnlock.objects.filter(character=character)
+            .select_related("skill__branch__tree__territory")
+            .order_by("unlocked_at", "id")
+        ]
         return Response(
             {
                 "available": character.skill_points_available,
                 "spent": character.skill_points_spent,
+                "unlocked": unlocked,
                 "transactions": SkillPointTransactionSerializer(transactions, many=True).data,
             },
         )

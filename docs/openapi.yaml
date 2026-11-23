@@ -3,6 +3,24 @@ info:
   title: LIFE RPG API
   version: 0.1.0
 paths:
+  /api/achievements/:
+    get:
+      operationId: achievements_list
+      description: Renvoie tous les succès avec leur état.
+      tags:
+      - achievements
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Achievement'
+          description: ''
   /api/auth/login/:
     post:
       operationId: auth_login_create
@@ -127,6 +145,175 @@ paths:
               schema:
                 $ref: '#/components/schemas/Character'
           description: ''
+  /api/economy/inventory/:
+    get:
+      operationId: economy_inventory_retrieve
+      description: Renvoie les objets possédés et l'historique d'achats.
+      tags:
+      - economy
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryResponse'
+          description: ''
+  /api/economy/inventory/{id}/equip/:
+    post:
+      operationId: economy_inventory_equip_create
+      description: Équipe l'objet possédé correspondant.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - economy
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Character'
+          description: ''
+  /api/economy/inventory/{id}/unequip/:
+    post:
+      operationId: economy_inventory_unequip_create
+      description: Retire l'objet équipé correspondant.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - economy
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Character'
+          description: ''
+  /api/economy/rewards/:
+    get:
+      operationId: economy_rewards_list
+      description: Renvoie les objets boutique visibles par le joueur.
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+      - in: query
+        name: slot
+        schema:
+          type: string
+      tags:
+      - economy
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShopItem'
+          description: ''
+    post:
+      operationId: economy_rewards_create
+      description: Crée une récompense personnelle.
+      tags:
+      - economy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RewardCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RewardCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RewardCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShopItem'
+          description: ''
+  /api/economy/rewards/{id}/:
+    patch:
+      operationId: economy_rewards_partial_update
+      description: Modifie une récompense personnelle appartenant au joueur.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - economy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRewardUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRewardUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRewardUpdate'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShopItem'
+          description: ''
+  /api/economy/rewards/{id}/purchase/:
+    post:
+      operationId: economy_rewards_purchase_create
+      description: Achète un objet via le moteur.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - economy
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseResponse'
+          description: ''
   /api/economy/transactions/:
     get:
       operationId: economy_transactions_list
@@ -185,14 +372,36 @@ paths:
   /api/journal/:
     get:
       operationId: journal_list
-      description: Historique paginé des événements de l'utilisateur connecté.
+      description: Renvoie la liste paginée filtrée du journal.
       parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+      - in: query
+        name: date_to
+        schema:
+          type: string
+      - in: query
+        name: event_type
+        schema:
+          type: array
+          items:
+            type: string
       - name: page
         required: false
         in: query
         description: Un numéro de page de l'ensemble des résultats.
         schema:
           type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+      - in: query
+        name: territory
+        schema:
+          type: string
       tags:
       - journal
       security:
@@ -220,6 +429,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RestResponse'
+          description: ''
+  /api/journal/summary/:
+    get:
+      operationId: journal_summary_retrieve
+      description: Renvoie un résumé journalier hebdomadaire ou mensuel.
+      parameters:
+      - in: query
+        name: period
+        schema:
+          type: string
+      tags:
+      - journal
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalSummary'
           description: ''
   /api/progression/:
     get:
@@ -263,7 +493,7 @@ paths:
   /api/progression/skills/:
     get:
       operationId: progression_skills_retrieve
-      description: Renvoie le solde et les transactions de points.
+      description: Renvoie le solde, les compétences débloquées et les transactions.
       tags:
       - progression
       security:
@@ -669,6 +899,140 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/seasons/:
+    get:
+      operationId: seasons_list
+      description: Renvoie les saisons du joueur, la plus récente d'abord.
+      tags:
+      - seasons
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeasonListResponse'
+          description: ''
+    post:
+      operationId: seasons_create
+      description: Crée une nouvelle saison.
+      tags:
+      - seasons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeasonCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SeasonCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SeasonCreate'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Season'
+          description: ''
+  /api/seasons/{id}/:
+    get:
+      operationId: seasons_retrieve
+      description: Renvoie une saison du joueur.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - seasons
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Season'
+          description: ''
+    patch:
+      operationId: seasons_partial_update
+      description: Met à jour une saison active.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - seasons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSeasonUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSeasonUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSeasonUpdate'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Season'
+          description: ''
+  /api/seasons/{id}/close/:
+    post:
+      operationId: seasons_close_create
+      description: Clôt la saison et ouvre la suivante.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - seasons
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeasonCloseResponse'
+          description: ''
+  /api/seasons/current/:
+    get:
+      operationId: seasons_current_retrieve
+      description: Renvoie la saison active après clôture/ouverture automatiques.
+      tags:
+      - seasons
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Season'
+          description: ''
   /api/settings/game/:
     get:
       operationId: settings_game_retrieve
@@ -684,6 +1048,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GameSettings'
+          description: ''
+  /api/skills/{code}/unlock/:
+    post:
+      operationId: skills_unlock_create
+      description: Débloque la compétence demandée via le moteur.
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+          pattern: ^[a-z_.0-9]+$
+        required: true
+      tags:
+      - skills
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillUnlockResponse'
+          description: ''
+  /api/skills/trees/:
+    get:
+      operationId: skills_trees_list
+      description: Renvoie les arbres de compétences, éventuellement filtrés par territoire.
+      parameters:
+      - in: query
+        name: territory
+        schema:
+          type: string
+      tags:
+      - skills
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SkillTree'
           description: ''
   /api/world/progress/:
     get:
@@ -743,6 +1153,31 @@ paths:
           description: ''
 components:
   schemas:
+    Achievement:
+      type: object
+      description: Succès avec état de déblocage pour le joueur.
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        unlocked:
+          type: boolean
+        unlocked_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - code
+      - description
+      - label
+      - name
+      - unlocked
+      - unlocked_at
     Avatar:
       type: object
       description: Apparence minimaliste renvoyée dans le Character.
@@ -789,17 +1224,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TerritoryStat'
+        active_title:
+          type: string
+          nullable: true
+        titles:
+          type: array
+          items:
+            type: string
+        equipment:
+          $ref: '#/components/schemas/Equipment'
       required:
+      - active_title
       - avatar
       - bio
       - character_class
       - credits
+      - equipment
       - is_onboarded
       - level
       - pseudonym
       - rank
       - skill_points
       - stats
+      - titles
       - total_xp
       - xp_in_level
       - xp_required
@@ -824,6 +1271,17 @@ components:
         note:
           type: string
           default: ''
+    CompletionAchievement:
+      type: object
+      description: Succès débloqué lors d'une validation.
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+      required:
+      - code
+      - label
     CompletionResult:
       type: object
       description: Réponse complète de la route de validation d'une mission.
@@ -858,7 +1316,12 @@ components:
         level_message:
           type: string
           nullable: true
+        achievements:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompletionAchievement'
       required:
+      - achievements
       - credits
       - level_after
       - level_before
@@ -924,6 +1387,26 @@ components:
         * `HARD` - Difficile
         * `EPIC` - Épique
         * `LEGENDARY` - Légendaire
+    Equipment:
+      type: object
+      description: Équipement cosmétique par emplacement.
+      properties:
+        AURA:
+          allOf:
+          - $ref: '#/components/schemas/ShopItemSnapshot'
+          nullable: true
+        FRAME:
+          allOf:
+          - $ref: '#/components/schemas/ShopItemSnapshot'
+          nullable: true
+        EMBLEM:
+          allOf:
+          - $ref: '#/components/schemas/ShopItemSnapshot'
+          nullable: true
+      required:
+      - AURA
+      - EMBLEM
+      - FRAME
     EventTypeEnum:
       enum:
       - QUEST_CREATED
@@ -939,6 +1422,15 @@ components:
       - SKILL_POINTS_EARNED
       - REST
       - CHARACTER_UPDATED
+      - SKILL_UNLOCKED
+      - ACHIEVEMENT_UNLOCKED
+      - REWARD_PURCHASED
+      - ITEM_EQUIPPED
+      - ITEM_UNEQUIPPED
+      - SEASON_STARTED
+      - SEASON_CLOSED
+      - SEASON_UPDATED
+      - TITLE_CHANGED
       type: string
       description: |-
         * `QUEST_CREATED` - Mission créée
@@ -954,6 +1446,15 @@ components:
         * `SKILL_POINTS_EARNED` - Points de compétence gagnés
         * `REST` - Repos
         * `CHARACTER_UPDATED` - Personnage modifié
+        * `SKILL_UNLOCKED` - Compétence débloquée
+        * `ACHIEVEMENT_UNLOCKED` - Succès débloqué
+        * `REWARD_PURCHASED` - Récompense obtenue
+        * `ITEM_EQUIPPED` - Objet équipé
+        * `ITEM_UNEQUIPPED` - Objet retiré
+        * `SEASON_STARTED` - Saison commencée
+        * `SEASON_CLOSED` - Saison terminée
+        * `SEASON_UPDATED` - Saison mise à jour
+        * `TITLE_CHANGED` - Titre changé
     GameSettings:
       type: object
       description: Paramètres du jeu exposés en lecture seule.
@@ -998,6 +1499,40 @@ components:
       - app
       - status
       - version
+    InventoryPurchase:
+      type: object
+      description: Historique d'achat dans l'inventaire.
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        item_name:
+          type: string
+        cost:
+          type: integer
+        purchased_at:
+          type: string
+          format: date-time
+      required:
+      - cost
+      - item_name
+      - purchased_at
+      - uuid
+    InventoryResponse:
+      type: object
+      description: Inventaire du joueur.
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShopItem'
+        purchases:
+          type: array
+          items:
+            $ref: '#/components/schemas/InventoryPurchase'
+      required:
+      - items
+      - purchases
     JournalEntry:
       type: object
       description: Événement du journal, tel que décrit dans le contrat d'API.
@@ -1034,6 +1569,57 @@ components:
       - payload
       - quest
       - uuid
+    JournalSummary:
+      type: object
+      description: Résumé journalier d'une période.
+      properties:
+        period:
+          type: string
+        from_:
+          type: string
+          format: date
+          title: 'From '
+        to:
+          type: string
+          format: date
+        xp_by_day:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalSummaryDay'
+        xp_by_territory:
+          type: object
+          additionalProperties:
+            type: integer
+        completions:
+          type: integer
+        rests:
+          type: integer
+        achievements:
+          type: integer
+        skills:
+          type: integer
+      required:
+      - achievements
+      - completions
+      - from_
+      - period
+      - rests
+      - skills
+      - to
+      - xp_by_day
+      - xp_by_territory
+    JournalSummaryDay:
+      type: object
+      description: XP d'un jour pour le résumé journal.
+      properties:
+        date:
+          type: string
+          format: date
+        xp:
+          type: integer
+      required:
+      - date
+      - xp
     Login:
       type: object
       description: Identifiants acceptés par la route de connexion.
@@ -1183,6 +1769,10 @@ components:
           $ref: '#/components/schemas/CharacterClassEnum'
         is_onboarded:
           type: boolean
+        active_title:
+          type: string
+          nullable: true
+          maxLength: 80
     PatchedQuestUpdate:
       type: object
       description: Champs modifiables d'une mission active ; le reste est ignoré.
@@ -1217,6 +1807,38 @@ components:
         skill_branch:
           type: string
           maxLength: 40
+    PatchedRewardUpdate:
+      type: object
+      description: Mise à jour d'une récompense personnelle.
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+        cost:
+          type: integer
+          minimum: 1
+        is_available:
+          type: boolean
+    PatchedSeasonUpdate:
+      type: object
+      description: Mise à jour d'une saison active.
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        theme:
+          type: string
+          maxLength: 200
+        priority_territories:
+          type: array
+          items:
+            type: string
+        objectives:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeasonObjectiveInput'
     PriorityEnum:
       enum:
       - LOW
@@ -1250,6 +1872,20 @@ components:
       - total_xp
       - xp_in_level
       - xp_required
+    PurchaseResponse:
+      type: object
+      description: Réponse d'achat.
+      properties:
+        item:
+          $ref: '#/components/schemas/ShopItem'
+        credits:
+          type: integer
+        message:
+          type: string
+      required:
+      - credits
+      - item
+      - message
     Quest:
       type: object
       description: Mission renvoyée par l'API, avec les champs calculés par le serveur.
@@ -1523,6 +2159,289 @@ components:
           type: string
       required:
       - message
+    RewardCreate:
+      type: object
+      description: Création d'une récompense personnelle.
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          default: ''
+        cost:
+          type: integer
+          minimum: 1
+      required:
+      - cost
+      - name
+    Season:
+      type: object
+      description: Représentation complète d'une saison.
+      properties:
+        id:
+          type: integer
+        number:
+          type: integer
+        name:
+          type: string
+        theme:
+          type: string
+        status:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        days_left:
+          type: integer
+        closed_at:
+          type: string
+          format: date-time
+          nullable: true
+        priority_territories:
+          type: array
+          items:
+            type: string
+        objectives:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeasonObjective'
+        summary:
+          $ref: '#/components/schemas/SeasonSummary'
+      required:
+      - closed_at
+      - days_left
+      - end_date
+      - id
+      - name
+      - number
+      - objectives
+      - priority_territories
+      - start_date
+      - status
+      - summary
+      - theme
+    SeasonCloseResponse:
+      type: object
+      description: Réponse de clôture anticipée.
+      properties:
+        closed:
+          $ref: '#/components/schemas/Season'
+        next:
+          $ref: '#/components/schemas/Season'
+      required:
+      - closed
+      - next
+    SeasonCreate:
+      type: object
+      description: Création d'une saison.
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        theme:
+          type: string
+          default: ''
+          maxLength: 200
+        start_date:
+          type: string
+          format: date
+        priority_territories:
+          type: array
+          items:
+            type: string
+        objectives:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeasonObjectiveInput'
+    SeasonListResponse:
+      type: object
+      description: Liste paginée des saisons.
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Season'
+      required:
+      - count
+      - next
+      - previous
+      - results
+    SeasonObjective:
+      type: object
+      description: Objectif de saison.
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        is_main:
+          type: boolean
+        is_done:
+          type: boolean
+        order:
+          type: integer
+      required:
+      - id
+      - is_done
+      - is_main
+      - order
+      - title
+    SeasonObjectiveInput:
+      type: object
+      description: Objectif envoyé lors de la création ou modification.
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+          maxLength: 200
+        is_main:
+          type: boolean
+          default: false
+        is_done:
+          type: boolean
+          default: false
+        order:
+          type: integer
+          minimum: 0
+    SeasonSummary:
+      type: object
+      description: Bilan d'une saison.
+      properties:
+        xp_total:
+          type: integer
+        xp_by_territory:
+          type: object
+          additionalProperties:
+            type: integer
+        completions:
+          type: integer
+        completions_by_type:
+          type: object
+          additionalProperties:
+            type: integer
+        levels_gained:
+          type: integer
+        objectives_done:
+          type: integer
+        objectives_total:
+          type: integer
+        achievements_unlocked:
+          type: array
+          items:
+            type: string
+        skills_unlocked:
+          type: array
+          items:
+            type: string
+      required:
+      - achievements_unlocked
+      - completions
+      - completions_by_type
+      - levels_gained
+      - objectives_done
+      - objectives_total
+      - skills_unlocked
+      - xp_by_territory
+      - xp_total
+    ShopItem:
+      type: object
+      description: Objet boutique renvoyé par l'API.
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        slot:
+          type: string
+          nullable: true
+        cost:
+          type: integer
+        is_available:
+          type: boolean
+        is_custom:
+          type: boolean
+        visual:
+          type: object
+          additionalProperties: {}
+        owned:
+          type: boolean
+        equipped:
+          type: boolean
+        purchases_count:
+          type: integer
+      required:
+      - category
+      - cost
+      - description
+      - equipped
+      - id
+      - is_available
+      - is_custom
+      - name
+      - owned
+      - purchases_count
+      - slot
+      - visual
+    ShopItemSnapshot:
+      type: object
+      description: Objet boutique/équipement renvoyé dans le personnage.
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        slot:
+          type: string
+          nullable: true
+        cost:
+          type: integer
+        is_available:
+          type: boolean
+        is_custom:
+          type: boolean
+        visual:
+          type: object
+          additionalProperties: {}
+        owned:
+          type: boolean
+        equipped:
+          type: boolean
+        purchases_count:
+          type: integer
+      required:
+      - category
+      - cost
+      - description
+      - equipped
+      - id
+      - is_available
+      - is_custom
+      - name
+      - owned
+      - purchases_count
+      - slot
+      - visual
     SilhouetteEnum:
       enum:
       - A
@@ -1533,6 +2452,66 @@ components:
         * `A` - Silhouette A
         * `B` - Silhouette B
         * `C` - Silhouette C
+    SkillBranch:
+      type: object
+      description: Branche de compétences.
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        validated_quests:
+          type: integer
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillNode'
+      required:
+      - code
+      - name
+      - skills
+      - validated_quests
+    SkillNode:
+      type: object
+      description: Nœud de compétence dans un arbre.
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        tier:
+          type: integer
+        cost:
+          type: integer
+        requires:
+          type: array
+          items:
+            type: string
+        min_territory_stat:
+          type: integer
+        min_validated_quests:
+          type: integer
+        state:
+          type: string
+        unlocked_at:
+          type: string
+          format: date-time
+          nullable: true
+        missing:
+          type: array
+          items:
+            type: string
+      required:
+      - code
+      - cost
+      - min_territory_stat
+      - min_validated_quests
+      - missing
+      - name
+      - requires
+      - state
+      - tier
+      - unlocked_at
     SkillPointTransaction:
       type: object
       description: Ligne de l'historique des points de compétence.
@@ -1584,14 +2563,29 @@ components:
       required:
       - available
       - spent
-    SkillPointsResponse:
+    SkillPointsBalance:
       type: object
-      description: Solde de points et transactions associées.
+      description: Solde de points de compétence.
       properties:
         available:
           type: integer
         spent:
           type: integer
+      required:
+      - available
+      - spent
+    SkillPointsResponse:
+      type: object
+      description: Solde de points, compétences débloquées et transactions.
+      properties:
+        available:
+          type: integer
+        spent:
+          type: integer
+        unlocked:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnlockedSkill'
         transactions:
           type: array
           items:
@@ -1600,6 +2594,43 @@ components:
       - available
       - spent
       - transactions
+      - unlocked
+    SkillTree:
+      type: object
+      description: Arbre de compétences d'un territoire.
+      properties:
+        territory:
+          type: string
+        name:
+          type: string
+        color:
+          type: string
+        stat:
+          type: integer
+        branches:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillBranch'
+      required:
+      - branches
+      - color
+      - name
+      - stat
+      - territory
+    SkillUnlockResponse:
+      type: object
+      description: Réponse du déblocage d'une compétence.
+      properties:
+        skill:
+          $ref: '#/components/schemas/SkillNode'
+        skill_points:
+          $ref: '#/components/schemas/SkillPointsBalance'
+        message:
+          type: string
+      required:
+      - message
+      - skill
+      - skill_points
     StatusEnum:
       enum:
       - AVAILABLE
@@ -1710,6 +2741,24 @@ components:
       - stat_display
       - state
       - total_xp
+    UnlockedSkill:
+      type: object
+      description: Compétence débloquée renvoyée dans la progression.
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        territory:
+          type: string
+        unlocked_at:
+          type: string
+          format: date-time
+      required:
+      - code
+      - name
+      - territory
+      - unlocked_at
     User:
       type: object
       description: Identité minimale d'un compte renvoyée par l'API.

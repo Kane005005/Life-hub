@@ -1,6 +1,6 @@
 # Architecture de LIFE RPG
 
-État : **phase 1 (LIFE CORE)**. Ce document est mis à jour à chaque phase.
+État : **phase 2 (RPG SYSTEM)**. Ce document est mis à jour à chaque phase.
 
 ## Vue d'ensemble
 
@@ -54,6 +54,18 @@ Toute écriture de progression passe par `engine/services.py`, sous `transaction
 
 La formule de niveau (`100 + 50 × (N − 1)`) est une règle fixe de `engine/rules.py`, volontairement non configurable.
 
+### RPG System (phase 2)
+
+| Module | Rôle |
+| --- | --- |
+| `engine/skills.py` | Arbre de compétences (annexe A) : `load_skill_tree` lit `docs/skill_tree_seed.json` (6 arbres, 18 branches, 72 compétences, idempotent). Déblocage atomique : points, prérequis, statistique du territoire, validations dans la branche (chaque validation compte). |
+| `engine/achievements.py` | Succès à conditions configurables (`{quest_type?, territory?, count}`), attribués une seule fois, évalués après chaque validation et au `seed` (rattrapage). |
+| `engine/economy.py` | Boutique : récompenses personnelles et objets cosmétiques (catalogue modifiable dans l'admin), achat refusé si crédits insuffisants, inventaire, équipement (aura, cadre, emblème). Titres : succès et compétences obtenus, jamais achetés. |
+| `engine/seasons.py` | Saisons de 90 jours (`season_length_days`) : clôture automatique à la date de fin avec bilan figé, ouverture immédiate de la suivante ; clôture anticipée ; pas de saisons vides en série après une longue absence. |
+| `engine/journal.py` | Résumé hebdomadaire ou mensuel du journal. |
+
+Aucun de ces modules ne donne de bonus d'XP ni ne retire quoi que ce soit. `make migrate` lance `seed`, qui charge territoires, arbre, succès et catalogue.
+
 ### API
 
 Contrat lisible : `docs/API.md`. Schéma généré : `docs/openapi.yaml` (`manage.py export_openapi`). Données initiales : `manage.py seed` (6 territoires et paramètres), lancé par `make migrate`.
@@ -67,9 +79,11 @@ Contrat lisible : `docs/API.md`. Schéma généré : `docs/openapi.yaml` (`manag
 | `src/tokens/` | Tokens typés (couleurs, territoires, glyphes, durées) |
 | `src/components/` | Composants de base : `HudFrame`, `Button`, `XpGauge`, `TopBar`, `LogoMark`, `SoundToggle` |
 | `src/app/` | Application, routeur, mise en page |
-| `src/pages/` | Connexion, création du personnage, Monde, Héros, Missions, Journal ; les autres espaces arrivent en phases 2 et 3 |
+| `src/pages/` | Connexion, création du personnage, Monde, Héros (succès, arbres de compétences), Missions, Boutique, Saisons, Journal ; Game Master et Réglages arrivent en phase 3 |
 | `src/features/fx/` | Braises, secousse du boss, montée de niveau, toasts, sons Web Audio (désactivés par défaut), annonces `aria-live` |
 | `src/lib/` | Client d'API avec jeton, types du contrat, hooks TanStack Query, libellés français |
+
+Django sert `index.html` avec `Cache-Control: no-cache` pour que le navigateur prenne toujours la dernière interface ; les fichiers de `/assets/` portent un hash.
 
 Polices auto-hébergées via `@fontsource` : l'interface fonctionne hors ligne. Le front n'applique aucune règle de jeu : il affiche ce que l'API renvoie.
 

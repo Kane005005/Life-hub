@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { QuestCard } from '../components/QuestCard'
 import { RestButton } from '../components/RestButton'
 import { HudFrame } from '../components/HudFrame'
 import { TerritoryPanel } from '../components/TerritoryPanel'
 import { WorldMap } from '../components/WorldMap'
 import { useHealth } from '../lib/api'
-import { useQuests, useTerritories } from '../lib/queries'
+import { useCurrentSeason, useQuests, useTerritories } from '../lib/queries'
 import type { TerritoryCode, TerritoryStat } from '../lib/types'
 
 function defaultTerritory(territories: TerritoryStat[]): TerritoryStat | undefined {
@@ -15,6 +16,7 @@ function defaultTerritory(territories: TerritoryStat[]): TerritoryStat | undefin
 export function WorldPage() {
   const territoriesQuery = useTerritories()
   const todayQuery = useQuests({ today: true })
+  const currentSeasonQuery = useCurrentSeason()
   const health = useHealth()
   const [chosen, setChosen] = useState<TerritoryCode | null>(null)
 
@@ -24,12 +26,30 @@ export function WorldPage() {
     [territories, chosen],
   )
   const todayQuests = todayQuery.data?.results ?? []
+  const currentSeason = currentSeasonQuery.data
+  const mainObjective = currentSeason?.objectives?.find((objective) => objective.is_main)
 
   return (
     <section className="lr-section">
       <p className="lr-eyebrow">01 · Le monde</p>
       <h1 className="lr-title">Ta carte</h1>
       <p className="lr-lede">Choisis un territoire. Le monde se dévoile à ton rythme.</p>
+
+      {currentSeason ? (
+        <HudFrame className="lr-season-banner">
+          <div>
+            <p className="lr-detail-code">Saison en cours</p>
+            <p className="lr-q-title">{currentSeason.name}</p>
+            <p className="lr-note">
+              <span className="num">{currentSeason.days_left}</span> jours restants
+              {mainObjective ? ` · ${mainObjective.title}` : ''}
+            </p>
+          </div>
+          <Link className="lr-q-menu" to="/saisons">
+            Voir la saison
+          </Link>
+        </HudFrame>
+      ) : null}
 
       {territoriesQuery.isPending ? <p className="lr-note">Chargement de la carte…</p> : null}
       {territoriesQuery.isError ? (

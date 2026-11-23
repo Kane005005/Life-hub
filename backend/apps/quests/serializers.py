@@ -152,6 +152,13 @@ class CompleteQuestInputSerializer(serializers.Serializer):
     note = serializers.CharField(required=False, allow_blank=True, default="")
 
 
+class CompletionAchievementSerializer(serializers.Serializer):
+    """Succès débloqué lors d'une validation."""
+
+    code = serializers.CharField()
+    label = serializers.CharField()
+
+
 class CompletionResultDetailSerializer(serializers.Serializer):
     """Récompenses et messages renvoyés après une validation."""
 
@@ -164,6 +171,7 @@ class CompletionResultDetailSerializer(serializers.Serializer):
     skill_points_gained = serializers.IntegerField()
     message = serializers.CharField()
     level_message = serializers.CharField(allow_null=True)
+    achievements = CompletionAchievementSerializer(many=True)
 
 
 class CompletionResultSerializer(serializers.Serializer):

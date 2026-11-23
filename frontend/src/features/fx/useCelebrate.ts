@@ -39,6 +39,22 @@ export function useCelebrate(): Celebrate {
           isBoss ? 600 : 300,
         )
       }
+
+      const achievements = result.result.achievements ?? []
+      if (achievements.length > 0) {
+        const baseDelay = result.result.levels_gained > 0 ? (isBoss ? 1400 : 1100) : 700
+        achievements.forEach((achievement, index) => {
+          window.setTimeout(
+            () => {
+              const message = `Succès débloqué : ${achievement.label}.`
+              announce(message)
+              toast(message)
+              playSfx('ach')
+            },
+            baseDelay + index * 850,
+          )
+        })
+      }
     },
     [announce, burst, shakeBody, showLevelUp, toast],
   )

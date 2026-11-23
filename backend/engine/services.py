@@ -23,7 +23,7 @@ from apps.quests.models import Quest, QuestCompletion, QuestStep
 from apps.skills.models import SkillPointTransaction
 from apps.world.models import Territory, TerritoryProgress
 from engine.events import log_event
-from engine.exceptions import AlreadyCompleted, QuestStateError
+from engine.exceptions import AlreadyCompleted, EngineError, QuestStateError
 from engine.rules import (
     apply_xp,
     credits_for_xp,
@@ -72,6 +72,7 @@ class CompletionResult:
     skill_points_gained: int
     message: str
     level_message: str | None
+    achievements: list[dict]
 
 
 def _resolve_territory(value: object) -> Territory:
@@ -81,6 +82,17 @@ def _resolve_territory(value: object) -> Territory:
     if isinstance(value, str):
         return Territory.objects.get(code=value)
     return Territory.objects.get(pk=value)
+
+
+def _validate_skill_branch(territory: Territory, skill_branch: str) -> None:
+    """Valide qu'une branche appartient au territoire de la mission."""
+    if not skill_branch:
+        return
+    from apps.skills.models import SkillBranch
+
+    exists = SkillBranch.objects.filter(code=skill_branch, tree__territory=territory).exists()
+    if not exists:
+        raise QuestStateError("Branche de compétence inconnue pour ce territoire.")
 
 
 def _parse_date(value: object) -> date | None:
@@ -114,6 +126,36 @@ def ensure_character(user: User) -> Character:
     return character
 
 
+def character_titles(character: Character) -> list[str]:
+    """Renvoie les titres obtenus (succès puis compétences) sans doublon."""
+    from apps.achievements.models import PlayerAchievement
+    from apps.skills.models import SkillUnlock
+
+    titles: list[str] = []
+    seen: set[str] = set()
+    achievements = (
+        PlayerAchievement.objects.filter(character=character)
+        .select_related("achievement")
+        .order_by("unlocked_at", "id")
+    )
+    for item in achievements:
+        label = item.achievement.label
+        if label not in seen:
+            titles.append(label)
+            seen.add(label)
+    skills = (
+        SkillUnlock.objects.filter(character=character)
+        .select_related("skill")
+        .order_by("unlocked_at", "id")
+    )
+    for item in skills:
+        name = item.skill.name
+        if name not in seen:
+            titles.append(name)
+            seen.add(name)
+    return titles
+
+
 @transaction.atomic
 def update_character(character: Character, data: Mapping[str, object]) -> Character:
     """Met à jour le profil sans toucher à la progression du personnage."""
@@ -121,7 +163,21 @@ def update_character(character: Character, data: Mapping[str, object]) -> Charac
     for field in CHARACTER_EDITABLE_FIELDS:
         if field in data:
             setattr(character, field, data[field])
-    character.save(update_fields=[*CHARACTER_EDITABLE_FIELDS, "updated_at"])
+
+    update_fields = [*CHARACTER_EDITABLE_FIELDS, "updated_at"]
+    if "active_title" in data:
+        active_title = data["active_title"] or ""
+        if active_title:
+            titles = character_titles(character)
+            if active_title not in titles:
+                raise EngineError("Ce titre n'est pas encore obtenu.")
+        character.active_title = active_title
+        update_fields.append("active_title")
+        character.save(update_fields=update_fields)
+        log_event(character.user, "TITLE_CHANGED", "Titre actif mis à jour.")
+        return character
+
+    character.save(update_fields=update_fields)
     log_event(character.user, "CHARACTER_UPDATED", "Personnage mis à jour.")
     return character
 
@@ -153,10 +209,17 @@ def create_quest(
     difficulty = str(data.get("difficulty", "MEDIUM"))
     xp = xp_for_difficulty(difficulty, settings.xp_by_difficulty)
     territory = _resolve_territory(data.get("territory"))
+    skill_branch = str(data.get("skill_branch", ""))
+    _validate_skill_branch(territory, skill_branch)
+
+    from engine.seasons import current_season
+
+    active_season = current_season(user)
 
     quest = Quest.objects.create(
         owner=user,
         territory=territory,
+        season=active_season,
         title=str(data.get("title", "Nouvelle mission")),
         description=str(data.get("description", "")),
         quest_type=str(data.get("quest_type", "SIDE")),
@@ -169,7 +232,7 @@ def create_quest(
         credit_reward=credits_for_xp(xp, settings.credits_per_xp),
         validation_mode=str(data.get("validation_mode", "MANUAL")),
         origin=origin,
-        skill_branch=str(data.get("skill_branch", "")),
+        skill_branch=skill_branch,
     )
     for index, step in enumerate(steps or []):
         QuestStep.objects.create(
@@ -197,6 +260,9 @@ def update_quest(quest: Quest, data: Mapping[str, object]) -> Quest:
         if field in ("start_date", "due_date"):
             value = _parse_date(value)
         setattr(quest, field, value)
+
+    if "skill_branch" in data or "territory" in data:
+        _validate_skill_branch(quest.territory, quest.skill_branch)
 
     if difficulty_changed:
         settings = GameSettings.load()
@@ -263,6 +329,9 @@ def complete_quest(quest: Quest, note: str = "", today: date | None = None) -> C
     expected_message = _already_completed_message(quest.quest_type)
     try:
         with transaction.atomic():
+            from engine.seasons import current_season
+
+            current_season(quest.owner, today=day)
             current = Quest.objects.select_for_update().get(pk=quest.pk)
             if current.status == "ABANDONED":
                 raise QuestStateError("Cette mission a été abandonnée.")
@@ -406,6 +475,14 @@ def complete_quest(quest: Quest, note: str = "", today: date | None = None) -> C
                     payload={"points": points},
                 )
 
+            from engine.achievements import evaluate_achievements
+
+            unlocked = evaluate_achievements(character)
+            achievements = [
+                {"code": item.achievement.code, "label": item.achievement.label}
+                for item in unlocked
+            ]
+
             result = CompletionResult(
                 quest=current,
                 xp=xp,
@@ -417,6 +494,7 @@ def complete_quest(quest: Quest, note: str = "", today: date | None = None) -> C
                 skill_points_gained=points,
                 message=message,
                 level_message=level_message,
+                achievements=achievements,
             )
             quest.refresh_from_db()
     except IntegrityError:
@@ -472,6 +550,31 @@ def territory_stats(character: Character) -> list[dict]:
     return stats
 
 
+def character_equipment(character: Character) -> dict:
+    """Renvoie l'équipement cosmétique du personnage."""
+    from apps.economy.models import Equipment
+
+    slots = {"AURA": None, "FRAME": None, "EMBLEM": None}
+    equipped = Equipment.objects.filter(character=character).select_related("item__item")
+    for entry in equipped:
+        item = entry.item.item
+        slots[entry.slot] = {
+            "id": item.id,
+            "name": item.name,
+            "description": item.description,
+            "category": item.category,
+            "slot": item.slot or None,
+            "cost": item.cost,
+            "is_available": item.is_available,
+            "is_custom": item.owner_id is not None,
+            "visual": item.visual,
+            "owned": True,
+            "equipped": True,
+            "purchases_count": 0,
+        }
+    return slots
+
+
 def character_snapshot(character: Character) -> dict:
     """Produit l'objet Character du contrat d'API pour le personnage."""
     settings = GameSettings.load()
@@ -481,6 +584,8 @@ def character_snapshot(character: Character) -> dict:
         "color": avatar.color if avatar else "#2FD08B",
         "accent": avatar.accent if avatar else "#EDE9DF",
     }
+    titles = character_titles(character)
+    active_title = character.active_title or None
     return {
         "pseudonym": character.pseudonym,
         "bio": character.bio,
@@ -498,4 +603,7 @@ def character_snapshot(character: Character) -> dict:
         },
         "avatar": avatar_data,
         "stats": territory_stats(character),
+        "active_title": active_title,
+        "titles": titles,
+        "equipment": character_equipment(character),
     }

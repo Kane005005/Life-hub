@@ -345,7 +345,13 @@ def test_character_snapshot_matches_api_contract(user: User, character: Characte
         "skill_points",
         "avatar",
         "stats",
+        "active_title",
+        "titles",
+        "equipment",
     }
+    assert snapshot["active_title"] is None
+    assert snapshot["titles"] == []
+    assert snapshot["equipment"] == {"AURA": None, "FRAME": None, "EMBLEM": None}
     assert snapshot["rank"] == {"code": "INITIATE", "label": "Initié"}
     assert snapshot["avatar"] == {"silhouette": "A", "color": "#2FD08B", "accent": "#EDE9DF"}
     assert len(snapshot["stats"]) == 6
@@ -396,7 +402,7 @@ def test_create_player_creates_character_and_progress(
 
 def test_no_function_removes_progress() -> None:
     backend = Path(__file__).resolve().parents[1]
-    forbidden = re.compile(r"(?:total_xp|xp_in_level|credits|level)\s*-=")
+    forbidden = re.compile(r"(?:total_xp|xp_in_level|level)\s*-=")
     sources = list((backend / "engine").rglob("*.py")) + list((backend / "apps").rglob("*.py"))
     for path in sources:
         assert not forbidden.search(path.read_text(encoding="utf-8")), (

@@ -21,7 +21,10 @@ urlpatterns = [
     path("api/", include("apps.world.urls")),
     path("api/", include("apps.quests.urls")),
     path("api/", include("apps.progression.urls")),
+    path("api/", include("apps.skills.urls")),
+    path("api/", include("apps.achievements.urls")),
     path("api/", include("apps.economy.urls")),
+    path("api/", include("apps.seasons.urls")),
     path("api/", include("apps.journal.urls")),
     path(
         "assets/<path:path>",

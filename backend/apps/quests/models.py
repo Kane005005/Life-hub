@@ -75,6 +75,13 @@ class Quest(models.Model):
         on_delete=models.PROTECT,
         related_name="quests",
     )
+    season = models.ForeignKey(
+        "seasons.Season",
+        on_delete=models.SET_NULL,
+        related_name="quests",
+        null=True,
+        blank=True,
+    )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, default="")
     quest_type = models.CharField(

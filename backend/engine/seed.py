@@ -1,5 +1,6 @@
 """Données initiales du monde LIFE RPG, chargées de façon idempotente."""
 
+from apps.character.models import Character
 from apps.progression.models import GameSettings
 from apps.world.models import Territory
 
@@ -66,3 +67,13 @@ def seed_world() -> None:
     for order, data in enumerate(TERRITORIES, start=1):
         Territory.objects.update_or_create(code=data["code"], defaults={**data, "order": order})
     GameSettings.load()
+
+    from engine.achievements import evaluate_achievements, seed_achievements
+    from engine.economy import seed_shop
+    from engine.skills import load_skill_tree
+
+    load_skill_tree()
+    seed_achievements()
+    seed_shop()
+    for character in Character.objects.select_related("user").all():
+        evaluate_achievements(character)

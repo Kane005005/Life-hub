@@ -12,7 +12,7 @@ import {
   TERRITORY_CODES,
   TERRITORY_LABELS,
 } from '../lib/labels'
-import { useCreateQuest, useGameSettings } from '../lib/queries'
+import { useCreateQuest, useGameSettings, useSkillTrees } from '../lib/queries'
 import type {
   Difficulty,
   Priority,
@@ -54,6 +54,8 @@ export function QuestForm({ onCreated, onCancel }: QuestFormProps) {
   const [skillBranch, setSkillBranch] = useState('')
   const [steps, setSteps] = useState<FormStep[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const skillTrees = useSkillTrees(territory)
+  const branches = skillTrees.data?.[0]?.branches ?? []
 
   const difficultyXp = settings.data?.xp_by_difficulty[difficulty]
 
@@ -146,7 +148,10 @@ export function QuestForm({ onCreated, onCancel }: QuestFormProps) {
           <select
             name="territory"
             value={territory}
-            onChange={(event) => setTerritory(event.target.value as TerritoryCode)}
+            onChange={(event) => {
+              setTerritory(event.target.value as TerritoryCode)
+              setSkillBranch('')
+            }}
           >
             {TERRITORY_CODES.map((code) => (
               <option key={code} value={code}>
@@ -249,21 +254,21 @@ export function QuestForm({ onCreated, onCancel }: QuestFormProps) {
         </label>
       </div>
 
-      <div className="lr-field">
-        <label htmlFor="quest-skill-branch">Branche de compétence</label>
-        <input
-          id="quest-skill-branch"
-          type="text"
+      <label className="lr-field">
+        <span>Branche de compétence</span>
+        <select
           name="skill_branch"
-          maxLength={40}
-          aria-describedby="quest-skill-branch-help"
           value={skillBranch}
           onChange={(event) => setSkillBranch(event.target.value)}
-        />
-        <span id="quest-skill-branch-help" className="lr-field-help">
-          Code de branche, par exemple programming. Les arbres arrivent en phase 2.
-        </span>
-      </div>
+        >
+          <option value="">Aucune branche</option>
+          {branches.map((branch) => (
+            <option key={branch.code} value={branch.code}>
+              {branch.name}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <fieldset className="lr-fieldset">
         <legend>Étapes</legend>

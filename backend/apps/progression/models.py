@@ -37,6 +37,10 @@ class GameSettings(models.Model):
     territory_stat_display_max = models.PositiveIntegerField(default=100)
     territory_state_thresholds = models.JSONField(default=default_state_thresholds)
     ranks = models.JSONField(default=default_ranks)
+    season_length_days = models.PositiveIntegerField(
+        default=90,
+        validators=[MinValueValidator(1)],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

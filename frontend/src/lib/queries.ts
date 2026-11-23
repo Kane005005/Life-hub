@@ -1,21 +1,37 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { clearToken, setToken } from './auth'
-import { apiRequest } from './api'
+import { ApiError, apiRequest } from './api'
 import type {
+  Achievement,
   Character,
   CharacterUpdate,
   CompletionResult,
   GameSettings,
+  Inventory,
   JournalEntry,
   JournalFilters,
+  JournalSummary,
   LoginResponse,
   Paginated,
   Progression,
+  PurchaseResult,
   Quest,
   QuestFilters,
   QuestInput,
   QuestUpdate,
+  RewardInput,
+  Season,
+  SeasonCloseResult,
+  SeasonInput,
+  SeasonUpdate,
+  ShopCategory,
+  ShopItem,
+  SkillTree,
+  SkillUnlockResult,
+  SkillsSummary,
+  TerritoryCode,
   TerritoryStat,
+  WalletTransaction,
   WorldProgress,
   XpTransaction,
 } from './types'
@@ -32,8 +48,21 @@ export const queryKeys = {
   quest: (id: number) => ['quests', id] as const,
   progression: ['progression'] as const,
   history: ['progression', 'history'] as const,
+  skills: ['skills'] as const,
+  skillTrees: (territory?: TerritoryCode) => ['skills', 'trees', territory ?? 'all'] as const,
+  skillsSummary: ['skills', 'summary'] as const,
+  achievements: ['achievements'] as const,
+  shop: ['shop'] as const,
+  shopItems: (filters?: { category?: ShopCategory; slot?: string }) =>
+    ['shop', 'items', filters ?? {}] as const,
+  inventory: ['inventory'] as const,
+  wallet: ['wallet'] as const,
+  seasons: ['seasons'] as const,
+  season: (id: number) => ['seasons', id] as const,
+  currentSeason: ['seasons', 'current'] as const,
   journal: ['journal'] as const,
   journalList: (filters?: JournalFilters) => ['journal', filters ?? {}] as const,
+  journalSummary: (period: 'week' | 'month') => ['journal', 'summary', period] as const,
   settings: ['settings', 'game'] as const,
 }
 
@@ -63,8 +92,23 @@ function questsPath(filters: QuestFilters = {}): string {
 
 function journalPath(filters: JournalFilters = {}): string {
   const params = new URLSearchParams()
-  if (filters.event_type) {
-    params.set('event_type', filters.event_type)
+  const eventTypes = filters.event_type
+    ? Array.isArray(filters.event_type)
+      ? filters.event_type
+      : [filters.event_type]
+    : []
+  eventTypes.forEach((eventType) => params.append('event_type', eventType))
+  if (filters.date_from) {
+    params.set('date_from', filters.date_from)
+  }
+  if (filters.date_to) {
+    params.set('date_to', filters.date_to)
+  }
+  if (filters.territory) {
+    params.set('territory', filters.territory)
+  }
+  if (filters.q) {
+    params.set('q', filters.q)
   }
   const search = params.toString()
   return `/journal/${search ? `?${search}` : ''}`
@@ -209,6 +253,12 @@ export function useCompleteQuest() {
       void client.invalidateQueries({ queryKey: queryKeys.progression })
       void client.invalidateQueries({ queryKey: queryKeys.journal })
       void client.invalidateQueries({ queryKey: queryKeys.world })
+      void client.invalidateQueries({ queryKey: queryKeys.skills })
+      void client.invalidateQueries({ queryKey: queryKeys.achievements })
+      void client.invalidateQueries({ queryKey: queryKeys.shop })
+      void client.invalidateQueries({ queryKey: queryKeys.inventory })
+      void client.invalidateQueries({ queryKey: queryKeys.wallet })
+      void client.invalidateQueries({ queryKey: queryKeys.seasons })
     },
   })
 }
@@ -258,6 +308,13 @@ export function useJournal(filters?: JournalFilters) {
   })
 }
 
+export function useJournalSummary(period: 'week' | 'month' = 'week') {
+  return useQuery({
+    queryKey: queryKeys.journalSummary(period),
+    queryFn: () => apiRequest<JournalSummary>('GET', `/journal/summary/?period=${period}`),
+  })
+}
+
 export function useRest() {
   const client = useQueryClient()
   return useMutation({
@@ -272,6 +329,201 @@ export function useGameSettings() {
   return useQuery({
     queryKey: queryKeys.settings,
     queryFn: () => apiRequest<GameSettings>('GET', '/settings/game/'),
+  })
+}
+
+export function useSkillTrees(territory?: TerritoryCode) {
+  return useQuery({
+    queryKey: queryKeys.skillTrees(territory),
+    queryFn: () =>
+      apiRequest<SkillTree[]>('GET', `/skills/trees/${territory ? `?territory=${territory}` : ''}`),
+  })
+}
+
+export function useUnlockSkill() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (code: string) => apiRequest<SkillUnlockResult>('POST', `/skills/${code}/unlock/`),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.character })
+      void client.invalidateQueries({ queryKey: queryKeys.skills })
+      void client.invalidateQueries({ queryKey: queryKeys.progression })
+      void client.invalidateQueries({ queryKey: queryKeys.journal })
+    },
+  })
+}
+
+export function useSkillsSummary() {
+  return useQuery({
+    queryKey: queryKeys.skillsSummary,
+    queryFn: () => apiRequest<SkillsSummary>('GET', '/progression/skills/'),
+  })
+}
+
+export function useAchievements() {
+  return useQuery({
+    queryKey: queryKeys.achievements,
+    queryFn: () => apiRequest<Achievement[]>('GET', '/achievements/'),
+  })
+}
+
+export function useShopItems(filters?: { category?: ShopCategory; slot?: string }) {
+  return useQuery({
+    queryKey: queryKeys.shopItems(filters),
+    queryFn: () => {
+      const params = new URLSearchParams()
+      if (filters?.category) {
+        params.set('category', filters.category)
+      }
+      if (filters?.slot) {
+        params.set('slot', filters.slot)
+      }
+      const search = params.toString()
+      return apiRequest<ShopItem[]>('GET', `/economy/rewards/${search ? `?${search}` : ''}`)
+    },
+  })
+}
+
+export function useCreateReward() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (input: RewardInput) => apiRequest<ShopItem>('POST', '/economy/rewards/', input),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.shop })
+    },
+  })
+}
+
+export function useUpdateReward() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, input }: { id: number; input: Partial<RewardInput> }) =>
+      apiRequest<ShopItem>('PATCH', `/economy/rewards/${id}/`, input),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.shop })
+      void client.invalidateQueries({ queryKey: queryKeys.inventory })
+    },
+  })
+}
+
+export function usePurchase() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiRequest<PurchaseResult>('POST', `/economy/rewards/${id}/purchase/`),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.character })
+      void client.invalidateQueries({ queryKey: queryKeys.shop })
+      void client.invalidateQueries({ queryKey: queryKeys.inventory })
+      void client.invalidateQueries({ queryKey: queryKeys.wallet })
+      void client.invalidateQueries({ queryKey: queryKeys.journal })
+    },
+  })
+}
+
+export function useInventory() {
+  return useQuery({
+    queryKey: queryKeys.inventory,
+    queryFn: () => apiRequest<Inventory>('GET', '/economy/inventory/'),
+  })
+}
+
+export function useWalletTransactions() {
+  return useQuery({
+    queryKey: queryKeys.wallet,
+    queryFn: () => apiRequest<Paginated<WalletTransaction>>('GET', '/economy/transactions/'),
+  })
+}
+
+export function useEquip() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => apiRequest<Character>('POST', `/economy/inventory/${id}/equip/`),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.character })
+      void client.invalidateQueries({ queryKey: queryKeys.inventory })
+      void client.invalidateQueries({ queryKey: queryKeys.shop })
+      void client.invalidateQueries({ queryKey: queryKeys.journal })
+    },
+  })
+}
+
+export function useUnequip() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => apiRequest<Character>('POST', `/economy/inventory/${id}/unequip/`),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.character })
+      void client.invalidateQueries({ queryKey: queryKeys.inventory })
+      void client.invalidateQueries({ queryKey: queryKeys.shop })
+      void client.invalidateQueries({ queryKey: queryKeys.journal })
+    },
+  })
+}
+
+export function useSeasons() {
+  return useQuery({
+    queryKey: queryKeys.seasons,
+    queryFn: () => apiRequest<Paginated<Season>>('GET', '/seasons/'),
+  })
+}
+
+export function useCurrentSeason() {
+  return useQuery({
+    queryKey: queryKeys.currentSeason,
+    queryFn: async () => {
+      try {
+        return await apiRequest<Season>('GET', '/seasons/current/')
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 404) {
+          return null
+        }
+        throw error
+      }
+    },
+    retry: false,
+  })
+}
+
+export function useSeason(id: number) {
+  return useQuery({
+    queryKey: queryKeys.season(id),
+    queryFn: () => apiRequest<Season>('GET', `/seasons/${id}/`),
+    enabled: Number.isFinite(id),
+  })
+}
+
+export function useCreateSeason() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (input: SeasonInput) => apiRequest<Season>('POST', '/seasons/', input),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.seasons })
+      void client.invalidateQueries({ queryKey: queryKeys.journal })
+    },
+  })
+}
+
+export function useUpdateSeason() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, input }: { id: number; input: SeasonUpdate }) =>
+      apiRequest<Season>('PATCH', `/seasons/${id}/`, input),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.seasons })
+      void client.invalidateQueries({ queryKey: queryKeys.journal })
+    },
+  })
+}
+
+export function useCloseSeason() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => apiRequest<SeasonCloseResult>('POST', `/seasons/${id}/close/`),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.seasons })
+      void client.invalidateQueries({ queryKey: queryKeys.journal })
+    },
   })
 }
 

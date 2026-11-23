@@ -116,6 +116,10 @@ def test_complete_returns_exact_result_and_is_idempotent(
         "skill_points_gained": 0,
         "message": "Mission validée. +30 XP en Savoir.",
         "level_message": None,
+        "achievements": [
+            {"code": "FIRST_QUEST", "label": "Premier pas"},
+            {"code": "EXPLORER", "label": "Explorateur"},
+        ],
     }
     assert data["quest"]["status"] == "COMPLETED"
 

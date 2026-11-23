@@ -15,6 +15,31 @@ class AvatarSerializer(serializers.Serializer):
     accent = serializers.CharField()
 
 
+class ShopItemSnapshotSerializer(serializers.Serializer):
+    """Objet boutique/équipement renvoyé dans le personnage."""
+
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+    category = serializers.CharField()
+    slot = serializers.CharField(allow_null=True)
+    cost = serializers.IntegerField()
+    is_available = serializers.BooleanField()
+    is_custom = serializers.BooleanField()
+    visual = serializers.DictField()
+    owned = serializers.BooleanField()
+    equipped = serializers.BooleanField()
+    purchases_count = serializers.IntegerField()
+
+
+class EquipmentSerializer(serializers.Serializer):
+    """Équipement cosmétique par emplacement."""
+
+    AURA = ShopItemSnapshotSerializer(allow_null=True)
+    FRAME = ShopItemSnapshotSerializer(allow_null=True)
+    EMBLEM = ShopItemSnapshotSerializer(allow_null=True)
+
+
 class CharacterSerializer(serializers.Serializer):
     """Objet Character complet du contrat d'API."""
 
@@ -31,6 +56,9 @@ class CharacterSerializer(serializers.Serializer):
     skill_points = SkillPointsSerializer()
     avatar = AvatarSerializer()
     stats = TerritoryStatSerializer(many=True)
+    active_title = serializers.CharField(allow_null=True)
+    titles = serializers.ListField(child=serializers.CharField())
+    equipment = EquipmentSerializer()
 
 
 class CharacterUpdateSerializer(serializers.Serializer):
@@ -40,6 +68,9 @@ class CharacterUpdateSerializer(serializers.Serializer):
     bio = serializers.CharField(required=False, allow_blank=True)
     character_class = serializers.ChoiceField(choices=CharacterClass.choices, required=False)
     is_onboarded = serializers.BooleanField(required=False)
+    active_title = serializers.CharField(
+        max_length=80, required=False, allow_blank=True, allow_null=True
+    )
 
 
 class AvatarUpdateSerializer(serializers.Serializer):

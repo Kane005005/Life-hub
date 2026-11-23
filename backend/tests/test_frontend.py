@@ -19,3 +19,10 @@ def test_frontend_index_without_build_returns_503(client: Client, tmp_path) -> N
 
     assert response.status_code == 503
     assert response.content.decode("utf-8") == "Le front n'est pas construit. Lance make build."
+
+
+def test_frontend_index_is_revalidated(client, settings, tmp_path) -> None:
+    (tmp_path / "index.html").write_text("<html>LIFE RPG</html>", encoding="utf-8")
+    settings.FRONTEND_DIST = tmp_path
+    response = client.get("/")
+    assert response["Cache-Control"] == "no-cache"

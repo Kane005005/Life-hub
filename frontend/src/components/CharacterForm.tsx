@@ -27,10 +27,12 @@ export function CharacterForm({
   const [pseudonym, setPseudonym] = useState(character.pseudonym)
   const [bio, setBio] = useState(character.bio)
   const [characterClass, setCharacterClass] = useState<CharacterClass>(character.character_class)
+  const [activeTitle, setActiveTitle] = useState(character.active_title ?? '')
   const [silhouette, setSilhouette] = useState<Silhouette>(character.avatar.silhouette)
   const [color, setColor] = useState(character.avatar.color)
   const [accent, setAccent] = useState(character.avatar.accent)
   const [error, setError] = useState('')
+  const titles = character.titles ?? []
 
   const isSaving = updateAvatar.isPending || updateCharacter.isPending
 
@@ -43,7 +45,7 @@ export function CharacterForm({
         pseudonym,
         bio,
         character_class: characterClass,
-        ...(onboarding ? { is_onboarded: true } : {}),
+        ...(onboarding ? { is_onboarded: true } : { active_title: activeTitle || null }),
       })
       onSaved?.()
     } catch (cause) {
@@ -92,6 +94,22 @@ export function CharacterForm({
             value={bio}
             onChange={(event) => setBio(event.target.value)}
           />
+        </label>
+
+        <label className="lr-field">
+          <span>Titre actif</span>
+          <select
+            name="active_title"
+            value={activeTitle}
+            onChange={(event) => setActiveTitle(event.target.value)}
+          >
+            <option value="">Aucun titre</option>
+            {titles.map((title) => (
+              <option key={title} value={title}>
+                {title}
+              </option>
+            ))}
+          </select>
         </label>
 
         <fieldset className="lr-fieldset">

@@ -41,6 +41,22 @@ describe('QuestForm', () => {
       if (url === '/api/settings/game/') {
         return Promise.resolve(jsonResponse(200, settings))
       }
+      if (url.startsWith('/api/skills/trees/')) {
+        return Promise.resolve(
+          jsonResponse(200, [
+            {
+              territory: 'KNOWLEDGE',
+              name: 'Savoir',
+              color: '#6F94B5',
+              stat: 10,
+              branches: [
+                { code: 'reading', name: 'Lecture & culture', validated_quests: 0, skills: [] },
+                { code: 'research', name: 'Recherche & méthode', validated_quests: 0, skills: [] },
+              ],
+            },
+          ]),
+        )
+      }
       return Promise.resolve(jsonResponse(201, makeQuest()))
     })
     vi.stubGlobal('fetch', fetchMock)
@@ -54,7 +70,8 @@ describe('QuestForm', () => {
     expect(await screen.findByText('XP prévue : 25')).toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Titre'), 'Écrire le rapport')
-    await user.type(screen.getByLabelText('Branche de compétence'), 'programming')
+    await screen.findByRole('option', { name: 'Lecture & culture' })
+    await user.selectOptions(screen.getByLabelText('Branche de compétence'), 'reading')
     await user.click(screen.getByRole('button', { name: 'Ajouter une étape' }))
     await user.type(screen.getByLabelText('Étape 1'), 'Rassembler les notes')
     await user.click(screen.getByLabelText('Obligatoire'))
@@ -67,9 +84,61 @@ describe('QuestForm', () => {
       expect(call).toBeDefined()
       const body = JSON.parse((call?.[1] as RequestInit).body as string) as Record<string, unknown>
       expect(body.title).toBe('Écrire le rapport')
-      expect(body.skill_branch).toBe('programming')
+      expect(body.skill_branch).toBe('reading')
       expect(body.steps).toEqual([{ title: 'Rassembler les notes', is_required: true }])
       expect(body).not.toHaveProperty('xp_reward')
     })
+  })
+
+  it('filtre les branches par territoire et remet la branche à vide au changement', async () => {
+    const user = userEvent.setup()
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url === '/api/settings/game/') return Promise.resolve(jsonResponse(200, settings))
+      if (url.includes('territory=KNOWLEDGE')) {
+        return Promise.resolve(
+          jsonResponse(200, [
+            {
+              territory: 'KNOWLEDGE',
+              name: 'Savoir',
+              color: '#6F94B5',
+              stat: 0,
+              branches: [
+                { code: 'reading', name: 'Lecture & culture', validated_quests: 0, skills: [] },
+              ],
+            },
+          ]),
+        )
+      }
+      if (url.includes('territory=TECHNOLOGY')) {
+        return Promise.resolve(
+          jsonResponse(200, [
+            {
+              territory: 'TECHNOLOGY',
+              name: 'Technologie',
+              color: '#3FB6C6',
+              stat: 0,
+              branches: [
+                { code: 'programming', name: 'Programmation', validated_quests: 0, skills: [] },
+              ],
+            },
+          ]),
+        )
+      }
+      return Promise.resolve(jsonResponse(200, []))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <TestProviders>
+        <QuestForm />
+      </TestProviders>,
+    )
+
+    await screen.findByRole('option', { name: 'Lecture & culture' })
+    await user.selectOptions(screen.getByLabelText('Branche de compétence'), 'reading')
+    await user.selectOptions(screen.getByLabelText('Territoire'), 'TECHNOLOGY')
+
+    await screen.findByRole('option', { name: 'Programmation' })
+    expect(screen.getByLabelText('Branche de compétence')).toHaveValue('')
   })
 })
