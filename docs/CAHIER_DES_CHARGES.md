@@ -198,6 +198,20 @@ Le système d'habitudes est distinct des missions classiques. Il permet :
 
 Les séries de jours consécutifs sont facultatives et ne créent aucune pénalité en cas d'interruption.
 
+### 5.5. Calendrier journalier
+
+Le calendrier affiche et planifie les missions existantes. Il ne change aucune règle de gain (XP, crédits, niveaux) et ne punit jamais un jour manqué, conformément au principe « aucune perte liée au repos ».
+
+- **Aujourd'hui :** les missions du jour regroupées par territoire, les hebdomadaires en cours avec leur avancement, les étapes planifiées des missions principales et boss, et le résumé de la journée.
+- **Semaine :** sept jours en colonnes ; glisser une mission sur un autre jour la replanifie.
+- **Mois :** une grille dont chaque jour est coloré selon l'activité, avec un compteur de jours actifs (sans notion de série à protéger).
+- **Saison :** une barre de 90 jours avec le jour courant et les repères de la saison.
+- **Planification :** champs optionnels scheduled_date, scheduled_time et due_date sur une mission. Les missions quotidiennes et hebdomadaires apparaissent automatiquement selon leur période. Une échéance dépassée s'affiche sobrement, sans pénalité.
+- **Agents :** un agent peut proposer une date, seul l'utilisateur la confirme.
+- **Local d'abord :** le calendrier est propre à l'application et fonctionne hors ligne. Une lecture de Google Agenda (lecture seule) pourra être ajoutée plus tard.
+
+La spécification complète (API, interface, critères d'acceptation) est dans l'annexe docs/CALENDRIER.md du dépôt.
+
 ## 6. Moteur de progression
 
 Le moteur de progression est centralisé dans le backend. Les récompenses sont définies par le système et non directement par l'IA.
@@ -411,7 +425,7 @@ L'application comporte huit espaces : Dashboard, Quests, Character, World, Stati
 
 Un front web React et un backend Django tournent en local sur le PC de l'utilisateur, et les agents de code s'y connectent par l'API ou par MCP ; toutes les récompenses passent par le Life Engine.
 
-<img src="media/rId64.png" style="width:5.83333in;height:3.20312in" />
+<img src="media/rId65.png" style="width:5.83333in;height:3.20312in" />
 
 Le Life Engine est le seul composant qui écrit XP et récompenses ; les agents ne font que proposer via l'API.
 
