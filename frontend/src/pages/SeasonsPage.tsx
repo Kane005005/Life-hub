@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import '../styles/seasons.css'
 import { Button } from '../components/Button'
 import { HudFrame } from '../components/HudFrame'
 import { SeasonCard } from '../components/SeasonCard'
@@ -33,7 +34,7 @@ export function SeasonsPage() {
   }
 
   return (
-    <section className="lr-section">
+    <section className="lr-section lr-seasons-page">
       <p className="lr-eyebrow">06 · Saisons</p>
       <h1 className="lr-title">Saisons</h1>
       <p className="lr-lede">Des cycles de 90 jours pour donner un cap à ta progression.</p>
@@ -41,8 +42,8 @@ export function SeasonsPage() {
       {currentQuery.isPending ? <p className="lr-note">Chargement de la saison…</p> : null}
 
       {current ? (
-        <div className="lr-stack">
-          <SeasonCard season={current} />
+        <div className="lr-stack lr-seasons-active">
+          <SeasonCard season={current} featured />
           <div className="lr-form-actions">
             <Button variant="quiet" onClick={() => setEditing((value) => !value)}>
               Modifier
@@ -88,7 +89,8 @@ export function SeasonsPage() {
         </div>
       ) : !currentQuery.isPending ? (
         <div className="lr-stack">
-          <HudFrame>
+          <HudFrame className="lr-season-empty">
+            <p className="lr-eyebrow">Aucune saison active</p>
             <p>Aucune saison en cours. Une saison dure 90 jours.</p>
           </HudFrame>
           <SeasonForm />
@@ -98,18 +100,21 @@ export function SeasonsPage() {
       <h2 className="lr-subtitle">Saisons passées</h2>
       <div className="lr-stack">
         {past.map((season) => (
-          <details key={season.id} className="lr-frame">
+          <details key={season.id} className="lr-season-past">
             <summary className="lr-season-summary-toggle">
-              Saison {season.number} · {season.name} · {formatDate(season.start_date)} →{' '}
-              {formatDate(season.end_date)}
+              <span className="lr-season-past-number">Saison {season.number}</span>
+              <span className="lr-season-past-name">{season.name}</span>
+              <span className="lr-note">
+                {formatDate(season.start_date)} → {formatDate(season.end_date)}
+              </span>
             </summary>
-            <div className="lr-stack" style={{ marginTop: 12 }}>
+            <div className="lr-season-past-body">
               <SeasonCard season={season} />
             </div>
           </details>
         ))}
         {!seasonsQuery.isPending && past.length === 0 ? (
-          <p className="lr-note">Aucune saison passée.</p>
+          <p className="lr-empty">Aucune saison passée.</p>
         ) : null}
       </div>
     </section>

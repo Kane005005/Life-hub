@@ -42,7 +42,10 @@ export function TerritoryPanel({ territory }: TerritoryPanelProps) {
       <div className="lr-detail-stat">
         <span>Stat</span>
         <div className="lr-detail-bar">
-          <i style={{ width: `${territory.stat_display}%` }} />
+          <i
+            className="lr-detail-fill"
+            style={{ transform: `scaleX(${territory.stat_display / 100})` }}
+          />
         </div>
         <span className="num">{territory.stat_display} / 100</span>
       </div>

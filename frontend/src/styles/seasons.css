@@ -1,0 +1,370 @@
+/* ---------- Saisons : temps, objectifs et bilan ---------- */
+
+.lr-seasons-page .lr-lede {
+  margin-bottom: 24px;
+}
+
+.lr-seasons-page .lr-season-card {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.lr-season-card--featured {
+  padding: 26px;
+  border-color: var(--lr-em-deep);
+  background:
+    radial-gradient(circle at 88% 0%, rgba(47, 208, 139, 0.12), transparent 55%),
+    linear-gradient(180deg, rgba(19, 30, 26, 0.96), rgba(12, 19, 16, 0.96));
+}
+
+.lr-seasons-page .lr-season-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lr-season-head .lr-eyebrow {
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.lr-season-title {
+  font-family: var(--lr-font-display);
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.lr-season-title--featured {
+  font-size: clamp(36px, 5vw, 54px);
+}
+
+.lr-season-theme {
+  margin-top: 6px;
+  font-size: 15px;
+  color: var(--lr-muted);
+}
+
+.lr-season-time {
+  display: grid;
+  gap: 8px;
+}
+
+.lr-season-time-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lr-season-time-head .num {
+  font-size: 13px;
+  color: var(--lr-ivoire);
+}
+
+.lr-season-time--unavailable {
+  padding: 10px 12px;
+  border: 1px dashed var(--lr-line2);
+}
+
+.lr-season-time--unavailable .lr-note {
+  margin-top: 0;
+}
+
+.lr-rail.lr-season-time-rail {
+  --h: 10px;
+}
+
+.lr-rail.lr-season-objective-rail {
+  --h: 12px;
+}
+
+.lr-season-time-rail::after,
+.lr-season-objective-rail::after {
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(12.5% - 1px),
+    rgba(11, 16, 14, 0.75) calc(12.5% - 1px),
+    rgba(11, 16, 14, 0.75) 12.5%
+  );
+}
+
+.lr-season-time-fill,
+.lr-season-objective-fill {
+  background: linear-gradient(90deg, var(--lr-em-deep), var(--lr-emeraude-vive));
+  box-shadow: 0 0 14px var(--lr-glow);
+  transition: none;
+}
+
+.lr-season-objectives {
+  display: grid;
+  gap: 12px;
+}
+
+.lr-season-objectives-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lr-season-objective-count {
+  font-size: 13px;
+  color: var(--lr-emeraude-vive);
+}
+
+.lr-seasons-page .lr-season-main-objective {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-color: var(--lr-em-deep);
+  background: rgba(47, 208, 139, 0.05);
+}
+
+.lr-season-main-objective .lr-eyebrow {
+  margin-bottom: 0;
+  font-size: 11px;
+}
+
+.lr-season-secondary-list {
+  gap: 6px;
+}
+
+.lr-season-secondary-item {
+  border-left-color: var(--lr-line2);
+}
+
+.lr-season-check {
+  align-items: flex-start;
+  line-height: 1.4;
+}
+
+.lr-season-check input {
+  flex: none;
+  margin-top: 3px;
+  accent-color: var(--lr-emeraude-vive);
+}
+
+.lr-season-summary {
+  display: grid;
+  gap: 14px;
+  padding-top: 16px;
+  border-top: 1px solid var(--lr-line);
+}
+
+.lr-season-summary > .lr-eyebrow {
+  margin-bottom: 0;
+  font-size: 11px;
+}
+
+.lr-season-summary-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.lr-season-xp-value {
+  font-family: var(--lr-font-display);
+  font-size: clamp(48px, 7vw, 72px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--lr-ivoire);
+  text-shadow: 0 0 26px var(--lr-glow);
+}
+
+.lr-season-stats {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.lr-season-stats div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--lr-line);
+  font-size: 14px;
+}
+
+.lr-season-stats dt {
+  color: var(--lr-muted);
+}
+
+.lr-season-stats dd {
+  margin: 0;
+  color: var(--lr-ivoire);
+}
+
+.lr-seasons-page .lr-season-bars {
+  display: grid;
+  gap: 8px;
+}
+
+.lr-seasons-page .lr-season-bar-row {
+  display: grid;
+  grid-template-columns: auto minmax(70px, 90px) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.lr-season-bar-name {
+  font-size: 13px;
+  color: var(--lr-muted);
+}
+
+.lr-season-bar {
+  height: 8px;
+}
+
+.lr-season-bar-fill {
+  display: block;
+  height: 100%;
+  transition: none;
+}
+
+.lr-season-bar-value {
+  font-size: 13px;
+}
+
+.lr-season-unlocks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.lr-season-unlock-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lr-season-unlock {
+  color: var(--lr-ivoire);
+  border-color: var(--lr-line2);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.lr-season-past {
+  border: 1px solid var(--lr-line);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.lr-season-summary-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.lr-season-past-number {
+  font-family: var(--lr-font-hud);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lr-emeraude-vive);
+}
+
+.lr-season-past-name {
+  font-family: var(--lr-font-display);
+  font-size: 22px;
+}
+
+.lr-season-summary-toggle .lr-note {
+  margin-top: 0;
+}
+
+.lr-season-past-body {
+  padding: 0 16px 16px;
+}
+
+.lr-season-past .lr-season-card {
+  padding: 16px;
+}
+
+.lr-season-empty {
+  display: grid;
+  gap: 8px;
+  border-style: dashed;
+}
+
+.lr-season-empty .lr-eyebrow {
+  margin-bottom: 0;
+  font-size: 11px;
+}
+
+.lr-season-empty p:last-child {
+  font-size: 15px;
+  color: var(--lr-muted);
+}
+
+.lr-season-form {
+  max-width: 820px;
+}
+
+@media (max-width: 720px) {
+  .lr-season-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lr-season-unlocks {
+    grid-template-columns: 1fr;
+  }
+
+  .lr-seasons-page .lr-season-bar-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .lr-season-bar-name {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .lr-seasons-page .lr-season-card {
+    padding: 14px;
+  }
+
+  .lr-seasons-page .lr-season-card--featured {
+    padding: 18px;
+  }
+
+  .lr-season-title--featured {
+    font-size: 34px;
+  }
+
+  .lr-season-xp-value {
+    font-size: 44px;
+  }
+
+  .lr-season-summary-toggle {
+    padding: 12px;
+  }
+
+  .lr-season-past-body {
+    padding: 0 12px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lr-season-time-fill,
+  .lr-season-objective-fill,
+  .lr-season-bar-fill {
+    transition: none;
+    animation: none;
+  }
+}

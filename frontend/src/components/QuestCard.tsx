@@ -184,7 +184,7 @@ export function QuestCard({ quest }: QuestCardProps) {
       </div>
       <div className="lr-q-actions">
         <Button
-          variant={isBoss && !action.disabled ? 'solid' : 'default'}
+          variant={isBoss && action.label === 'Affronter' ? 'solid' : 'default'}
           onClick={handleAction}
           disabled={action.disabled || complete.isPending || accept.isPending}
         >

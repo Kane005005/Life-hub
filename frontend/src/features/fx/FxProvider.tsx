@@ -4,6 +4,7 @@ import { EmberCanvas } from './EmberCanvas'
 import { FxContext } from './FxContext'
 import type { FxApi } from './FxContext'
 import { LevelUpOverlay } from './LevelUpOverlay'
+import { prefersReducedMotion } from './motion'
 import { Toaster } from './Toaster'
 import { shake } from './shake'
 import { useEmbers } from './useEmbers'
@@ -21,14 +22,32 @@ function FxInner({ children }: { children: ReactNode }) {
   const [levelUp, setLevelUp] = useState<LevelState | null>(null)
   const [announcement, setAnnouncement] = useState('')
   const announceTimer = useRef<number | null>(null)
+  const levelTimers = useRef<number[]>([])
 
-  const showLevelUp = useCallback((level: number, message: string | null) => {
-    setLevelUp((previous) => ({
-      id: (previous?.id ?? 0) + 1,
-      level,
-      message,
-    }))
-  }, [])
+  const showLevelUp = useCallback(
+    (level: number, message: string | null) => {
+      setLevelUp((previous) => ({
+        id: (previous?.id ?? 0) + 1,
+        level,
+        message,
+      }))
+      if (prefersReducedMotion()) {
+        return
+      }
+      const x = window.innerWidth / 2
+      const y = window.innerHeight / 2
+      burst(x, y, 120)
+      levelTimers.current.push(
+        window.setTimeout(() => {
+          if (prefersReducedMotion()) {
+            return
+          }
+          burst(x, y, 80, '237,233,223')
+        }, 250),
+      )
+    },
+    [burst],
+  )
 
   const closeLevelUp = useCallback(() => {
     setLevelUp(null)
@@ -50,6 +69,8 @@ function FxInner({ children }: { children: ReactNode }) {
       if (announceTimer.current !== null) {
         window.clearTimeout(announceTimer.current)
       }
+      levelTimers.current.forEach((timer) => window.clearTimeout(timer))
+      levelTimers.current = []
     },
     [],
   )

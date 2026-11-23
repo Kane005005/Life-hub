@@ -64,6 +64,10 @@ export function Radar({ stats }: RadarProps) {
     const start = performance.now()
     let frame = 0
     const tick = (now: number) => {
+      if (prefersReducedMotion()) {
+        apply(target)
+        return
+      }
       const progress = Math.min(1, (now - start) / 700)
       const eased = 1 - Math.pow(1 - progress, 3)
       apply(from.map((value, index) => value + (target[index] - value) * eased))
@@ -109,6 +113,7 @@ export function Radar({ stats }: RadarProps) {
           stroke="#2FD08B"
           strokeWidth="2"
           strokeLinejoin="round"
+          style={{ filter: 'drop-shadow(0 0 8px rgba(47,208,139,.5))' }}
         />
         {axes.map((axis, index) => {
           const position = point(index, shown[index] ?? 0)

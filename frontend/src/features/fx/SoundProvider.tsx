@@ -31,6 +31,7 @@ export function SoundProvider({ children }: { children: ReactNode }) {
   const toggle = useCallback(() => {
     const next = !enabled
     setEnabled(next)
+    setSoundEnabled(next, true)
     writeSound(next)
   }, [enabled])
 

@@ -103,14 +103,30 @@ export function WorldMap({ territories, selected, onSelect }: WorldMapProps) {
 
       <circle className="lr-hubring" cx={HUB.x} cy={HUB.y} r="58" strokeDasharray="2 10" />
       <circle cx={HUB.x} cy={HUB.y} r="44" fill="#0E1A16" stroke="#35493F" />
-      <path
-        d="M450 240 L470 262 L450 284 L430 262 Z"
-        fill="none"
-        stroke="#EDE9DF"
-        strokeWidth="2"
-      />
-      <path d="M438 264 L448 254 L456 261 L466 249" fill="none" stroke="#2FD08B" strokeWidth="2" />
-      <circle cx="466" cy="249" r="3.5" fill="#2FD08B" />
+      <g
+        transform="translate(418 230)"
+        style={{ color: '#EDE9DF', '--node': '#2FD08B' } as CssVars}
+      >
+        <circle
+          cx="32"
+          cy="32"
+          r="26"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3.5"
+          strokeDasharray="24 3.23"
+          transform="rotate(-92 32 32)"
+        />
+        <path
+          d="M19 41 L28 32 L34 37 L44 25"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx="44" cy="25" r="4.4" style={{ fill: 'var(--node)' }} />
+      </g>
       <text className="lr-hub-label" x={HUB.x} y="338" textAnchor="middle">
         CITADELLE
       </text>
@@ -120,6 +136,13 @@ export function WorldMap({ territories, selected, onSelect }: WorldMapProps) {
         const link = TERRITORY_BY_CODE[territory.code]
         const isSelected = territory.code === selected
         const nodeStyle: CssVars = { '--c': territory.color }
+        const classes = [
+          'lr-node',
+          `lr-node--${territory.state.toLowerCase()}`,
+          isSelected ? 'is-selected' : undefined,
+        ]
+          .filter(Boolean)
+          .join(' ')
         const label = `${territory.name}, statistique ${territory.stat_display}, ${
           STATE_LABELS[territory.state]
         }`
@@ -129,7 +152,7 @@ export function WorldMap({ territories, selected, onSelect }: WorldMapProps) {
             ref={(element) => {
               nodes.current[territory.code] = element
             }}
-            className={isSelected ? 'lr-node is-selected' : 'lr-node'}
+            className={classes}
             style={nodeStyle}
             role="button"
             tabIndex={0}

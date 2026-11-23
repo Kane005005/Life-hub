@@ -47,4 +47,23 @@ describe('WorldMap', () => {
 
     expect(nodes()[1]).toHaveFocus()
   })
+
+  it('applique l’intensité correspondant à l’état renvoyé par l’API', () => {
+    const { container } = render(
+      <WorldMap
+        territories={[
+          makeTerritory({ code: 'KNOWLEDGE', state: 'DISCOVERY' }),
+          makeTerritory({ code: 'BODY', state: 'DEVELOPMENT' }),
+          makeTerritory({ code: 'CAREER', state: 'MASTERY' }),
+        ]}
+        selected="BODY"
+        onSelect={vi.fn()}
+      />,
+    )
+
+    expect(container.querySelectorAll('.lr-node--discovery')).toHaveLength(1)
+    expect(container.querySelectorAll('.lr-node--development')).toHaveLength(1)
+    expect(container.querySelectorAll('.lr-node--mastery')).toHaveLength(1)
+    expect(container.querySelector('.lr-node--development')).toHaveClass('is-selected')
+  })
 })

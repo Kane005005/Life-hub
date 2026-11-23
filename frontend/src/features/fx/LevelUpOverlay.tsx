@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '../../components/Button'
+import { prefersReducedMotion } from './motion'
 
 type LevelUpOverlayProps = {
   level: number
@@ -10,6 +11,7 @@ type LevelUpOverlayProps = {
 
 export function LevelUpOverlay({ level, message, onClose, open = true }: LevelUpOverlayProps) {
   const container = useRef<HTMLDivElement>(null)
+  const animated = !prefersReducedMotion()
 
   useEffect(() => {
     if (!open) {
@@ -33,18 +35,26 @@ export function LevelUpOverlay({ level, message, onClose, open = true }: LevelUp
     return null
   }
 
+  const classes = ['lr-lvlup', 'lr-lvlup--open', animated ? 'lr-lvlup--animated' : undefined]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <div
       ref={container}
-      className="lr-lvlup show"
+      className={classes}
       role="dialog"
       aria-modal="true"
       aria-label="Niveau atteint"
     >
-      <div className="rays" aria-hidden="true" />
-      <div className="ring" aria-hidden="true" />
+      {animated ? (
+        <>
+          <div className="rays" aria-hidden="true" />
+          <div className="ring" aria-hidden="true" />
+        </>
+      ) : null}
       <small>Niveau atteint</small>
-      <div className="big">{level}</div>
+      <div className="lr-lvlup-number">{level}</div>
       <p>{message ?? ''}</p>
       <Button variant="solid" onClick={onClose} autoFocus>
         Continuer

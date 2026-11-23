@@ -1,6 +1,6 @@
 # Architecture de LIFE RPG
 
-État : **phase 3 (LIFE AI)**. Ce document est mis à jour à chaque phase.
+État : **phase 4 (expérience immersive)**. Ce document est mis à jour à chaque phase.
 
 ## Vue d'ensemble
 
@@ -78,6 +78,13 @@ Aucun de ces modules ne donne de bonus d'XP ni ne retire quoi que ce soit. `make
 | `mcp_server/` | Serveur MCP stdio (`make mcp`) : client de l'API locale, outils `get_context`, `list_my_proposals`, `propose_quests` |
 
 Un test parcourt toutes les routes de `config/urls.py` et vérifie qu'aucune ne répond 2xx à un jeton d'agent. Guide complet : `docs/AGENTS.md`.
+
+### Expérience immersive (phase 4)
+
+- Arbre de compétences en SVG (`SkillTreeView`, `SkillTooltip`, `SkillConstellation`, `styles/skill-tree.css`) : nœuds hexagonaux, trois états (éteint, halo qui pulse, allumé avec ligne d'énergie), bulle au survol ou au focus, animation de déblocage (éclat, onde, braises, toast) puis éveil du nœud que l'API rend débloquable.
+- Boutique (`styles/shop.css`) et saisons (`styles/seasons.css`) : sections par emplacement, aperçu local sur l'avatar, progression du temps et des objectifs.
+- Effets : braises calculées sur le temps réel (durée stable même à faible fréquence d'images), boucle arrêtée sans particules, `devicePixelRatio` plafonné à 2 ; animations sur `transform`, `opacity` et `stroke-dashoffset` seulement.
+- `prefers-reduced-motion` : chaque fichier de styles coupe ses animations, et les effets JS (braises, secousse, éclat, rayons) vérifient la préférence au moment de l'appel. Son coupé par défaut.
 
 ### API
 

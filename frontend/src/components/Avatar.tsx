@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import '../styles/shop.css'
 import type { CharacterEquipment, Silhouette } from '../lib/types'
 
 type AvatarProps = {
@@ -24,13 +25,20 @@ export function Avatar({
   label,
   equipment,
 }: AvatarProps) {
-  const gradientId = `lr-avatar-${useId().replace(/:/g, '')}`
+  const gradientId = `lr-avatar-${useId().replace(/[^a-zA-Z0-9-]/g, '')}`
   const auraColor = equipment?.AURA?.visual?.color
   const frameStyle = equipment?.FRAME?.visual?.style
-  const emblemSign = equipment?.EMBLEM?.visual?.sign ?? '◆'
+  const emblem = equipment?.EMBLEM
+  const emblemColor = emblem?.visual?.color ?? '#EDE9DF'
+  const emblemSign = emblem?.visual?.sign
+  const outerStroke = frameStyle === 'silver' ? '#B9BEC2' : '#35493F'
+  const innerStroke = frameStyle === 'silver' ? '#EDE9DF' : color
+  const outerWidth = frameStyle === 'silver' ? '2.5' : '1.5'
+  const innerOpacity = frameStyle === 'silver' ? '0.55' : '0.45'
 
   return (
     <svg
+      className="lr-avatar"
       width={size}
       height={size * (188 / 168)}
       viewBox="0 0 168 188"
@@ -43,25 +51,32 @@ export function Avatar({
           <stop offset="0" stopColor={color} stopOpacity="0.55" />
           <stop offset="1" stopColor="#0B100E" stopOpacity="0" />
         </radialGradient>
+        <radialGradient id={`${gradientId}-aura`} cx="50%" cy="50%" r="50%">
+          <stop offset="0" stopColor={auraColor ?? color} stopOpacity="0.42" />
+          <stop offset="1" stopColor={auraColor ?? color} stopOpacity="0" />
+        </radialGradient>
       </defs>
       {auraColor ? (
-        <circle
-          data-avatar-aura="true"
-          cx="84"
-          cy="94"
-          r="76"
-          fill={auraColor}
-          fillOpacity="0.12"
-          stroke={auraColor}
-          strokeOpacity="0.45"
-          strokeWidth="2"
-        />
+        <g aria-hidden="true">
+          <circle cx="84" cy="94" r="76" fill={`url(#${gradientId}-aura)`} />
+          <circle
+            data-avatar-aura="true"
+            className="lr-avatar-aura"
+            cx="84"
+            cy="94"
+            r="76"
+            fill="none"
+            stroke={auraColor}
+            strokeOpacity="0.45"
+            strokeWidth="2"
+          />
+        </g>
       ) : null}
       <polygon
         points="84,4 160,48 160,140 84,184 8,140 8,48"
         fill={`url(#${gradientId})`}
-        stroke={frameStyle === 'silver' ? '#B9BEC2' : '#35493F'}
-        strokeWidth={frameStyle === 'silver' ? '2.5' : '1.5'}
+        stroke={outerStroke}
+        strokeWidth={outerWidth}
       />
       {frameStyle === 'double' ? (
         <polygon
@@ -76,28 +91,47 @@ export function Avatar({
       <polygon
         points="84,14 150,52 150,136 84,174 18,136 18,52"
         fill="none"
-        stroke={frameStyle === 'silver' ? '#EDE9DF' : color}
-        strokeOpacity={frameStyle === 'silver' ? '0.55' : '0.45'}
+        stroke={innerStroke}
+        strokeOpacity={innerOpacity}
         strokeWidth="1"
       />
       <circle cx="84" cy="74" r="22" fill="#0B100E" stroke={accent} strokeWidth="2" />
-      <path d={BUSTS[silhouette]} fill="#0B100E" stroke={accent} strokeWidth="2" />
+      <path
+        d={BUSTS[silhouette]}
+        fill="#0B100E"
+        stroke={accent}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
       {silhouette === 'C' ? (
         <path d="M66 106 L84 132 L102 106" stroke={accent} strokeWidth="2" fill="none" />
       ) : null}
-      {equipment?.EMBLEM ? (
-        <text
-          data-avatar-emblem="true"
-          x="84"
-          y="142"
-          textAnchor="middle"
-          fontSize="14"
-          fill={equipment.EMBLEM.visual?.color ?? '#EDE9DF'}
-        >
-          {emblemSign}
-        </text>
+      {emblem ? (
+        <g data-avatar-emblem="true" className="lr-avatar-emblem">
+          <path
+            d="M68 143 L78 133 L85 139 L99 124"
+            fill="none"
+            stroke={emblemColor}
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="99" cy="124" r="3" fill={emblemColor} />
+          {emblemSign && emblemSign !== '◆' ? (
+            <text
+              className="lr-avatar-emblem-sign"
+              x="84"
+              y="160"
+              textAnchor="middle"
+              fontSize="10"
+              fill={emblemColor}
+            >
+              {emblemSign}
+            </text>
+          ) : null}
+        </g>
       ) : null}
-      <circle cx="84" cy="74" r="4" fill={color} />
+      <circle className="lr-avatar-core" cx="84" cy="74" r="4" fill={color} />
     </svg>
   )
 }
